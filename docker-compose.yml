@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: my_postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: myuser          # ชื่อผู้ใช้
+      POSTGRES_PASSWORD: mypassword  # รหัสผ่าน
+      POSTGRES_DB: mydb              # ชื่อ Database
+    ports:
+      - "5432:5432"                  # Map Port คอมพิวเตอร์ : Port ใน Docker Container
+    volumes:
+      - postgres_data:/var/lib/postgresql/data  # ผูกข้อมูลไว้กับดิสก์ ป้องกันข้อมูลหายเวลาปิด Docker
+
+volumes:
+  postgres_data:
