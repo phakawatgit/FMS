@@ -10,7 +10,7 @@ services:
       POSTGRES_PASSWORD: mypassword  # รหัสผ่าน
       POSTGRES_DB: mydb              # ชื่อ Database
     ports:
-      - "5432:5432"                  # Map Port คอมพิวเตอร์ : Port ใน Docker Container
+      - "5433:5432"                  # Map Port คอมพิวเตอร์ : Port ใน Docker Container
     volumes:
       - postgres_data:/var/lib/postgresql/data  # ผูกข้อมูลไว้กับดิสก์ ป้องกันข้อมูลหายเวลาปิด Docker
 
