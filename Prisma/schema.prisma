@@ -13,3 +13,12 @@ model User {
   name      String?
   createdAt DateTime @default(now())
 }
+
+// เพิ่มตารางสินค้าสำหรับเว็บของคุณ
+model Product {
+  id          Int      @id @default(autoincrement())
+  name        String
+  price       Float
+  description String?
+  createdAt   DateTime @default(now())
+}
