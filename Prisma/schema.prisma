@@ -15,10 +15,19 @@ model User {
 }
 
 // เพิ่มตารางสินค้าสำหรับเว็บของคุณ
-model Product {
-  id          Int      @id @default(autoincrement())
-  name        String
-  price       Float
-  description String?
-  createdAt   DateTime @default(now())
+model Nurse {
+  id        Int    @id @default(autoincrement())
+  name      String @db.VarChar(255)
+  lastName  String @db.VarChar(255)
+  nickname  String @db.VarChar(255)
+
+  @@map("Nurses")
+}
+
+model Patient {
+  id        Int    @id @default(autoincrement())
+  name      String @db.VarChar(255)
+  lastName  String @db.VarChar(255)
+  nickname  String @db.VarChar(255)
+  stuId     String @map("Stu.id") @db.Char(8)
 }
