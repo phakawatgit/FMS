@@ -14,12 +14,13 @@ model User {
   createdAt DateTime @default(now())
 }
 
-// เพิ่มตารางสินค้าสำหรับเว็บของคุณ
+// เพิ่มตารางสำหรับเว็บ
 model Nurse {
   id        Int    @id @default(autoincrement())
   name      String @db.VarChar(255)
   lastName  String @db.VarChar(255)
   nickname  String @db.VarChar(255)
+  TeleNumber String?
 
   @@map("Nurses")
 }
@@ -30,4 +31,17 @@ model Patient {
   lastName  String @db.VarChar(255)
   nickname  String @db.VarChar(255)
   stuId     String @map("Stu.id") @db.Char(8)
+}
+
+model MedicineInventory {
+  id          Int      @id @default(autoincrement())
+  name        String   @db.VarChar(255)
+  productSku  String   @unique @map("Product SKU") @db.Char(8)
+  productInfo String?  @map("Product Info") @db.VarChar(255)
+  stock       Int      @default(0)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("Medicine & Medical Supplies Inventory")
 }
