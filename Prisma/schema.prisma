@@ -16,32 +16,33 @@ model User {
 
 // เพิ่มตารางสำหรับเว็บ
 model Nurse {
-  id        Int    @id @default(autoincrement())
-  name      String @db.VarChar(255)
-  lastName  String @db.VarChar(255)
-  nickname  String @db.VarChar(255)
-  TeleNumber String?
+  id       Int     @id @default(autoincrement())
+  fullName String  @map("ชื่อ-สกุล") @db.VarChar(255)
+  position String  @map("ตำแหน่ง") @db.VarChar(100)
+  phone    String? @map("เบอร์โทร") @db.VarChar(30)
 
   @@map("Nurses")
 }
 
 model Patient {
-  id        Int    @id @default(autoincrement())
-  name      String @db.VarChar(255)
-  lastName  String @db.VarChar(255)
-  nickname  String @db.VarChar(255)
-  stuId     String @map("Stu.id") @db.Char(8)
+  id       Int    @id @default(autoincrement())
+  name     String @db.VarChar(255)
+  lastName String @db.VarChar(255)
+  nickname String @db.VarChar(255)
+  stuId    String @map("Stu.id") @db.Char(8)
 }
 
-model MedicineInventory {
-  id          Int      @id @default(autoincrement())
-  name        String   @db.VarChar(255)
-  productSku  String   @unique @map("Product SKU") @db.Char(8)
-  productInfo String?  @map("Product Info") @db.VarChar(255)
-  stock       Int      @default(0)
+model MedicalSupplyCatalog {
+  id                Int       @id @default(autoincrement())
+  internationalName String    @map("ชื่อยาสากล") @db.VarChar(255)
+  genericName       String    @map("ชื่อยาสามัญ") @db.VarChar(255)
+  quantity          Int       @map("จำนวน")
+  unit              String    @map("หน่วยนับ") @db.VarChar(100)
+  indication        String    @map("สรรพคุณ") @db.Text
+  manufacturedDate  DateTime? @map("วันผลิต") @db.Date
+  expirationDate    DateTime? @map("วันหมดอายุ") @db.Date
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@map("Medicine & Medical Supplies Inventory")
+  @@map("Medical Supply Catalog")
 }

@@ -1,0 +1,2 @@
+ALTER TABLE "Nurses"
+ADD COLUMN "เบอร์โทร" VARCHAR(30);
