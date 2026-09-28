@@ -1,0 +1,262 @@
+.topbar .export,
+.topbar .tool-button,
+.topbar .actions > button.export,
+.topbar .page-tools .tool-button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 2.9rem !important;
+  height: 2rem !important;
+  min-height: 2rem !important;
+  padding: 0 .62rem !important;
+  border: 0 !important;
+  border-radius: .35rem !important;
+  background: #fff !important;
+  color: #123678 !important;
+  font: 600 .7rem Kanit, sans-serif !important;
+  line-height: 1 !important;
+  box-shadow: none !important;
+}
+
+.topbar .actions,
+.topbar .page-tools,
+.topbar .top-actions,
+.topbar .topbar-actions {
+  gap: .42rem !important;
+}
+.topbar{min-height:3.8rem!important;padding:.5rem clamp(.75rem,1.5vw,1rem)!important;background:#0b005f!important;color:#fff!important;display:flex!important;align-items:center!important;justify-content:space-between!important}.topbar-inner{width:100%!important;display:flex!important;align-items:center!important;justify-content:space-between!important}.topbar .brand{display:flex!important;align-items:center!important;gap:.65rem!important;color:#fff!important;text-decoration:none!important;font:700 1rem Kanit,sans-serif!important}.topbar .brand img{width:2.35rem!important;height:2.35rem!important;border-radius:.55rem!important}.topbar .actions,.topbar .top-actions,.topbar .page-tools,.topbar .topbar-actions{display:flex!important;align-items:center!important;gap:.45rem!important}.topbar .menu-button,.topbar .menu-link{display:grid!important;place-items:center!important;width:2rem!important;height:2rem!important;border-radius:.45rem!important;color:#fff!important}.topbar .menu-button svg,.topbar .menu-link svg{width:1.25rem!important;height:1.25rem!important;fill:none!important;stroke:currentColor!important;stroke-width:1.8!important}.topbar .bell,.topbar .icon-button{position:relative!important;display:grid!important;place-items:center!important;width:2rem!important;height:2rem!important;border:0!important;background:transparent!important;color:#fff!important}.topbar .bell svg,.topbar .icon-button svg{width:1.2rem!important;height:1.2rem!important;fill:none!important;stroke:currentColor!important;stroke-width:1.6!important}.topbar .bell b,.topbar .notification-badge{position:absolute!important;top:-.2rem!important;right:-.1rem!important;min-width:1rem!important;height:1rem!important;padding:0 .2rem!important;border-radius:999px!important;background:#ed5060!important;color:#fff!important;font:700 .55rem/1 Kanit,sans-serif!important;text-align:center!important}.topbar .language,.topbar .language-tool,.topbar .language-switcher{display:flex!important;align-items:center!important;gap:.25rem!important;min-height:2rem!important;padding:.25rem .55rem!important;border:1px solid #6b83cf!important;border-radius:999px!important;background:#10006d!important;color:#fff!important;font:600 .7rem Kanit,sans-serif!important}.topbar .language svg,.topbar .language-switcher svg{width:1rem!important;height:1rem!important;fill:none!important;stroke:currentColor!important;stroke-width:1.5!important}.topbar .language-switcher label{color:#fff!important}.topbar .sign-out{color:#fff!important}
+.detail-page-heading .back,
+.page-heading .back,
+.history-back,
+.cart-back,
+.back-link,
+.borrow-form-back,
+.return-back,
+.back-stock,
+.order-back,
+.return-backbar #returnHome {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: .45rem !important;
+  min-height: 2.5rem !important;
+  padding: .45rem .8rem !important;
+  border: 1px solid #a9cbe7 !important;
+  border-radius: .7rem !important;
+  background: #fff !important;
+  color: #07517e !important;
+  font: 600 .82rem/1.2 Kanit, sans-serif !important;
+  text-decoration: none !important;
+  box-shadow: 0 3px 8px rgba(33, 103, 151, .12) !important;
+  cursor: pointer !important;
+}
+
+.detail-page-heading .back:hover,
+.page-heading .back:hover,
+.history-back:hover,
+.cart-back:hover,
+.back-link:hover,
+.borrow-form-back:hover,
+.return-back:hover,
+.back-stock:hover,
+.order-back:hover,
+.return-backbar #returnHome:hover {
+  background: #f5fcff !important;
+  border-color: #73bed7 !important;
+  color: #006f8b !important;
+  transform: translateY(-1px);
+}
+
+.detail-page-heading .back svg,
+.page-heading .back svg,
+.history-back svg,
+.cart-back svg,
+.back-link svg,
+.borrow-form-back svg,
+.return-back svg,
+.order-back svg,
+.return-backbar #returnHome svg {
+  display: none !important;
+}
+
+.detail-page-heading .back::before,
+.page-heading .back::before,
+.history-back::before,
+.cart-back::before,
+.back-link::before,
+.borrow-form-back::before,
+.return-back::before,
+.order-back::before,
+.return-backbar #returnHome::before {
+  content: "";
+  display: block;
+  flex: 0 0 1.2rem;
+  width: 1.2rem;
+  height: 1.2rem;
+  border: 0;
+  background: center / contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2301a5aa' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M13 8l-4 4 4 4M9 12h6'/%3E%3C/svg%3E");
+}
+
+/* Keep the reference shape even on pages with older, more specific styles. */
+body .detail-page-heading .back,
+body .page-heading .back,
+body .history-back,
+body .cart-back,
+body .back-link,
+body .borrow-form-back,
+body .return-back,
+body .back-stock,
+body .order-back,
+body .return-backbar #returnHome {
+  border-radius: .7rem !important;
+}
+
+body .back-link::after {
+  content: none !important;
+}
+/* Final original language-button reference. Keep this after page-specific rules. */
+body header.topbar .actions button.language,
+body header.topbar .actions button.language-tool {
+  display: inline-flex !important;
+  width: 88px !important;
+  min-width: 88px !important;
+  height: 34px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  padding: 0 10px !important;
+  border: 0 !important;
+  border-radius: 8px !important;
+  background: #fff !important;
+  color: #214967 !important;
+  box-shadow: none !important;
+  font: 700 12px/1 Kanit, Arial, sans-serif !important;
+}
+
+body header.topbar .actions button.language svg,
+body header.topbar .actions button.language-tool svg {
+  display: block !important;
+  width: 16px !important;
+  height: 16px !important;
+  fill: none !important;
+  stroke: #08aeb8 !important;
+  stroke-width: 1.8 !important;
+}
+
+body header.topbar .actions button.language i,
+body header.topbar .actions button.language-tool i {
+  display: none !important;
+}
+
+/* Some pages use the same control with the language-switcher class. */
+body header.topbar .top-actions button.language-switcher,
+body header.topbar .actions button.language-switcher {
+  display: inline-flex !important;
+  width: 88px !important;
+  min-width: 88px !important;
+  height: 34px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  padding: 0 10px !important;
+  border: 0 !important;
+  border-radius: 8px !important;
+  background: #fff !important;
+  color: #214967 !important;
+  box-shadow: none !important;
+  font: 700 12px/1 Kanit, Arial, sans-serif !important;
+}
+
+body header.topbar button.language-switcher svg {
+  display: block !important;
+  width: 16px !important;
+  height: 16px !important;
+  fill: none !important;
+  stroke: #08aeb8 !important;
+  stroke-width: 1.8 !important;
+}
+
+/* Last-resort selector for pages that only expose the language button by id. */
+body header.topbar button#languageButton,
+body header.topbar button[class*="language"] {
+  display: inline-flex !important;
+  width: 88px !important;
+  min-width: 88px !important;
+  height: 34px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  padding: 0 10px !important;
+  border: 0 !important;
+  border-radius: 8px !important;
+  background: #fff !important;
+  color: #214967 !important;
+  box-shadow: none !important;
+  font: 700 12px/1 Kanit, Arial, sans-serif !important;
+}
+body header.topbar button#languageButton svg,
+body header.topbar button[class*="language"] svg {
+  display: block !important;
+  width: 16px !important;
+  height: 16px !important;
+  fill: none !important;
+  stroke: #08aeb8 !important;
+  stroke-width: 1.8 !important;
+}
+
+body header.topbar button#languageButton i,
+body header.topbar button[class*="language"] i {
+  display: none !important;
+}
+/* Back links: keep the circular arrow icon, remove the legacy text arrow. */
+body .back-link {
+  font-size: 0 !important;
+}
+
+body .back-link::after {
+  content: "กลับหน้าคลังทั้งหมด" !important;
+  font-size: .85rem !important;
+  font-weight: 700 !important;
+}
+
+body .back-link.back-link {
+  font-size: 0 !important;
+}
+
+body .back-link.back-link::after {
+  content: "กลับหน้าคลังทั้งหมด" !important;
+  font-size: .85rem !important;
+}
+/* Shared language control matching catalog detail across all menus. */
+body .topbar .actions .language,
+body .topbar .actions .language-tool,
+body .topbar .actions .language-switcher,
+body .topbar .actions #languageButton{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:6px!important;width:auto!important;min-width:0!important;height:32px!important;padding:0 12px!important;border:0!important;border-radius:8px!important;background:#fff!important;color:#214967!important;box-shadow:none!important;font:700 12px/1 Kanit,Arial,sans-serif!important;cursor:pointer!important}
+body .topbar .actions .language svg,
+body .topbar .actions .language-tool svg,
+body .topbar .actions .language-switcher svg,
+body .topbar .actions #languageButton svg{display:block!important;width:16px!important;height:16px!important;fill:none!important;stroke:#08aeb8!important;stroke-width:1.8!important}
+body .topbar .actions .language i,
+body .topbar .actions .language-tool i,
+body .topbar .actions .language-switcher i,
+body .topbar .actions #languageButton i{display:none!important}
+body .topbar .actions .language:has(> svg)::before,
+body .topbar .actions .language-tool:has(> svg)::before,
+body .topbar .actions .language-switcher:has(> svg)::before,
+body .topbar .actions #languageButton:has(> svg)::before{display:none!important}
+
+/* Language controls intentionally use text only; no Earth icon. */
+body .topbar .language > svg,
+body .topbar .language-tool > svg,
+body .topbar .language-switcher > svg,
+body .topbar #languageButton > svg,
+body .topbar .language::before,
+body .topbar .language::after,
+body .topbar .language-tool::before,
+body .topbar .language-tool::after,
+body .topbar .language-switcher::before,
+body .topbar .language-switcher::after,
+body .topbar #languageButton::before,
+body .topbar #languageButton::after {
+  display: none !important;
+  content: none !important;
+}

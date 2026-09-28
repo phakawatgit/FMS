@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FMS | Menu</title>
+    <link rel="icon" type="image/png" href="./assets/fms.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Itim&family=Kanit:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./menu.css?v=20" />
+<link rel="stylesheet" href="./header-controls.css"><link rel="stylesheet" href="./button-animations.css?v=3"><link rel="stylesheet" href="./font-kanit.css?v=1"><link rel="stylesheet" href="./theme-colors.css?v=3"></head>
+
+<body>
+    <header class="topbar">
+        <div class="container-fluid topbar-inner">
+            <a class="brand" href="./menu.html" aria-label="FMS home">
+                <img src="./assets/fms.png" alt="" />
+                <span>First Aid &amp; Medicine Management System</span>
+            </a>
+            <div class="topbar-actions">
+                <button id="notificationButton" class="icon-button" type="button" aria-label="การแจ้งเตือน" data-i18n-aria-label="notifications">
+            <svg viewBox="0 0 32 32" aria-hidden="true">
+              <path d="M7.2 23.3h17.6c-1.6-1.8-2.4-4-2.4-6.5v-3.1c0-3.7-2.4-6.5-6.4-7.2v-1c0-.9-.7-1.6-1.6-1.6s-1.6.7-1.6 1.6v1c-4 .7-6.4 3.5-6.4 7.2v3.1c0 2.5-.8 4.7-2.4 6.5h3.2Z" />
+              <path d="M12.3 25.2c.5 1.2 1.5 1.8 2.7 1.8s2.2-.6 2.7-1.8" />
+            </svg>
+            <span id="notificationBadge" class="notification-badge" hidden>0</span>
+          </button>
+                <section id="notificationPanel" class="notification-panel" hidden aria-label="การแจ้งเตือน" data-i18n-aria-label="notifications">
+                    <div class="notification-panel-header">
+                        <div>
+                            <p data-i18n="notifications">การแจ้งเตือน</p>
+                            <span id="notificationSummary">รายการที่ต้องดำเนินการ</span>
+                        </div>
+                        <button id="markNotificationsRead" type="button" data-i18n="markAllRead">อ่านทั้งหมด</button>
+                    </div>
+                    <div id="notificationList" class="notification-list"></div>
+                </section>
+                <fieldset class="language-switcher" aria-label="เปลี่ยนภาษา" data-i18n-aria-label="changeLanguage">
+                    
+                    <label><input type="radio" name="language" value="en" /> <span>English</span></label>
+                    <label><input type="radio" name="language" value="th" checked /> <span>ไทย</span></label>
+                </fieldset>
+                <button id="signOutButton" class="sign-out" type="button">
+            <span id="signOutLabel">ออกจากระบบ</span>
+            <img class="sign-out-icon" src="./assets/logout-icon.png" alt="" />
+          </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container-fluid page-content">
+        <section class="overview-card" aria-labelledby="calendarTitle">
+            <div class="calendar-area">
+                <div class="section-heading">
+                    <div>
+                        <h1 id="calendarTitle" data-i18n="dutyShift">การเข้าเวร</h1>
+                        <h2 id="monthTitle"></h2>
+                    </div>
+                    <button id="viewCalendarButton" class="small-action" type="button" data-i18n="viewCalendar">ดูปฏิทิน</button>
+                </div>
+                <div class="week-row" aria-hidden="true">
+                    <span data-i18n="sun">อา</span><span data-i18n="mon">จ</span><span data-i18n="tue">อ</span><span data-i18n="wed">พ</span><span data-i18n="thu">พฤ</span><span data-i18n="fri">ศ</span><span data-i18n="sat">ส</span>
+                </div>
+                <div id="calendarGrid" class="calendar-grid" aria-label="ปฏิทินเดือนสิงหาคม 2026" data-i18n-aria-label="calendarLabel"></div>
+            </div>
+            <aside class="duty-tools">
+                <section class="color-picker-card" aria-labelledby="colorPickerTitle">
+                    <div class="color-picker-head">
+                        <strong id="colorPickerTitle" data-i18n="chooseColor">เลือกแถบสี</strong>
+                    </div>
+                    <div class="color-carousel">
+                        <button id="previousColorPage" class="color-nav" type="button" aria-label="สีหน้าก่อนหน้า" data-i18n-aria-label="previousColorPage">&#x2039;</button>
+                        <div id="colorPalette" class="color-palette" role="group" aria-label="เลือกสีประจำตัว" data-i18n-aria-label="choosePersonalColor"></div>
+                        <button id="nextColorPage" class="color-nav" type="button" aria-label="สีหน้าถัดไป" data-i18n-aria-label="nextColorPage">&#x203A;</button>
+                    </div>
+                    <div id="colorPagination" class="color-pagination" role="tablist" aria-label="หน้าของสี"></div>
+                </section>
+                <section class="duty-form-card" aria-labelledby="dutyFormTitle">
+                    <h3 id="dutyFormTitle" data-i18n="dutyRecord">บันทึกการเข้าเวร</h3>
+                    <p class="duty-form-hint" data-i18n="dutyHint">กรอกข้อมูลให้ครบเพื่อบันทึกเวรของคุณ</p>
+                    <form id="dutyForm">
+                        <div class="duty-form-grid">
+                            <label><span data-i18n="firstName">ชื่อ</span><input id="nurseFirstName" type="text" placeholder="เช่น สมใจ" data-i18n-placeholder="firstNamePlaceholder" required /></label>
+                            <label><span data-i18n="lastName">นามสกุล</span><input id="nurseLastName" type="text" placeholder="เช่น ใจดี" data-i18n-placeholder="lastNamePlaceholder" required /></label>
+                            <label><span data-i18n="nickname">ชื่อเล่น</span><input id="nurseNickname" type="text" placeholder="ไม่บังคับ" data-i18n-placeholder="nicknamePlaceholder" /></label>
+                            <label><span data-i18n="affiliation">สังกัด</span><input id="nurseAffiliation" type="text" placeholder="เช่น ห้องพยาบาล" data-i18n-placeholder="affiliationPlaceholder" /></label>
+                        </div>
+                        <p id="dutyStatus" class="duty-status" aria-live="polite"></p>
+                        <button class="schedule-button" type="submit" data-i18n="saveDuty">บันทึก</button>
+                    </form>
+                </section>
+            </aside>
+        </section>
+
+        <section id="yearCalendarModal" class="year-calendar-modal" hidden aria-labelledby="yearCalendarTitle" role="dialog" aria-modal="true">
+            <div class="year-calendar-backdrop" data-close-calendar></div>
+            <div class="year-calendar-dialog">
+                <div class="year-calendar-header">
+                    <div>
+                    <p class="eyebrow" data-i18n="dutyOverview">ภาพรวมการเข้าเวร</p>
+                        <h2 id="yearCalendarTitle" data-i18n="yearCalendarTitle">ปฏิทินเวรประจำปี</h2>
+                        <p class="year-calendar-legend"><span></span> <span data-i18n="yearCalendarLegend">จุดสีแสดงวันที่มีพยาบาลเข้าเวร</span></p>
+                    </div>
+                    <button id="closeYearCalendar" class="close-calendar" type="button" aria-label="ปิดปฏิทิน" data-i18n-aria-label="closeCalendar">×</button>
+                </div>
+                <div class="year-calendar-toolbar">
+                    <span class="year-calendar-label" data-i18n="selectYear">เลือกปี</span>
+                    <div class="year-calendar-picker" id="yearCalendarPicker">
+                        <button id="yearCalendarPrevious" class="year-calendar-chevron" type="button" aria-label="ปีก่อนหน้า" data-i18n-aria-label="previousYear">‹</button>
+                        <button id="yearCalendarTrigger" class="year-calendar-trigger" type="button" aria-haspopup="listbox" aria-expanded="false">
+                            <span id="yearCalendarValue"></span>
+                            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 7 5 5 5-5"/></svg>
+                        </button>
+                        <button id="yearCalendarNext" class="year-calendar-chevron" type="button" aria-label="ปีถัดไป" data-i18n-aria-label="nextYear">›</button>
+                        <div id="yearCalendarOptions" class="year-calendar-options" role="listbox" aria-label="เลือกปี" data-i18n-aria-label="selectYear" hidden></div>
+                    </div>
+                </div>
+                <div id="yearCalendarContent" class="year-calendar-content"></div>
+            </div>
+        </section>
+
+        <section class="menu-section" aria-labelledby="menuTitle">
+            <div class="menu-heading">
+                <div>
+                    <p class="eyebrow" data-i18n="workspace">พื้นที่ทำงาน</p>
+                    <h2 id="menuTitle" data-i18n="menu">เมนู</h2>
+                </div>
+                <p class="menu-hint" data-i18n="menuHint">จัดการงานปฐมพยาบาลและยาได้ในที่เดียว</p>
+            </div>
+            <div id="menuGrid" class="row g-4"></div>
+        </section>
+    </main>
+
+    <script type="module" src="./menu.js?v=5"></script>
+<script src="./language-toggle.js?v=13"></script><script src="./header-controls.js?v=3"></script></body>
+
+</html>
+
+
+
+
+

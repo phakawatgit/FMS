@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FMS | Duty Shift</title>
+  <link rel="icon" href="./assets/fms.png">
+  <link rel="stylesheet" href="./header-controls.css">
+  <link rel="stylesheet" href="./button-animations.css?v=3">
+  <link rel="stylesheet" href="./font-kanit.css?v=1">
+  <link rel="stylesheet" href="./duty-shift.css?v=10">
+  <link rel="stylesheet" href="./dashboard-topbar.css?v=1">
+  <link rel="stylesheet" href="./duty-shift-calendar-no-background.css?v=2">
+</head>
+<body>
+  <header class="topbar dashboard-topbar">
+    <a class="brand" href="./menu.html"><img src="./assets/fms.png" alt=""><span>First Aid &amp; Medicine Management System</span></a>
+    <div class="actions">
+      <a class="menu-button" href="./menu.html" aria-label="กลับหน้าเมนู"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></a>
+      <button id="exportExcel" class="export" type="button">Excel</button>
+      <button id="exportPdf" class="export" type="button">PDF</button>
+      <button id="notificationButton" class="bell" type="button" aria-label="การแจ้งเตือน"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 17h12l-1.4-2.2V10a4.6 4.6 0 0 0-9.2 0v4.8L6 17Zm4 2a2 2 0 0 0 4 0"/></svg><b>6</b></button>
+      <button id="languageButton" class="language" type="button" aria-label="เปลี่ยนภาษา"><span id="languageLabel">ไทย</span></button>
+    </div>
+  </header>
+  <main class="duty-page">
+    <header class="duty-page-heading"><h1>Duty Shift Scheduling &amp;<br class="mobile-break"> Attendance</h1></header>
+    <section class="calendar-panel" aria-labelledby="calendarTitle">
+      <div class="calendar-title-row"><h2 id="calendarTitle">การเข้าเวร</h2><div class="month-picker">
+        <div class="custom-picker" id="monthPicker"><input id="calendarMonth" type="hidden"><button id="monthTrigger" class="custom-picker-trigger" type="button" aria-label="เลือกเดือน" aria-haspopup="listbox" aria-expanded="false"><span id="monthValue"></span><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 7 5 5 5-5"/></svg></button><div id="monthOptions" class="custom-picker-menu" role="listbox" aria-label="เดือน" hidden></div></div>
+        <div class="custom-picker custom-picker-year" id="yearPicker"><input id="calendarYear" type="hidden"><button id="yearTrigger" class="custom-picker-trigger" type="button" aria-label="เลือกปี" aria-haspopup="listbox" aria-expanded="false"><span id="yearValue"></span><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 7 5 5 5-5"/></svg></button><div id="yearOptions" class="custom-picker-menu" role="listbox" aria-label="ปี" hidden></div></div>
+      </div></div>
+      <div class="week-row" aria-hidden="true"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div>
+      <div id="calendarGrid" class="calendar-grid" role="grid" aria-label="ปฏิทินเข้าเวร"></div>
+      <div class="duty-tools">
+        <section class="color-picker-card" aria-labelledby="colorPickerTitle">
+          <div class="color-picker-head"><strong id="colorPickerTitle">เลือกสีประจำตัว</strong><span id="selectedColorPreview" aria-hidden="true"></span></div>
+          <div class="color-carousel"><button id="previousColorPage" class="color-nav" type="button" aria-label="สีก่อนหน้า">‹</button><div id="colorPalette" class="color-palette" role="group" aria-label="เลือกสีประจำตัว"></div><button id="nextColorPage" class="color-nav" type="button" aria-label="สีถัดไป">›</button></div>
+          <div id="colorPagination" class="color-pagination" aria-label="หน้าชุดสี"></div>
+        </section>
+        <section class="duty-form-card" aria-labelledby="dutyFormTitle">
+          <h3 id="dutyFormTitle">บันทึกการเข้าเวร</h3>
+          <form id="dutyForm">
+            <div class="duty-form-grid">
+              <label><span>ชื่อ</span><input id="nurseFirstName" type="text" placeholder="ชื่อ" required></label>
+              <label><span>นามสกุล</span><input id="nurseLastName" type="text" placeholder="นามสกุล" required></label>
+              <label><span>ชื่อเล่น</span><input id="nurseNickname" type="text" placeholder="ไม่บังคับ"></label>
+              <label><span>สังกัด</span><input id="nurseAffiliation" type="text" placeholder="เช่น ห้องพยาบาล"></label>
+            </div>
+            <p class="selected-date-label">วันที่บันทึก: <strong id="selectedDateLabel"></strong></p>
+            <div class="duty-form-footer"><p id="dutyStatus" class="duty-status" aria-live="polite"></p><button class="schedule-button" type="submit">บันทึกเวร</button></div>
+          </form>
+        </section>
+      </div>
+    </section>
+    <section class="recent-panel" aria-labelledby="recentTitle">
+      <div class="recent-heading"><h2 id="recentTitle">รายละเอียดการเข้าเวร</h2><label class="record-search"><span class="visually-hidden">ค้นหารายการเวร</span><input id="recordSearch" type="search" placeholder="ค้นหาชื่อ, วันที่"><span aria-hidden="true">⌕</span></label></div>
+      <div class="recent-list-heading"><h3>ล่าสุด</h3><span id="recordCount"></span></div>
+      <div id="dutyRecordList" class="duty-record-list"></div>
+      <p id="emptyRecords" class="empty-records" hidden>ยังไม่มีข้อมูลการเข้าเวร</p>
+    </section>
+  </main>
+  <aside id="notificationPanel" class="notification-panel" hidden><button id="closeNotification" type="button" aria-label="ปิด">×</button><strong>การแจ้งเตือน</strong><p>คุณสามารถบันทึกและตรวจสอบตารางเข้าเวรได้ที่หน้านี้</p></aside>
+  <script type="module" src="./duty-shift.js?v=4"></script>
+<script src="./language-toggle.js?v=13"></script><script src="./header-controls.js?v=3"></script></body>
+</html>

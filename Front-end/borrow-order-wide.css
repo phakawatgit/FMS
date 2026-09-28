@@ -1,0 +1,3 @@
+.order-page{width:calc(100% - clamp(1.25rem,5vw,5rem));max-width:1440px}
+.order-footer{padding-right:max(1rem,calc((100% - 1440px)/2));padding-left:max(1rem,calc((100% - 1440px)/2))}
+@media(max-width:600px){.order-page{width:calc(100% - 1rem)}}

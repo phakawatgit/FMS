@@ -1,0 +1,39 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  NURSE
+}
+
+model User {
+  id        String     @id @default(cuid())
+  email     String     @unique
+  name      String
+  password  String?
+  role      Role       @default(NURSE)
+  createdAt DateTime   @default(now())
+  duties    DutyShift[]
+}
+
+model DutyShift {
+  id          String   @id @default(cuid())
+  date        DateTime
+  color       String
+  firstName   String
+  lastName    String
+  nickname    String?
+  affiliation String?
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@unique([date, color])
+  @@index([date])
+}

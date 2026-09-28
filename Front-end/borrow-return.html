@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FMS | Borrow and Return</title>
+  <link rel="icon" href="./assets/fms.png">
+  <link rel="stylesheet" href="./font-kanit.css?v=1">
+  <link rel="stylesheet" href="./header-controls.css">
+  <link rel="stylesheet" href="./button-animations.css?v=4">
+  <link rel="stylesheet" href="./theme-colors.css?v=2">
+  <link rel="stylesheet" href="./borrow-return-new.css?v=24">
+  <link rel="stylesheet" href="./dashboard-topbar.css?v=6">
+</head>
+<body>
+  <header class="topbar dashboard-topbar">
+    <a class="brand" href="./menu.html"><img src="./assets/fms.png" alt=""><span>First Aid &amp; Medicine Management System</span></a>
+    <div class="actions">
+      <a class="menu-button" href="./menu.html" aria-label="กลับหน้าเมนู"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></a>
+      <button id="exportExcel" class="export excel" type="button">Excel</button>
+      <button id="exportPdf" class="export pdf" type="button">PDF</button>
+      <button class="bell" type="button" aria-label="การแจ้งเตือน"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 17h12l-1.4-2.2V10a4.6 4.6 0 0 0-9.2 0v4.8L6 17Zm4 2a2 2 0 0 0 4 0"/></svg><b>6</b></button>
+      <button class="language" type="button"><i></i><span>ไทย</span></button>
+    </div>
+  </header>
+  <main id="borrowPage" class="borrow-page">
+    <div class="return-backbar"><button id="returnHome" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 5-7 7 7 7M7 12h14"/></svg><span>กลับหน้าหลัก</span></button></div>
+    <section class="page-heading">
+      <h1>Medicine &amp; Medical Supplies<br><span>Borrowing &amp; Return</span></h1>
+    </section>
+    <nav class="borrow-tabs" aria-label="เลือกรายการยืมหรือคืน">
+      <button id="borrowTab" class="borrow-tab" type="button">การยืมยา และเวชภัณฑ์</button>
+      <button id="returnTab" class="return-tab active" type="button">การคืนยา และเวชภัณฑ์</button>
+    </nav>
+    <section id="calendarSection" class="content-panel calendar-panel">
+      <h2>ปฏิทินการคืน-ยืม</h2>
+      <div class="month-select">
+        <div class="calendar-picker" id="calendarMonthPicker">
+          <button id="calendarMonthButton" class="month-select-button" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="calendarMonthOptions" aria-label="เลือกเดือน"><span id="calendarMonthLabel"></span><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 7.5 5 5 5-5"/></svg></button>
+          <div id="calendarMonthOptions" class="month-options" role="listbox" aria-label="เลือกเดือน" hidden></div>
+        </div>
+        <div class="calendar-picker" id="calendarYearPicker">
+          <button id="calendarYearButton" class="month-select-button" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="calendarYearOptions" aria-label="เลือกปี"><span id="calendarYearLabel"></span><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 7.5 5 5 5-5"/></svg></button>
+          <div id="calendarYearOptions" class="month-options" role="listbox" aria-label="เลือกปี" hidden></div>
+        </div>
+      </div>
+      <div class="calendar-week" aria-hidden="true"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div>
+      <div id="calendarGrid" class="calendar-grid" aria-label="ปฏิทินการยืมและคืน"></div>
+      <div class="calendar-legend"><span><i class="borrow-dot"></i>ยืม</span><span><i class="due-dot"></i>ต่อเวลา</span><span><i class="overdue-dot"></i>ไม่คืน</span><span><i class="returned-dot"></i>คืนแล้ว</span></div>
+    </section>
+    <section class="content-panel records-panel">
+      <div class="records-heading"><h2 id="recordsTitle">ต่อเวลา และไม่คืน</h2><label class="records-search"><input id="borrowSearch" type="search" placeholder="name, date" aria-label="ค้นหารายการยืม-คืน"><span aria-hidden="true">⌕</span></label></div>
+      <div id="borrowList" class="borrow-list"></div>
+    </section>
+  </main>
+  <section id="returnDetailView" class="return-detail-view" aria-labelledby="returnDetailTitle" hidden></section>
+  <div id="extendBorrowModal" class="extend-borrow-modal" hidden>
+    <form id="extendBorrowForm" class="extend-borrow-dialog" aria-labelledby="extendBorrowTitle">
+      <p class="extend-registered-label">วันที่ลงทะเบียน</p>
+      <time id="extendRegisteredDate" class="extend-registered-date"></time>
+      <label id="extendBorrowTitle" for="extendDueDate">วันให้คืนยา และเวชภัณฑ์</label>
+      <input id="extendDueDate" type="date" required>
+      <div class="extend-borrow-actions"><button id="cancelExtendBorrow" type="button">ยกเลิก</button><button type="submit">บันทึก</button></div>
+    </form>
+  </div>
+  <script src="./borrow-return-history-store.js?v=1"></script><script src="./borrow-return.js?v=29"></script>
+<script src="./language-toggle.js?v=13"></script><script src="./header-controls.js?v=3"></script></body>
+</html>
+
+
+
+
+
+
+
+
+

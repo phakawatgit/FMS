@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Infirmary Visit History | FMS</title>
+  <link rel="icon" href="./assets/fms.png">
+  <link rel="stylesheet" href="./header-controls.css">
+  <link rel="stylesheet" href="./button-animations.css?v=3">
+  <link rel="stylesheet" href="./font-kanit.css?v=1">
+  <link rel="stylesheet" href="./theme-colors.css?v=3">
+  <link rel="stylesheet" href="./infirmary-visit-history.css?v=14">
+  <link rel="stylesheet" href="./dashboard-topbar.css?v=3">
+</head>
+<body>
+  <header class="topbar dashboard-topbar">
+    <a class="brand" href="./menu.html"><img src="./assets/fms.png" alt="FMS"><span>First Aid &amp; Medicine Management System</span></a>
+    <div class="actions">
+      <a class="menu-button" href="./menu.html" aria-label="กลับไปหน้าเมนู"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></a>
+      <button id="exportExcel" class="export excel" type="button">Excel</button>
+      <button id="exportPdf" class="export pdf" type="button">PDF</button>
+      <button id="notificationButton" class="bell" type="button" aria-label="การแจ้งเตือน" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 17h12l-1.4-2.2V10a4.6 4.6 0 0 0-9.2 0v4.8L6 17Zm4 2a2 2 0 0 0 4 0"/></svg><b>6</b></button>
+      <button id="languageButton" class="language" type="button"><span>English</span></button>
+    </div>
+  </header>
+  <section class="page-toolbar" aria-label="เครื่องมือหน้า">
+    <h1 data-i18n="pageTitle">Infirmary Visit History</h1>
+  </section>
+  <main class="history-page">
+    <a class="history-back" href="./system-activity.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8l-4 4 4 4M8 12h8"/></svg><span data-i18n="backMenu">กลับหน้าเมนู History</span></a>
+    <div class="section-heading"><h2 data-i18n="listTitle">การเข้าใช้ห้องพยาบาล</h2></div>
+    <label class="search-box"><span class="visually-hidden" data-i18n="searchLabel">ค้นหาชื่อหรือรหัสนักศึกษา</span><input id="searchInput" type="search" placeholder="ชื่อ, รหัสนักศึกษา หรือสาขา" autocomplete="off"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg></label>
+    <p id="resultCount" class="result-count" aria-live="polite"></p>
+    <section id="visitList" class="visit-list" aria-label="ประวัติการเข้าใช้ห้องพยาบาล"></section>
+  </main>
+  <dialog id="visitDetailDialog" class="visit-detail-dialog" aria-labelledby="visitDetailTitle">
+    <header class="visit-detail-header"><div><p data-i18n="detailEyebrow">ข้อมูลการเข้าใช้ห้องพยาบาล</p><h2 id="visitDetailTitle">รายละเอียดรายการ</h2></div><button id="closeVisitDetail" type="button" aria-label="ปิดรายละเอียด">×</button></header>
+    <div id="visitDetailFields" class="visit-detail-fields"></div>
+  </dialog>
+  <aside id="notificationPanel" class="notification-panel" hidden><button id="closeNotification" type="button" aria-label="ปิด">×</button><strong data-i18n="notifications">การแจ้งเตือน</strong><p data-i18n="notificationMessage">มีรายการรอดำเนินการ 6 รายการ</p></aside>
+  <script src="./infirmary-visit-history.js?v=9"></script>
+<script src="./language-toggle.js?v=13"></script><script src="./header-controls.js?v=4"></script></body>
+</html>

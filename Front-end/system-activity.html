@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>System Activity Log | FMS</title>
+  <link rel="icon" href="./assets/fms.png">
+  <link rel="stylesheet" href="./header-controls.css">
+  <link rel="stylesheet" href="./button-animations.css?v=3">
+  <link rel="stylesheet" href="./font-kanit.css?v=1">
+  <link rel="stylesheet" href="./system-activity.css?v=16">
+  <link rel="stylesheet" href="./theme-colors.css?v=3">
+  <link rel="stylesheet" href="./dashboard-topbar.css?v=17">
+  <style>
+    body .topbar.dashboard-topbar{height:56px!important;min-height:56px!important;padding:0!important;background:#01406d!important;border-bottom:4px solid #01b4ba!important}
+    body .topbar.dashboard-topbar .topbar-inner{display:flex!important;width:100%!important;max-width:none!important;min-height:52px!important;align-items:center!important;justify-content:space-between!important;padding:6px 20px!important}
+    body .topbar.dashboard-topbar .brand{gap:8px!important;font:600 13px/1.15 Kanit,Arial,sans-serif!important}
+    body .topbar.dashboard-topbar .brand img{width:34px!important;height:34px!important}
+    body .topbar.dashboard-topbar .actions{display:flex!important;align-items:center!important;gap:8px!important;margin-left:auto!important}
+    body .topbar.dashboard-topbar .menu-button{display:inline-flex!important;width:32px!important;height:32px!important;align-items:center!important;justify-content:center!important;padding:0!important;border:0!important;border-radius:8px!important;background:#fff!important;color:#214967!important}
+    body .topbar.dashboard-topbar .menu-button svg{width:18px!important;height:18px!important;stroke:#01b4ba!important}
+    body .topbar.dashboard-topbar .export{height:32px!important;min-height:32px!important;padding:0 13px!important;border:0!important;border-radius:8px!important;background:#fff!important;color:#214967!important;font:700 12px/1 Kanit,Arial,sans-serif!important}
+    body .topbar.dashboard-topbar .bell{width:32px!important;height:32px!important;border:0!important;border-radius:0!important;background:transparent!important;color:#08b0ba!important}
+    body .topbar.dashboard-topbar .language{display:inline-flex!important;width:72px!important;min-width:72px!important;height:32px!important;align-items:center!important;justify-content:center!important;gap:6px!important;padding:0 8px!important;border:0!important;border-radius:8px!important;background:#fff!important;color:#214967!important;font:700 12px/1 Kanit,Arial,sans-serif!important;box-shadow:none!important}
+    body .topbar.dashboard-topbar .language svg{display:none!important}
+    @media(max-width:760px){body .topbar.dashboard-topbar{padding-inline:22px!important}body .topbar.dashboard-topbar .brand{display:none!important}body .topbar.dashboard-topbar .actions{margin-left:0!important}}
+  </style>
+</head>
+<body>
+  <header class="topbar dashboard-topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="./menu.html"><img src="./assets/fms.png" alt=""><span>First Aid &amp; Medicine Management System</span></a>
+      <div class="actions">
+      <a class="menu-button" href="./menu.html" aria-label="กลับหน้าเมนู"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></a>
+        <button id="exportExcel" class="export" type="button">Excel</button>
+        <button id="exportPdf" class="export" type="button">PDF</button>
+        <button id="notificationButton" class="bell" type="button" aria-label="การแจ้งเตือน"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 17h12l-1.4-2.2V10a4.6 4.6 0 0 0-9.2 0v4.8L6 17Zm4 2a2 2 0 0 0 4 0"/></svg><b>6</b></button>
+        <button id="languageButton" class="language" type="button" aria-label="เปลี่ยนภาษา"><span id="languageLabel">ไทย</span></button>
+      </div>
+    </div>
+  </header>
+  <section class="activity-intro">
+    <div><span id="activityKicker" class="activity-kicker">พนักงาน</span><h1 id="pageTitle">History</h1></div>
+    <p id="activityDescription">จัดการข้อมูลผู้ป่วยและเจ้าหน้าที่ที่เกี่ยวข้อง</p>
+  </section>
+  <main class="activity-page">
+    <nav id="activityCards" class="activity-grid" aria-label="เมนูระบบ"></nav>
+  </main>
+  <aside id="notificationPanel" class="notification-panel" hidden><button id="closeNotification" type="button" aria-label="ปิด">×</button><strong>การแจ้งเตือน</strong><p>คุณกำลังดูประวัติกิจกรรมของระบบ FMS</p></aside>
+  <script type="module" src="./system-activity.js?v=6"></script>
+<script src="./language-toggle.js?v=13"></script><script src="./header-controls.js?v=3"></script></body>
+</html>

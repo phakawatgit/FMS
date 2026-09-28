@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>History Stock | FMS</title>
+  <link rel="icon" href="./assets/fms.png">
+  <link rel="stylesheet" href="./header-controls.css">
+  <link rel="stylesheet" href="./button-animations.css?v=3">
+  <link rel="stylesheet" href="./font-kanit.css?v=1">
+  <link rel="stylesheet" href="./system-activity.css?v=15">
+  <link rel="stylesheet" href="./theme-colors.css?v=2">
+  <link rel="stylesheet" href="./history-stock.css?v=7">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="./menu.html"><img src="./assets/fms.png" alt=""><span>First Aid &amp; Medicine Management System</span></a>
+      <div class="actions">
+        <a class="menu-button" href="./menu.html" aria-label="กลับหน้าเมนู"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></a>
+        <button id="exportCsv" class="export export-excel" type="button" aria-label="Export Excel">Excel</button>
+        <button id="exportPdf" class="export export-pdf" type="button" aria-label="Export PDF">PDF</button>
+        <button id="notificationButton" class="bell" type="button" aria-label="การแจ้งเตือน"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 17h12l-1.4-2.2V10a4.6 4.6 0 0 0-9.2 0v4.8L6 17Zm4 2a2 2 0 0 0 4 0"/></svg><b>6</b></button>
+        <button id="languageButton" class="language" type="button" aria-label="เปลี่ยนภาษา"><span id="languageLabel">English</span></button>
+      </div>
+    </div>
+  </header>
+  <section class="activity-intro">
+    <div><span id="activityKicker" class="activity-kicker">System Activity</span><h1 id="pageTitle">Tracking &amp; History</h1></div>
+    <form id="historySearchForm" class="search" role="search"><input id="searchInput" type="search" placeholder="name, date" aria-label="ค้นหาชื่อยา รหัสยา ผู้รับบริการ หรือวันที่" autocomplete="off"><button id="clearSearch" class="search-clear" type="button" aria-label="ล้างคำค้น" hidden>×</button><button class="search-submit" type="submit" aria-label="ค้นหา"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg></button></form>
+  </section>
+  <main class="history-page">
+    <div class="history-back-wrap"><a class="history-back" href="./system-activity.html" aria-label="กลับไปหน้า History Menu"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8l-4 4 4 4M8 12h8"/></svg><span>กลับไปหน้า History Menu</span></a></div>
+    <nav class="stock-nav" aria-label="เมนูประวัติ">
+      <div class="stock-nav-row">
+        <button id="stockMenuButton" class="stock-menu-button" type="button" aria-expanded="false" aria-controls="stockMenu"><span class="menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></span><span class="menu-label">คลังสินค้า</span></button>
+        <button id="selectedOption" class="selected-option" type="button" hidden><span class="selected-option-x" aria-hidden="true">×</span><span id="selectedOptionLabel">ประวัติการจ่ายยา</span></button>
+      </div>
+      <div id="stockMenu" class="stock-menu" hidden>
+        <a href="?view=dispense-history">ประวัติการจ่ายยา</a>
+        <a href="./borrow-return-history.html?selected=borrow-return-history">ประวัติการยืม-คืน</a>
+        <a href="?view=stock-status">สถานะยา</a>
+      </div>
+    </nav>
+    <section id="dispenseHistory" class="dispense-history" aria-live="polite" hidden><h2>ประวัติการจ่ายยา</h2><div id="dispenseList"></div></section>
+    <section id="stock-status"><div id="stockHistory"><div id="historyList" class="history-list" aria-live="polite"></div></div></section>
+  </main>
+  <div id="stockDetailModal" class="detail-modal" role="dialog" aria-modal="true" aria-labelledby="stockDetailTitle" hidden>
+    <button class="detail-backdrop" type="button" data-close-detail aria-label="ปิดรายละเอียด"></button>
+    <section class="detail-dialog">
+      <button class="detail-close" type="button" data-close-detail aria-label="ปิด">×</button>
+      <div id="stockDetailContent"></div>
+    </section>
+  </div>
+  <aside id="notificationPanel" class="notification-panel" hidden><strong>การแจ้งเตือน</strong><p>ประวัติคลังสินค้าพร้อมใช้งาน</p></aside>
+  <script src="./history-stock.js?v=10"></script>
+<script src="./language-toggle.js?v=13"></script><script src="./header-controls.js?v=4"></script></body>
+</html>
+

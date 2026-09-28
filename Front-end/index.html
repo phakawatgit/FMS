@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FMS | First Aid &amp; Medicine Management System</title>
+    <link rel="icon" type="image/png" href="./assets/fms.png" />
+    <link rel="apple-touch-icon" href="./assets/fms.png" />
+    <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./button-animations.css?v=3"><link rel="stylesheet" href="./font-kanit.css?v=1"><link rel="stylesheet" href="./theme-colors.css?v=2"></head>
+  <body>
+    <main class="site-shell">
+      <section class="brand-panel" aria-label="FMS introduction">
+        <div class="brand-topline">
+          <div class="fms-brand">
+            <img src="./assets/fms.png" alt="" />
+            <span>FMS</span>
+          </div>
+          <div class="institution-lockup">
+            <img class="institution-logo" src="./assets/3d-design.png" alt="KMITL Chumphon Fight" />
+            <span id="brandLabel" class="brand-label">Healthcare workspace</span>
+          </div>
+        </div>
+
+        <div class="brand-copy">
+          <p id="brandKicker" class="kicker">First Aid &amp; Medicine</p>
+          <h1 id="brandTitle">First Aid &amp;<br /><em>Medicine.</em></h1>
+          <p id="brandDescription" class="brand-description">
+            ระบบจัดการปฐมพยาบาลและยา เพื่อให้การดูแลข้อมูลเป็นเรื่องง่าย เป็นระบบ และปลอดภัย
+          </p>
+        </div>
+
+
+      </section>
+
+      <section class="auth-panel" aria-labelledby="auth-title">
+        <fieldset class="language-switcher" aria-label="Change language">
+          
+          <label><input type="radio" name="language" value="en" checked /> <span>English</span></label>
+          <label><input type="radio" name="language" value="th" /> <span>ไทย</span></label>
+        </fieldset>
+
+        <div class="auth-header">
+          <img class="auth-mark" src="./assets/fms.png" alt="FMS" />
+          <div>
+            <p class="auth-overline">Welcome to FMS</p>
+            <p class="auth-system-name">First Aid &amp; Medicine Management System</p>
+          </div>
+        </div>
+
+        <div class="auth-tabs" role="tablist" aria-label="Authentication options">
+          <button class="tab-button is-active" type="button" role="tab" aria-selected="true" data-mode="login">Log in</button>
+          <button class="tab-button" type="button" role="tab" aria-selected="false" data-mode="signup">Create an account</button>
+        </div>
+
+        <div class="auth-copy">
+          <p class="auth-kicker" id="auth-kicker">Welcome back</p>
+          <h2 id="auth-title">Sign in to FMS</h2>
+          <p id="auth-description">เข้าสู่ระบบเพื่อจัดการข้อมูล First Aid และ Medicine ของคุณ</p>
+        </div>
+
+        <form id="authForm" class="auth-form">
+          <div class="field signup-field" hidden>
+            <label for="fullName" data-i18n="fullName">Full name</label>
+            <input id="fullName" name="fullName" type="text" autocomplete="name" placeholder="Your name" />
+          </div>
+
+          <div class="field">
+            <label for="email" data-i18n="email">Username or email address</label>
+            <input id="email" name="email" type="text" autocomplete="username" placeholder="name@example.com" required />
+          </div>
+
+          <div class="field">
+            <label for="password" data-i18n="password">Password</label>
+            <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Enter your password" required />
+          </div>
+
+          <div class="form-meta">
+            <label class="remember-label"><input type="checkbox" /> <span data-i18n="remember">Remember me</span></label>
+            <button class="forgot-button" type="button" data-i18n="forgot">Forgot password?</button>
+          </div>
+
+          <button id="submitButton" class="primary-button" type="submit">Log in</button>
+        </form>
+
+        <section id="resetFlow" class="reset-flow" hidden aria-labelledby="resetTitle">
+          <button id="resetBack" class="reset-back" type="button">← กลับไปเข้าสู่ระบบ</button>
+          <p class="auth-kicker">Password recovery</p>
+          <h2 id="resetTitle">ยืนยันอีเมล</h2>
+          <p id="resetDescription" class="reset-description">กรอกอีเมลเพื่อรับรหัส OTP</p>
+
+          <form id="resetEmailForm" class="auth-form">
+            <div class="field">
+              <label for="resetEmail">Email address</label>
+              <input id="resetEmail" type="email" autocomplete="email" placeholder="name@example.com" required />
+            </div>
+            <button class="primary-button" type="submit">รับรหัส OTP</button>
+          </form>
+
+          <form id="resetOtpForm" class="auth-form" hidden>
+            <div class="field">
+              <label for="resetOtp">รหัส OTP</label>
+              <input id="resetOtp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="กรอกรหัส 6 หลัก" required />
+            </div>
+            <button class="primary-button" type="submit">ยืนยัน OTP</button>
+          </form>
+
+          <form id="newPasswordForm" class="auth-form" hidden>
+            <div class="field">
+              <label for="newPassword">New password</label>
+              <input id="newPassword" type="password" autocomplete="new-password" minlength="6" placeholder="อย่างน้อย 6 ตัวอักษร" required />
+            </div>
+            <div class="field">
+              <label for="confirmPassword">Confirm password</label>
+              <input id="confirmPassword" type="password" autocomplete="new-password" minlength="6" placeholder="กรอกรหัสผ่านอีกครั้ง" required />
+            </div>
+            <button class="primary-button" type="submit">เปลี่ยนรหัสผ่าน</button>
+          </form>
+          <p id="resetStatus" class="status" aria-live="polite"></p>
+        </section>
+
+        <div class="divider"><span data-i18n="orContinue">or continue with</span></div>
+
+        <button id="googleLogin" class="google-button" type="button">
+          <svg viewBox="0 0 48 48" aria-hidden="true">
+            <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.9 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.1 5 29.4 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21 21-9.4 21-21c0-1.4-.1-2.7-.4-3.5z" />
+            <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 16 18.9 12 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.1 5 29.4 3 24 3c-7.9 0-14.7 4.5-17.7 11.7z" />
+            <path fill="#4CAF50" d="M24 45c5.2 0 9.8-1.8 13.4-4.9l-6.2-5.1C29.4 36 26.9 37 24 37c-5.2 0-9.6-3.3-11.2-7.9l-6.5 5C9.2 40.9 16 45 24 45z" />
+            <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-1.2 3.5-3.9 6.2-7.1 7.6l.1-.1 6.2 5.1C34 39.9 45 31.7 45 24c0-1.4-.1-2.7-.4-3.5z" />
+          </svg>
+          Continue with Google
+        </button>
+
+        <p id="loginStatus" class="status" aria-live="polite"></p>
+        <p class="terms">By continuing, you agree to the FMS workspace terms.</p>
+      </section>
+    </main>
+
+    <script type="module" src="./script.js"></script>
+  </body>
+</html>
+
+
+

@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>History Catalog | FMS</title>
+  <link rel="icon" href="./assets/fms.png">
+  <link rel="stylesheet" href="./header-controls.css">
+  <link rel="stylesheet" href="./button-animations.css?v=3">
+  <link rel="stylesheet" href="./font-kanit.css?v=1">
+  <link rel="stylesheet" href="./system-activity.css?v=15">
+  <link rel="stylesheet" href="./theme-colors.css?v=2">
+  <link rel="stylesheet" href="./history-catalog.css?v=15">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="./menu.html"><img src="./assets/fms.png" alt=""><span>First Aid &amp; Medicine Management System</span></a>
+      <div class="actions">
+        <a class="menu-button" href="./menu.html" aria-label="กลับหน้าเมนู"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></a>
+        <button id="exportExcel" class="export" type="button">Excel</button>
+        <button id="exportPdf" class="export" type="button">PDF</button>
+        <button id="notificationButton" class="bell" type="button" aria-label="การแจ้งเตือน"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 17h12l-1.4-2.2V10a4.6 4.6 0 0 0-9.2 0v4.8L6 17Zm4 2a2 2 0 0 0 4 0"/></svg><b>6</b></button>
+        <button id="languageButton" class="language" type="button" aria-label="เปลี่ยนภาษา"><span>English</span></button>
+      </div>
+    </div>
+  </header>
+  <section class="activity-intro">
+    <div><span class="activity-kicker">System Activity</span><h1>Tracking &amp; History</h1></div>
+    <form id="historySearchForm" class="search" role="search"><input id="searchInput" type="search" placeholder="name, date" aria-label="ค้นหาประวัติการสั่งซื้อ" autocomplete="off"><button id="clearSearch" class="search-clear" type="button" aria-label="ล้างคำค้น" hidden>×</button><button class="search-submit" type="submit" aria-label="ค้นหา"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg></button></form>
+  </section>
+  <main class="history-catalog-page">
+    <div class="history-back-wrap"><a class="history-back" href="./system-activity.html" aria-label="กลับไปหน้า History Menu"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8l-4 4 4 4M8 12h8"/></svg><span>กลับไปหน้า History Menu</span></a></div>
+    <div class="catalog-label" aria-label="History Catalog">CATALOG</div>
+    <section id="orderHistoryList" class="order-history-list" aria-live="polite"></section>
+  </main>
+  <aside id="notificationPanel" class="notification-panel" hidden><strong>การแจ้งเตือน</strong><p>กำลังดูประวัติการสั่งซื้อสินค้า</p></aside>
+  <script src="./history-catalog.js?v=17"></script>
+<script src="./language-toggle.js?v=13"></script><script src="./header-controls.js?v=4"></script></body>
+</html>
+
+

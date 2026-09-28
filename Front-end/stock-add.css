@@ -1,0 +1,183 @@
+@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700&display=swap');:root{--navy:#09004f;--bg:#e7eaff;--ink:#07164f;--line:#d2d8e8;--blue:#3561d0}*{box-sizing:border-box}body{margin:0;min-width:320px;background:var(--bg);color:var(--ink);font-family:Kanit,sans-serif}.topbar{display:flex;align-items:center;justify-content:space-between;gap:1rem;min-height:3.5rem;padding:.5rem clamp(.8rem,3vw,1.5rem);background:var(--navy);color:#fff}.brand{display:flex;align-items:center;gap:.7rem;color:#fff;text-decoration:none;font-size:clamp(.85rem,1.4vw,1rem);font-weight:700}.brand img{width:2.4rem;border-radius:.65rem}.actions{display:flex;align-items:center;gap:.42rem}.menu-button,.actions button{height:2rem;border:0;border-radius:.35rem;background:#fff;color:#123678;font:700 .7rem Kanit;cursor:pointer}.menu-button{display:grid;place-items:center;width:2.05rem;padding:0;border:1px solid #8aaaff;background:rgba(255,255,255,.1);color:#fff}.menu-button svg{width:1.15rem;fill:none;stroke:currentColor;stroke-width:2.25}.export{padding:0 .62rem}.bell{position:relative;width:1.35rem;background:transparent!important;color:#fff!important}.bell svg{width:1rem;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}.bell b{position:absolute;top:-.12rem;right:-.28rem;display:grid;width:.92rem;height:.92rem;place-items:center;border-radius:50%;background:#ef4545;color:#fff;font-size:.5rem}.language{display:inline-flex;align-items:center;gap:.25rem;padding:0 .5rem!important;border:1px solid rgba(255,255,255,.55)!important;border-radius:999px!important;background:transparent!important;color:#fff!important}.language svg{width:.92rem;fill:none;stroke:currentColor;stroke-width:1.7}.language i{width:.62rem;height:.62rem;border-radius:50%;background:#76b9ff;box-shadow:0 0 0 .13rem rgba(255,255,255,.2)}.page{width:100%;padding:clamp(1rem,3vw,2.2rem)}.add-form{width:100%;max-width:80rem;margin:auto;padding:clamp(1rem,2vw,2rem);border:1px solid #b6c6ff;border-radius:1.1rem;background:#fff;box-shadow:0 .7rem 1.5rem #263d8520}.form-heading{display:flex;align-items:end;justify-content:space-between;gap:1rem;margin-bottom:1.4rem;padding-bottom:1rem;border-bottom:1px solid var(--line)}.eyebrow{margin:0;color:#5574d4;font-size:.7rem;font-weight:700;letter-spacing:.12em}.form-heading h1{margin:.1rem 0 0;font-size:clamp(1.6rem,3vw,2.4rem)}.form-heading p:last-child{margin:.15rem 0 0;color:#78839b;font-size:.85rem}.back-stock{color:var(--blue);font-size:.8rem;font-weight:600}.form-layout{display:grid;grid-template-columns:minmax(18rem,.8fr) minmax(0,1.6fr);gap:2rem}.preview-panel{display:flex;flex-direction:column;min-width:0}.field{display:grid;gap:.3rem;min-width:0;color:#52607b;font-size:.82rem;font-weight:600}.field input,.field select,.field textarea{width:100%;min-width:0;border:1px solid var(--line);border-radius:.55rem;padding:.55rem .7rem;outline:0;background:#f8faff;color:var(--ink);font:400 .85rem Kanit}.field input,.field select{height:2.55rem}.field textarea{min-height:4.3rem;resize:vertical}.field input:focus,.field select:focus,.field textarea:focus{border-color:#6f8ce4;box-shadow:0 0 0 3px #6f8ce422}.name-field{margin-bottom:.8rem;font-size:1rem}.name-field input{height:3.2rem;font-size:1.1rem}.image-preview{display:grid;place-items:center;min-height:18rem;border:1px dashed #aab6d2;border-radius:.8rem;background:#f1f3f8;color:#a1a9b8;font-size:1.25rem}.image-preview img{width:100%;height:100%;min-height:18rem;object-fit:contain;border-radius:.8rem}.upload-button{align-self:center;margin:.75rem 0 .1rem;border-radius:999px;padding:.5rem 1.2rem;background:#f26b1d;color:#fff;font-size:.85rem;font-weight:700;cursor:pointer}.upload-button input{display:none}.preview-hint{margin:0 0 1rem;text-align:center;color:#8993a8;font-size:.7rem}.inventory-card{display:grid;gap:.55rem;margin-top:auto;padding:1rem;border-radius:.85rem;background:#f4f7ff}.inventory-card h2{margin:0;font-size:1rem}.stock-input{display:grid;grid-template-columns:4.5rem minmax(0,1fr) auto;align-items:center;gap:.45rem;padding:.55rem .7rem;border-radius:.6rem;font-size:.85rem;font-weight:700}.stock-input input{width:100%;min-width:0;border:0;outline:0;background:transparent;font:inherit}.stock-input b{font-size:.7rem}.stock-input.total{background:#dffbd5;color:#168c32}.stock-input.used{background:#ffe0e0;color:#cf3434}.stock-input.remaining{background:#fff9b8;color:#d08d00}.details-panel{min-width:0}.details-panel h2{margin:0 0 1rem;font-size:1.15rem}.details-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}.details-grid .full{grid-column:1/-1}.form-actions{display:flex;align-items:center;justify-content:flex-end;gap:.55rem;margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--line)}.form-actions p{margin:0 auto 0 0;color:#16823b;font-size:.8rem;font-weight:600}.form-actions button{border:0;border-radius:.5rem;padding:.65rem 1.2rem;color:#fff;font:600 .85rem Kanit;cursor:pointer}.cancel{background:#e74a52}.clear{background:#596170}.save{background:#2451c8}@media(max-width:850px){.form-layout{grid-template-columns:1fr;gap:1.5rem}.preview-panel{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}.name-field,.image-preview,.upload-button,.preview-hint,.inventory-card{grid-column:1/-1}.image-preview{min-height:15rem}.image-preview img{min-height:15rem}.inventory-card{margin-top:.5rem}.details-grid{gap:.7rem}}@media(max-width:600px){.topbar{align-items:flex-start;flex-direction:column}.actions{align-self:flex-end;max-width:100%;flex-wrap:wrap}.page{padding:.65rem}.add-form{padding:.85rem;border-radius:.8rem}.form-heading{align-items:flex-start;flex-direction:column;margin-bottom:1rem}.back-stock{align-self:flex-end}.preview-panel{display:flex}.details-grid{grid-template-columns:1fr}.details-grid .full{grid-column:auto}.form-actions{flex-wrap:wrap}.form-actions p{flex:0 0 100%}.form-actions button{flex:1;min-width:0}.image-preview{min-height:13rem}.image-preview img{min-height:13rem}}@media(max-width:380px){.brand{font-size:.76rem}.actions{width:100%;justify-content:flex-end;gap:.25rem}.export{padding-inline:.45rem}.image-preview{min-height:11rem}.image-preview img{min-height:11rem}.stock-input{grid-template-columns:3.7rem minmax(0,1fr) auto;font-size:.8rem}}
+.back-stock{display:inline-flex;align-items:center;gap:.3rem;font-size:0;text-decoration:none}.back-stock::before{content:"";display:block;width:1rem;height:1rem;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 8l-4 4 4 4M8 12h8'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 8l-4 4 4 4M8 12h8'/%3E%3C/svg%3E") center/contain no-repeat}.back-stock::after{content:"กลับหน้าคลังยา";font-size:.8rem;font-weight:600}
+/* Full-width responsive layout for the add-medicine page. */
+.page{min-height:calc(100vh - 4rem);padding:clamp(.75rem,1.8vw,1.5rem)}
+.add-form{width:100%;max-width:none;min-height:calc(100vh - 5.5rem);margin:0;padding:clamp(1rem,2vw,2rem)}
+.form-layout{grid-template-columns:minmax(17rem, .72fr) minmax(0, 1.8fr);gap:clamp(1rem,2vw,2.25rem)}
+.details-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(.65rem,1.2vw,1rem)}
+.image-preview,.image-preview img{min-height:clamp(15rem,28vw,26rem)}
+@media(max-width:850px){.add-form{min-height:0}.form-layout{grid-template-columns:1fr}.image-preview,.image-preview img{min-height:clamp(14rem,48vw,24rem)}}
+@media(max-width:600px){.page{padding:.5rem}.add-form{padding:.75rem}.details-grid{grid-template-columns:1fr}.form-actions{justify-content:stretch}.form-actions button{flex:1}}
+/* Stronger borders for clearer form separation and readability. */
+.add-form{border:2px solid #7895ed;box-shadow:0 .7rem 1.5rem rgba(38,61,133,.18)}
+.form-heading{border-bottom:2px solid #b5c1dc}
+.field input,.field select,.field textarea{border:1.5px solid #a9b7d3;box-shadow:0 1px 2px rgba(35,57,110,.08)}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#4c6fd6;box-shadow:0 0 0 3px rgba(76,111,214,.22)}
+.image-preview{border:2px dashed #8da3d2;background:#f0f3fa;box-shadow:inset 0 0 0 1px rgba(83,108,170,.08)}
+.inventory-card{border:1.5px solid #b5c4e4;box-shadow:0 2px 7px rgba(52,78,140,.1)}
+.stock-input{border:1px solid rgba(7,22,79,.16);box-shadow:0 1px 3px rgba(35,57,110,.1)}
+.form-actions{border-top:2px solid #b5c1dc}
+.stock-input input{ text-align:center; font-size:1.15rem; font-weight:700; cursor:text; appearance:textfield }
+.stock-input input::-webkit-outer-spin-button,.stock-input input::-webkit-inner-spin-button{margin:0}
+.stock-input input:focus{outline:2px solid currentColor;outline-offset:2px;border-radius:.25rem}
+.notification-panel{position:fixed;z-index:20;top:4.5rem;right:1rem;width:min(20rem,calc(100vw - 2rem));padding:1rem;border:1px solid #91b2ff;border-radius:.7rem;background:#fff;color:#07164f;box-shadow:0 .8rem 2rem #0003}.notification-panel button{float:right;border:0;background:transparent;font-size:1.2rem;cursor:pointer}.notification-panel p{margin:.5rem 0 0;color:#53617a}
+.back-stock[data-return="catalog"]::after{content:"กลับหน้า Catalog"}
+/* Add-medicine topbar matches the Inventory reference. */
+body .topbar {
+  height: 68px !important;
+  min-height: 68px !important;
+  padding: 6px 48px !important;
+  background: #064d75 !important;
+  border-bottom: 5px solid #073d65 !important;
+}
+body .topbar .brand { display: inline-flex !important; align-items: center !important; gap: 10px !important; color: #fff !important; font: 600 15px/1.15 Kanit,Arial,sans-serif !important; white-space: nowrap !important; }
+body .topbar .brand img { width: 38px !important; height: 38px !important; object-fit: contain !important; }
+body .topbar .actions { display: flex !important; align-items: center !important; gap: 8px !important; margin-left: auto !important; }
+body .topbar .menu-button { width: 32px !important; height: 32px !important; border: 0 !important; border-radius: 8px !important; background: #fff !important; color: #214967 !important; }
+body .topbar .menu-button svg { width: 18px !important; height: 18px !important; stroke: #08aeb8 !important; }
+body .topbar .export { height: 32px !important; min-height: 32px !important; padding: 0 13px !important; border: 0 !important; border-radius: 8px !important; background: #fff !important; color: #214967 !important; }
+body .topbar .bell { width: 32px !important; height: 32px !important; border: 0 !important; background: transparent !important; color: #08b0ba !important; }
+body .topbar .language { display: inline-flex !important; width: 84px !important; min-width: 84px !important; height: 32px !important; align-items: center !important; justify-content: center !important; gap: 6px !important; padding: 0 12px !important; border: 0 !important; border-radius: 8px !important; background: #fff !important; color: #214967 !important; }
+body .topbar .language svg { width: 16px !important; height: 16px !important; stroke: #08aeb8 !important; }
+body .topbar .language i { display: none !important; }
+@media (max-width: 760px) { body .topbar { padding-inline: 22px !important; } body .topbar .brand { display: none !important; } }
+/* Remove the two highlighted duplicate controls on the add-medicine page. */
+body .topbar .menu-button {
+  display: none !important;
+}
+
+body .back-stock::before {
+  content: "" !important;
+  display: block !important;
+  width: 1rem !important;
+  height: 1rem !important;
+  flex: 0 0 1rem !important;
+  background: currentColor center / contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2301a5aa' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M13 8l-4 4 4 4M9 12h6'/%3E%3C/svg%3E") !important;
+}
+
+body .back-stock {
+  font-size: 0 !important;
+}
+
+body .back-stock::after {
+  content: "กลับหน้าคลังยา" !important;
+  font-size: .8rem !important;
+  font-weight: 600 !important;
+}
+
+/* Locked reference layout for the Add Medicine page. */
+body .topbar {
+  height: 68px !important;
+  min-height: 68px !important;
+  padding: 6px 48px !important;
+  background: #064d75 !important;
+  border-bottom: 5px solid #073d65 !important;
+}
+body .topbar .brand {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  color: #fff !important;
+  font: 600 15px/1.15 Kanit, Arial, sans-serif !important;
+  white-space: nowrap !important;
+}
+body .topbar .brand img { width: 38px !important; height: 38px !important; object-fit: contain !important; }
+body .topbar .actions { display: flex !important; align-items: center !important; gap: 8px !important; margin-left: auto !important; }
+body .topbar .export { height: 32px !important; min-height: 32px !important; padding: 0 13px !important; border: 0 !important; border-radius: 8px !important; background: #fff !important; color: #214967 !important; font: 700 12px/1 Kanit, Arial, sans-serif !important; }
+body .topbar .bell { width: 32px !important; height: 32px !important; border: 0 !important; background: transparent !important; color: #08b0ba !important; }
+body .topbar .language { display: inline-flex !important; flex: 0 0 84px !important; width: 84px !important; min-width: 84px !important; height: 32px !important; align-items: center !important; justify-content: center !important; gap: 6px !important; padding: 0 10px !important; border: 0 !important; border-radius: 8px !important; background: #fff !important; color: #214967 !important; font: 700 12px/1 Kanit, Arial, sans-serif !important; white-space: nowrap !important; }
+body .page { min-height: calc(100vh - 68px) !important; padding: 18px 24px 28px !important; background: #effafa !important; }
+body .add-form { min-height: calc(100vh - 114px) !important; margin: 0 auto !important; padding: 24px !important; border: 1px solid #cfe4e8 !important; border-radius: 14px !important; background: #fff !important; box-shadow: 0 8px 24px rgba(12, 71, 100, .12) !important; }
+body .form-heading { margin-bottom: 20px !important; padding-bottom: 14px !important; border-bottom: 1px solid #d9e8eb !important; }
+body .form-layout { gap: 24px !important; }
+body .details-panel h2, body .inventory-card h2 { color: #123f63 !important; }
+body .field input, body .field select, body .field textarea { border-color: #c6dce2 !important; background: #fbfeff !important; }
+body .details-grid .field:has(select[name="status"]) { display: none !important; }
+
+/* Friendlier native selects. */
+body .field select {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  min-height: 2.75rem !important;
+  padding: .55rem 2.4rem .55rem .85rem !important;
+  border: 1.5px solid #b9d9df !important;
+  border-radius: .75rem !important;
+  background-color: #fbfeff !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23017f8c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right .75rem center !important;
+  background-size: 1rem !important;
+  color: #123b56 !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: border-color .16s ease, box-shadow .16s ease, background-color .16s ease !important;
+}
+body .field select:hover { border-color: #01b4ba !important; background-color: #f3fbfc !important; }
+body .field select:focus { border-color: #01b4ba !important; box-shadow: 0 0 0 4px rgba(1,180,186,.16) !important; outline: none !important; }
+body .field select option { padding: .65rem !important; background: #fff !important; color: #123b56 !important; }
+
+/* Minimal custom dropdown. */
+.minimal-select { position: relative; width: 100%; }
+.minimal-select-native { display: none !important; }
+.minimal-select-trigger {
+  display: flex;
+  width: 100%;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: .55rem .85rem;
+  border: 1px solid #c9dfe3;
+  border-radius: .7rem;
+  background: #fff;
+  color: #123b56;
+  font: 600 .86rem Kanit, sans-serif;
+  cursor: pointer;
+  transition: border-color .16s ease, box-shadow .16s ease;
+}
+.minimal-select-trigger::after {
+  content: "";
+  width: .48rem;
+  height: .48rem;
+  margin: -.22rem .15rem 0 0;
+  border-right: 2px solid #087f8c;
+  border-bottom: 2px solid #087f8c;
+  transform: rotate(45deg);
+  transition: transform .16s ease;
+}
+.minimal-select.is-open .minimal-select-trigger::after { margin-top: .22rem; transform: rotate(225deg); }
+.minimal-select-trigger:hover,
+.minimal-select.is-open .minimal-select-trigger { border-color: #01b4ba; box-shadow: 0 0 0 3px rgba(1,180,186,.12); }
+.minimal-select-list {
+  position: absolute;
+  z-index: 50;
+  top: calc(100% + .35rem);
+  right: 0;
+  left: 0;
+  display: none;
+  overflow: hidden;
+  padding: .3rem;
+  border: 1px solid #d5e5e7;
+  border-radius: .7rem;
+  background: #fff;
+  box-shadow: 0 .7rem 1.5rem rgba(1,64,109,.15);
+}
+.minimal-select.is-open .minimal-select-list { display: grid; gap: .15rem; }
+.minimal-select-list button {
+  border: 0;
+  border-radius: .45rem;
+  padding: .55rem .65rem;
+  background: transparent;
+  color: #31566c;
+  text-align: left;
+  font: 500 .82rem Kanit, sans-serif;
+  cursor: pointer;
+}
+.minimal-select-list button:hover,
+.minimal-select-list button.is-selected { background: #e8f8f8; color: #087f8c; font-weight: 700; }
+body .form-actions { margin-top: 22px !important; padding-top: 14px !important; border-top: 1px solid #d9e8eb !important; }
+@media (max-width: 760px) {
+  body .topbar { padding-inline: 16px !important; }
+  body .topbar .brand { display: none !important; }
+  body .page { padding: 12px !important; }
+  body .add-form { padding: 16px !important; }
+}
