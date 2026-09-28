@@ -26,6 +26,6 @@ Full-stack foundation for the First Aid & Medicine Management System.
 docker compose up --build
 ```
 
-The web app is available at `http://localhost:3000`, the API at `http://localhost:4000`, and the report service at `http://localhost:8000`.
+The web app is available at `http://localhost:3001`, the API at `http://localhost:4000`, and the report service at `http://localhost:8000`.
 
 The existing static prototype remains in `Front-end/` while the new application is built in `apps/`, `packages/`, and `services/`.

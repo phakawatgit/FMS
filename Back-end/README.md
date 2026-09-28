@@ -20,11 +20,31 @@ API จะทำงานที่ `http://localhost:4000`
 
 ตั้งค่า `NEXT_PUBLIC_API_URL=http://localhost:4000` ใน Next.js เพื่อให้ Front-end เรียก API ได้
 
+## การส่ง OTP รีเซ็ตรหัสผ่าน
+
+ระบบรีเซ็ตรหัสผ่านจะส่ง OTP ผ่าน SMTP และเปลี่ยนรหัสผ่าน Firebase หลังยืนยัน OTP สำเร็จ
+
+สร้างไฟล์ `Back-end/.env` แล้วเติมค่าต่อไปนี้:
+
+```env
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=465
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-gmail-app-password
+FIREBASE_PROJECT_ID=fams-7fdff
+FIREBASE_CLIENT_EMAIL=firebase-adminsdk-xxxxx@fams-7fdff.iam.gserviceaccount.com
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+```
+
+สำหรับ Gmail ต้องเปิด 2-Step Verification และสร้าง App Password ห้ามใช้รหัสผ่าน Gmail ปกติ และห้าม commit ไฟล์ `.env`
+
 - `GET /` ดูสถานะ API
 - `GET /api/health` ตรวจสอบสุขภาพ service
 - `GET /api/overview` ดูโมดูลที่เตรียมไว้
 - `GET /api/database/health` ตรวจสอบการเชื่อมต่อ PostgreSQL
 - `GET /api/overview` ดึงข้อมูลสรุปจาก PostgreSQL ผ่าน Prisma
+
+หน้า HTML เดิมใน `Front-end/` จะถูก mount เป็น `/legacy/` ใน Docker ชั่วคราว เพื่อให้ทุกหน้าทดลองยังเปิดใช้งานได้ระหว่างทยอยแปลงเป็น React/Next.js
 
 ## PostgreSQL + Prisma
 

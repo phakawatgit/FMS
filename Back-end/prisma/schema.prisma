@@ -37,3 +37,27 @@ model DutyShift {
   @@unique([date, color])
   @@index([date])
 }
+
+// Temporary shared store for the legacy static frontend while its modules are
+// migrated to typed API resources.
+model LegacyStorage {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+}
+
+model PasswordResetOtp {
+  id                  String    @id @default(cuid())
+  email               String
+  firebaseUid         String
+  codeHash            String
+  expiresAt           DateTime
+  attempts            Int       @default(0)
+  verifiedAt          DateTime?
+  resetTokenHash      String?
+  resetTokenExpiresAt DateTime?
+  createdAt           DateTime  @default(now())
+
+  @@index([email, createdAt])
+  @@index([resetTokenHash])
+}

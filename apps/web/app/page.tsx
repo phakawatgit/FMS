@@ -6,7 +6,7 @@ import { DashboardPreview } from "../components/dashboard/DashboardPreview";
 import { MenuCard } from "../components/dashboard/MenuCard";
 import { getApiOverview } from "../lib/api";
 
-const cards = [["Dashboard and Report", "แดชบอร์ดและรายงาน", "5.png", "#"], ["Infirmary Visit", "บันทึกการเข้าห้องพยาบาล", "6.png", "#"], ["Stock", "คลังยาและเวชภัณฑ์", "7.png", "#"], ["Catalog", "แคตตาล็อกการสั่งซื้อ", "8.png", "#"], ["Borrow and Return", "ระบบการยืม-คืน", "9.png", "#"], ["Duty Shift", "ระบบการเข้าเวร", "10.png", "#"], ["System Activity Log", "ประวัติกิจกรรมระบบ", "11.png", "#"]] as const;
+const cards = [["Dashboard and Report", "แดชบอร์ดและรายงาน", "5.png", "/legacy/dashboard.html"], ["Infirmary Visit", "บันทึกการเข้าห้องพยาบาล", "6.png", "/legacy/infirmary-visit.html"], ["Stock", "คลังยาและเวชภัณฑ์", "7.png", "/legacy/stock.html"], ["Catalog", "แคตตาล็อกการสั่งซื้อ", "8.png", "/legacy/catalog.html"], ["Borrow and Return", "ระบบการยืม-คืน", "9.png", "/legacy/borrow-return.html"], ["Duty Shift", "ระบบการเข้าเวร", "10.png", "/legacy/duty-shift.html"], ["System Activity Log", "ประวัติกิจกรรมระบบ", "11.png", "/legacy/system-activity.html"]] as const;
 
 export default function Home() {
   const [language, setLanguage] = useState<"th" | "en">("th");

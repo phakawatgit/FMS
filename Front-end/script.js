@@ -39,8 +39,8 @@ const resetEmailInput = document.getElementById("resetEmail");
 const resetOtpInput = document.getElementById("resetOtp");
 const newPasswordInput = document.getElementById("newPassword");
 const confirmPasswordInput = document.getElementById("confirmPassword");
-const demoOtp = document.getElementById("demoOtp");
 const resetStatus = document.getElementById("resetStatus");
+const API_BASE = window.FMS_API_URL || `${location.protocol}//${location.hostname}:4000`;
 const ADMIN_SESSION_KEY = "fms-admin-session";
 const ADMIN_USERNAME = "Admin";
 const ADMIN_PASSWORD = "admin12345678";
@@ -230,7 +230,7 @@ googleButton.addEventListener("click", async () => {
     }
 });
 
-let resetOtpCode = "";
+let resetToken = "";
 
 function showResetFlow() {
     window.FMSAdminAudit?.log("forgot-password-opened", { email: document.getElementById("email").value.trim() });
@@ -253,40 +253,63 @@ function hideResetFlow() {
     resetOtpForm.hidden = true;
     newPasswordForm.hidden = true;
     resetStatus.textContent = "";
-    resetOtpCode = "";
+    resetToken = "";
 }
 
 forgotButton.addEventListener("click", showResetFlow);
 resetBackButton.addEventListener("click", hideResetFlow);
 
-resetEmailForm.addEventListener("submit", (event) => {
+resetEmailForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (!resetEmailInput.validity.valid) {
         resetEmailInput.focus();
         return;
     }
-    resetOtpCode = String(Math.floor(100000 + Math.random() * 900000));
-    if (demoOtp) demoOtp.textContent = resetOtpCode;
-    resetEmailForm.hidden = true;
-    resetOtpForm.hidden = false;
-    resetStatus.textContent = "โหมดจำลอง: แสดง OTP บนหน้าจอแทนการส่งอีเมล";
-    resetOtpInput.focus();
-});
-
-resetOtpForm.addEventListener("submit", (event) => {
-    event.preventDefault();
-    if (resetOtpInput.value.trim() !== resetOtpCode) {
-        resetStatus.textContent = "รหัส OTP ไม่ถูกต้อง กรุณาลองใหม่";
+    const button = resetEmailForm.querySelector("button[type=submit]");
+    button.disabled = true;
+    resetStatus.textContent = "กำลังส่ง OTP...";
+    try {
+        const response = await fetch(`${API_BASE}/api/auth/forgot-password`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: resetEmailInput.value.trim() }),
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.message || "ส่ง OTP ไม่สำเร็จ");
+        resetEmailForm.hidden = true;
+        resetOtpForm.hidden = false;
+        resetStatus.textContent = "ส่ง OTP ไปยังอีเมลแล้ว กรุณาตรวจสอบกล่องจดหมาย";
         resetOtpInput.focus();
-        return;
+    } catch (error) {
+        resetStatus.textContent = error.message || "ส่ง OTP ไม่สำเร็จ กรุณาลองใหม่";
+    } finally {
+        button.disabled = false;
     }
-    resetOtpForm.hidden = true;
-    newPasswordForm.hidden = false;
-    resetStatus.textContent = "ยืนยัน OTP สำเร็จ กรุณาตั้งรหัสผ่านใหม่";
-    newPasswordInput.focus();
 });
 
-newPasswordForm.addEventListener("submit", (event) => {
+resetOtpForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    resetStatus.textContent = "กำลังตรวจสอบ OTP...";
+    try {
+        const response = await fetch(`${API_BASE}/api/auth/verify-otp`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: resetEmailInput.value.trim(), otp: resetOtpInput.value.trim() }),
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.message || "OTP ไม่ถูกต้อง");
+        resetToken = result.resetToken;
+        resetOtpForm.hidden = true;
+        newPasswordForm.hidden = false;
+        resetStatus.textContent = "ยืนยัน OTP สำเร็จ กรุณาตั้งรหัสผ่านใหม่";
+        newPasswordInput.focus();
+    } catch (error) {
+        resetStatus.textContent = error.message || "OTP ไม่ถูกต้อง กรุณาลองใหม่";
+        resetOtpInput.focus();
+    }
+});
+
+newPasswordForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (newPasswordInput.value.length < 6) {
         resetStatus.textContent = "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร";
@@ -298,8 +321,19 @@ newPasswordForm.addEventListener("submit", (event) => {
         confirmPasswordInput.focus();
         return;
     }
-    resetStatus.textContent = "โหมดจำลอง: เปลี่ยนรหัสผ่านสำเร็จแล้ว กรุณาเข้าสู่ระบบอีกครั้ง";
-    window.setTimeout(hideResetFlow, 1200);
+    try {
+        const response = await fetch(`${API_BASE}/api/auth/reset-password`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: resetEmailInput.value.trim(), resetToken, password: newPasswordInput.value }),
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.message || "เปลี่ยนรหัสผ่านไม่สำเร็จ");
+        resetStatus.textContent = "เปลี่ยนรหัสผ่านสำเร็จแล้ว กรุณาเข้าสู่ระบบอีกครั้ง";
+        window.setTimeout(hideResetFlow, 1200);
+    } catch (error) {
+        resetStatus.textContent = error.message || "เปลี่ยนรหัสผ่านไม่สำเร็จ กรุณาลองใหม่";
+    }
 });
 
 function showSignedInMessage(user) {
