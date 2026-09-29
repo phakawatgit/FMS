@@ -11,6 +11,7 @@ const firebaseConfig = {
 };
 
 const DUTY_KEY = "fms-local-duty-records";
+const API_BASE = window.FMS_API_URL || `${location.protocol}//${location.hostname}:4000`;
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const monthSelect = document.getElementById("calendarMonth");
@@ -241,7 +242,7 @@ function saveLocalRecord(record) {
   localStorage.setItem(DUTY_KEY, JSON.stringify(records));
 }
 
-function saveDuty(event) {
+async function saveDuty(event) {
   event.preventDefault();
   if (!currentUser) return;
   const firstName = document.getElementById("nurseFirstName").value.trim();
@@ -260,8 +261,27 @@ function saveDuty(event) {
     date: getDateKey(selectedDate),
     updatedAt: new Date().toISOString()
   };
+  let savedToDatabase = false;
+  try {
+    const response = await fetch(`${API_BASE}/api/nurses`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        firstName: record.firstName,
+        lastName: record.lastName,
+        nickname: record.nickname,
+        affiliation: record.affiliation,
+      }),
+    });
+    if (!response.ok) throw new Error("Nurse data could not be saved");
+    savedToDatabase = true;
+  } catch (error) {
+    console.error("Nurse data sync failed:", error);
+  }
   saveLocalRecord(record);
-  dutyStatus.textContent = `${copy[language].saved} · ${formatDate(record.date)}`;
+  dutyStatus.textContent = savedToDatabase
+    ? `${copy[language].saved} · ${formatDate(record.date)}`
+    : `${copy[language].saved} · ${language === "th" ? "บันทึกข้อมูลในฐานข้อมูลไม่สำเร็จ" : "Database sync failed"}`;
   renderCalendar();
   renderPalette();
   renderRecords();

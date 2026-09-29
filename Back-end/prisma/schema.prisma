@@ -22,6 +22,14 @@ model User {
   duties    DutyShift[]
 }
 
+model Nurse {
+  fullName    String   @id @db.VarChar(255)
+  nickname    String?  @db.VarChar(120)
+  affiliation String?  @db.VarChar(255)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
 model DutyShift {
   id          String   @id @default(cuid())
   date        DateTime

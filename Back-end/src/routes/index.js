@@ -34,6 +34,52 @@ router.get("/overview", async (_req, res) => {
   }
 });
 
+router.get("/nurses", async (_req, res) => {
+  try {
+    const nurses = await prisma.nurse.findMany({ orderBy: { fullName: "asc" } });
+    return res.json({ success: true, data: nurses });
+  } catch (error) {
+    console.error("Nurse list read failed:", error.message);
+    return res.status(503).json({ success: false, message: "อ่านรายชื่อพยาบาลไม่สำเร็จ" });
+  }
+});
+
+function normalizeNurseName(value) {
+  return String(value || "")
+    .trim()
+    .replace(/^(?:นางสาว|น\.ส\.|นาง|นาย)\s*/, "")
+    .replace(/\s+/g, " ");
+}
+
+router.post("/nurses", async (req, res) => {
+  const firstName = String(req.body?.firstName || "").trim();
+  const lastName = String(req.body?.lastName || "").trim();
+  const nickname = String(req.body?.nickname || "").trim();
+  const affiliation = String(req.body?.affiliation || "").trim();
+  if (!firstName || !lastName || firstName.length > 120 || lastName.length > 120 || nickname.length > 120 || affiliation.length > 255) {
+    return res.status(400).json({ success: false, message: "ข้อมูลพยาบาลไม่ถูกต้อง" });
+  }
+
+  const fullName = `${firstName} ${lastName}`;
+  try {
+    const knownNurses = await prisma.nurse.findMany({ select: { fullName: true } });
+    const canonicalNurse = knownNurses.find((nurse) => normalizeNurseName(nurse.fullName) === normalizeNurseName(fullName));
+    const canonicalFullName = canonicalNurse?.fullName ?? fullName;
+    const nurse = await prisma.nurse.upsert({
+      where: { fullName: canonicalFullName },
+      create: { fullName: canonicalFullName, nickname: nickname || null, affiliation: affiliation || null },
+      update: {
+        ...(nickname ? { nickname } : {}),
+        ...(affiliation ? { affiliation } : {}),
+      },
+    });
+    return res.json({ success: true, data: nurse });
+  } catch (error) {
+    console.error("Nurse upsert failed:", error.message);
+    return res.status(503).json({ success: false, message: "บันทึกข้อมูลพยาบาลไม่สำเร็จ" });
+  }
+});
+
 // Shared key/value storage used by the legacy static frontend. This keeps the
 // old pages compatible while their localStorage-backed modules are migrated.
 router.get("/legacy-storage", async (_req, res) => {
