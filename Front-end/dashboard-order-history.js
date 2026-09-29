@@ -1,5 +1,14 @@
 (() => {
   const key = "fms-history-catalog-orders";
+  // Remove the old placeholder history once. New orders saved from the order
+  // form are kept and will be shown normally after this cleanup.
+  const cleanupKey = "fms-history-catalog-orders-cleanup-v1";
+  try {
+    if (!localStorage.getItem(cleanupKey)) {
+      localStorage.removeItem(key);
+      localStorage.setItem(cleanupKey, "1");
+    }
+  } catch (_) {}
   const container = document.getElementById("purchaseCalendarContent");
   const openOrderIds = new Set();
   const calendarStartYear = new Date().getFullYear();
@@ -152,7 +161,8 @@
     }).join("");
     const selectedYearLabel = new Intl.DateTimeFormat(english ? "en-US" : "th-TH", { year: "numeric" }).format(new Date(annualSelectedYear, 0, 1));
     const windowEndYear = annualSelectedYear + 4;
-    container.innerHTML = `<div class="purchase-status-legend"><span><i class="purchase-status-dot is-saved"></i>${english ? "Saved" : "บันทึกแล้ว"}</span></div>${renderMonth(orders, english)}<dialog class="purchase-annual-dialog" id="purchaseAnnualDialog"><header><div><p>${english ? "Purchase history" : "ประวัติการสั่งซื้อ"}</p><h2>${annualTitle}</h2><small>${english ? `${annualSelectedYear}–${windowEndYear}` : `${annualSelectedYear + 543}–${windowEndYear + 543}`}</small></div><div class="purchase-annual-actions"><div class="purchase-year-picker"><span class="purchase-year-picker-label">${english ? "Select year" : "เลือกปี"}</span><button type="button" class="purchase-year-picker-trigger" data-toggle-year-picker aria-haspopup="listbox" aria-expanded="${yearPickerOpen}"><span><small>${english ? "Selected year" : "ปีที่เลือก"}</small><strong>${escape(selectedYearLabel)}</strong></span><svg class="purchase-year-picker-chevron" viewBox="0 0 20 20" aria-hidden="true"><path d="m5.5 7.5 4.5 4.5 4.5-4.5" /></svg></button><div class="purchase-year-picker-menu" role="listbox" aria-label="${english ? "Select year" : "เลือกปี"}" ${yearPickerOpen ? "" : "hidden"}>${yearOptions}</div></div><button type="button" data-close-annual-dialog aria-label="${english ? "Close" : "ปิด"}">×</button></div></header>${renderAnnualCalendar(orders, english)}</dialog>${renderDateDialog(orders, products, english)}`;
+    const statusLegend = orders.length ? `<div class="purchase-status-legend"><span><i class="purchase-status-dot is-saved"></i>${english ? "Saved" : "บันทึกแล้ว"}</span></div>` : "";
+    container.innerHTML = `${statusLegend}${renderMonth(orders, english)}<dialog class="purchase-annual-dialog" id="purchaseAnnualDialog"><header><div><p>${english ? "Purchase history" : "ประวัติการสั่งซื้อ"}</p><h2>${annualTitle}</h2><small>${english ? `${annualSelectedYear}–${windowEndYear}` : `${annualSelectedYear + 543}–${windowEndYear + 543}`}</small></div><div class="purchase-annual-actions"><div class="purchase-year-picker"><span class="purchase-year-picker-label">${english ? "Select year" : "เลือกปี"}</span><button type="button" class="purchase-year-picker-trigger" data-toggle-year-picker aria-haspopup="listbox" aria-expanded="${yearPickerOpen}"><span><small>${english ? "Selected year" : "ปีที่เลือก"}</small><strong>${escape(selectedYearLabel)}</strong></span><svg class="purchase-year-picker-chevron" viewBox="0 0 20 20" aria-hidden="true"><path d="m5.5 7.5 4.5 4.5 4.5-4.5" /></svg></button><div class="purchase-year-picker-menu" role="listbox" aria-label="${english ? "Select year" : "เลือกปี"}" ${yearPickerOpen ? "" : "hidden"}>${yearOptions}</div></div><button type="button" data-close-annual-dialog aria-label="${english ? "Close" : "ปิด"}">×</button></div></header>${renderAnnualCalendar(orders, english)}</dialog>${renderDateDialog(orders, products, english)}`;
     if (wasAnnualDialogOpen) {
       const annualDialog = document.getElementById("purchaseAnnualDialog");
       annualDialog.showModal();

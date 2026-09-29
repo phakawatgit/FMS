@@ -22,7 +22,7 @@ function formatDate(value) {
 
 function getOptions() {
   const defaults = {
-    faculties: ["คณะวิศวกรรมศาสตร์", "คณะเทคโนโลยีการเกษตรและอุตสาหกรรม", "คณะบริหารธุรกิจและนวัตกรรม"],
+    faculties: ["หลักสูตรวิศวกรรมศาสตร์", "หลักสูตรเทคโนโลยีการเกษตรและอุตสาหกรรม", "หลักสูตรบริหารธุรกิจและนวัตกรรม"],
     branches: ["เทคโนโลยีสารสนเทศ", "พยาบาลศาสตร์"],
     medicines: []
   };
@@ -46,7 +46,7 @@ function renderOverview() {
 
 function renderOptions() {
   const options = getOptions();
-  const labels = { faculties: "คณะ", branches: "สาขา", medicines: "ยา" };
+  const labels = { faculties: "หลักสูตร", branches: "สาขา", medicines: "ยา" };
   Object.entries(labels).forEach(([type, label]) => {
     const target = $(`[data-options-list="${type}"]`);
     target.innerHTML = options[type].length
@@ -72,7 +72,7 @@ function getDeletedCategory(collection = "") {
   return "other";
 }
 function getDeletedCategoryLabel(category) {
-  return { stock: "Stock", catalog: "Catalog", infirmary: "Infirmary Visit", borrow: "Borrow & Return", duty: "Duty Shift", other: "อื่น ๆ" }[category] || "อื่น ๆ";
+  return { stock: "คลังยา", catalog: "แคตตาล็อก", infirmary: "การเข้าห้องพยาบาล", borrow: "การยืมและคืน", duty: "ตารางเข้าเวร", other: "อื่น ๆ" }[category] || "อื่น ๆ";
 }
 function renderDeleted() {
   const records = read(window.FMSAdminAudit.DELETED_KEY).filter((item) => deletedCategory === "all" || getDeletedCategory(item.collection) === deletedCategory);

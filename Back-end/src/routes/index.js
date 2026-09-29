@@ -46,6 +46,36 @@ router.get("/legacy-storage", async (_req, res) => {
   }
 });
 
+// Migrate an existing browser localStorage in one request. Existing server
+// values are kept by default so another device cannot overwrite shared data
+// while it is only hydrating its local copy.
+router.post("/legacy-storage/bulk", async (req, res) => {
+  const data = req.body?.data;
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
+    return res.status(400).json({ success: false, message: "ข้อมูลส่วนกลางไม่ถูกต้อง" });
+  }
+
+  const entries = Object.entries(data)
+    .filter(([key]) => String(key).trim() && String(key).length <= 120)
+    .map(([key, value]) => [String(key).trim(), value]);
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      for (const [key, value] of entries) {
+        await tx.legacyStorage.upsert({
+          where: { key },
+          create: { key, value: value ?? null },
+          update: req.body?.preserveExisting ? {} : { value: value ?? null },
+        });
+      }
+    });
+    res.json({ success: true, count: entries.length });
+  } catch (error) {
+    console.error("Legacy storage bulk write failed:", error.message);
+    res.status(503).json({ success: false, message: "บันทึกข้อมูลส่วนกลางไม่สำเร็จ" });
+  }
+});
+
 router.put("/legacy-storage/:key", async (req, res) => {
   const key = String(req.params.key || "").trim();
   if (!key || key.length > 120) return res.status(400).json({ success: false, message: "คีย์ไม่ถูกต้อง" });

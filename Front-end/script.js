@@ -45,6 +45,17 @@ const ADMIN_SESSION_KEY = "fms-admin-session";
 const ADMIN_USERNAME = "Admin";
 const ADMIN_PASSWORD = "admin12345678";
 
+document.querySelectorAll("[data-password-toggle]").forEach((button) => {
+    button.addEventListener("click", () => {
+        const input = document.getElementById(button.dataset.passwordToggle);
+        if (!input) return;
+        const visible = input.type === "text";
+        input.type = visible ? "password" : "text";
+        button.setAttribute("aria-pressed", String(!visible));
+        button.setAttribute("aria-label", visible ? "แสดงรหัสผ่าน" : "ซ่อนรหัสผ่าน");
+    });
+});
+
 const FIREBASE_CONFIG = {
     apiKey: "AIzaSyD6eLRN8rU-e7KJMb1Diw_mFNH81pWpzIg",
     authDomain: "fams-7fdff.firebaseapp.com",
@@ -89,7 +100,31 @@ const translations = {
         loginProgress: "Signing you in...",
         signupProgress: "Creating your account...",
         googleProgress: "Preparing Google sign-in...",
-        forgotProgress: "Password reset is ready to connect to the backend."
+        forgotProgress: "Password reset is ready to connect to the backend.",
+        resetBack: "Back to sign in",
+        resetKicker: "PASSWORD RECOVERY",
+        resetTitle: "Verify your email",
+        resetDescription: "Enter your email to receive an OTP",
+        emailAddress: "Email address",
+        sendOtp: "Send OTP",
+        otpLabel: "OTP code",
+        otpPlaceholder: "Enter 6-digit code",
+        verifyOtp: "Verify OTP",
+        newPassword: "New password",
+        newPasswordPlaceholder: "At least 6 characters",
+        confirmPassword: "Confirm password",
+        confirmPasswordPlaceholder: "Enter your password again",
+        changePassword: "Change password",
+        sendingOtp: "Sending OTP...",
+        otpSent: "OTP sent. Please check your inbox.",
+        otpSendFailed: "Could not send OTP. Please try again.",
+        verifyingOtp: "Verifying OTP...",
+        otpVerified: "OTP verified. Please set a new password.",
+        otpInvalid: "Invalid OTP. Please try again.",
+        passwordTooShort: "Password must be at least 6 characters.",
+        passwordMismatch: "Passwords do not match.",
+        passwordChanged: "Password changed successfully. Please sign in again.",
+        passwordChangeFailed: "Could not change password. Please try again."
     },
     th: {
         language: "ไทย",
@@ -118,7 +153,31 @@ const translations = {
         loginProgress: "กำลังเข้าสู่ระบบ...",
         signupProgress: "กำลังสร้างบัญชี...",
         googleProgress: "กำลังเตรียมเชื่อมต่อ Google...",
-        forgotProgress: "ฟังก์ชันรีเซ็ตรหัสผ่านพร้อมเชื่อมต่อ backend"
+        forgotProgress: "ฟังก์ชันรีเซ็ตรหัสผ่านพร้อมเชื่อมต่อ backend",
+        resetBack: "กลับไปเข้าสู่ระบบ",
+        resetKicker: "กู้คืนรหัสผ่าน",
+        resetTitle: "ยืนยันอีเมล",
+        resetDescription: "กรอกอีเมลเพื่อรับรหัส OTP",
+        emailAddress: "อีเมล",
+        sendOtp: "รับรหัส OTP",
+        otpLabel: "รหัส OTP",
+        otpPlaceholder: "กรอกรหัส 6 หลัก",
+        verifyOtp: "ยืนยัน OTP",
+        newPassword: "รหัสผ่านใหม่",
+        newPasswordPlaceholder: "อย่างน้อย 6 ตัวอักษร",
+        confirmPassword: "ยืนยันรหัสผ่าน",
+        confirmPasswordPlaceholder: "กรอกรหัสผ่านอีกครั้ง",
+        changePassword: "เปลี่ยนรหัสผ่าน",
+        sendingOtp: "กำลังส่ง OTP...",
+        otpSent: "ส่ง OTP ไปยังอีเมลแล้ว กรุณาตรวจสอบกล่องจดหมาย",
+        otpSendFailed: "ส่ง OTP ไม่สำเร็จ กรุณาลองใหม่",
+        verifyingOtp: "กำลังตรวจสอบ OTP...",
+        otpVerified: "ยืนยัน OTP สำเร็จ กรุณาตั้งรหัสผ่านใหม่",
+        otpInvalid: "OTP ไม่ถูกต้อง กรุณาลองใหม่",
+        passwordTooShort: "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร",
+        passwordMismatch: "รหัสผ่านใหม่และการยืนยันรหัสผ่านไม่ตรงกัน",
+        passwordChanged: "เปลี่ยนรหัสผ่านสำเร็จแล้ว กรุณาเข้าสู่ระบบอีกครั้ง",
+        passwordChangeFailed: "เปลี่ยนรหัสผ่านไม่สำเร็จ กรุณาลองใหม่"
     }
 };
 
@@ -156,6 +215,23 @@ function renderLanguage() {
     passwordInput.placeholder = currentLanguage === "th" ? "กรอกรหัสผ่าน" : "Enter your password";
     document.getElementById("fullName").placeholder = currentLanguage === "th" ? "ชื่อของคุณ" : "Your name";
     document.getElementById("email").placeholder = currentLanguage === "th" ? "name@example.com" : "name@example.com";
+
+    const resetBackText = resetBackButton.querySelector("span");
+    setText(resetBackText, t.resetBack);
+    setText(resetFlow.querySelector(".auth-kicker"), t.resetKicker);
+    setText(document.getElementById("resetTitle"), t.resetTitle);
+    setText(document.getElementById("resetDescription"), t.resetDescription);
+    setText(resetEmailForm.querySelector("label"), t.emailAddress);
+    setText(resetEmailForm.querySelector("button[type=submit]"), t.sendOtp);
+    setText(resetOtpForm.querySelector("label"), t.otpLabel);
+    setText(resetOtpForm.querySelector("button[type=submit]"), t.verifyOtp);
+    setText(newPasswordForm.querySelector("label"), t.newPassword);
+    setText(newPasswordForm.querySelectorAll("label")[1], t.confirmPassword);
+    setText(newPasswordForm.querySelector("button[type=submit]"), t.changePassword);
+    resetEmailInput.placeholder = "name@example.com";
+    resetOtpInput.placeholder = t.otpPlaceholder;
+    newPasswordInput.placeholder = t.newPasswordPlaceholder;
+    confirmPasswordInput.placeholder = t.confirmPasswordPlaceholder;
 }
 
 function setMode(mode) {
@@ -267,7 +343,7 @@ resetEmailForm.addEventListener("submit", async (event) => {
     }
     const button = resetEmailForm.querySelector("button[type=submit]");
     button.disabled = true;
-    resetStatus.textContent = "กำลังส่ง OTP...";
+    resetStatus.textContent = translations[currentLanguage].sendingOtp;
     try {
         const response = await fetch(`${API_BASE}/api/auth/forgot-password`, {
             method: "POST",
@@ -278,10 +354,10 @@ resetEmailForm.addEventListener("submit", async (event) => {
         if (!response.ok) throw new Error(result.message || "ส่ง OTP ไม่สำเร็จ");
         resetEmailForm.hidden = true;
         resetOtpForm.hidden = false;
-        resetStatus.textContent = "ส่ง OTP ไปยังอีเมลแล้ว กรุณาตรวจสอบกล่องจดหมาย";
+        resetStatus.textContent = translations[currentLanguage].otpSent;
         resetOtpInput.focus();
     } catch (error) {
-        resetStatus.textContent = error.message || "ส่ง OTP ไม่สำเร็จ กรุณาลองใหม่";
+        resetStatus.textContent = error.message || translations[currentLanguage].otpSendFailed;
     } finally {
         button.disabled = false;
     }
@@ -289,7 +365,7 @@ resetEmailForm.addEventListener("submit", async (event) => {
 
 resetOtpForm.addEventListener("submit", async (event) => {
     event.preventDefault();
-    resetStatus.textContent = "กำลังตรวจสอบ OTP...";
+    resetStatus.textContent = translations[currentLanguage].verifyingOtp;
     try {
         const response = await fetch(`${API_BASE}/api/auth/verify-otp`, {
             method: "POST",
@@ -301,10 +377,10 @@ resetOtpForm.addEventListener("submit", async (event) => {
         resetToken = result.resetToken;
         resetOtpForm.hidden = true;
         newPasswordForm.hidden = false;
-        resetStatus.textContent = "ยืนยัน OTP สำเร็จ กรุณาตั้งรหัสผ่านใหม่";
+        resetStatus.textContent = translations[currentLanguage].otpVerified;
         newPasswordInput.focus();
     } catch (error) {
-        resetStatus.textContent = error.message || "OTP ไม่ถูกต้อง กรุณาลองใหม่";
+        resetStatus.textContent = error.message || translations[currentLanguage].otpInvalid;
         resetOtpInput.focus();
     }
 });
@@ -312,12 +388,12 @@ resetOtpForm.addEventListener("submit", async (event) => {
 newPasswordForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (newPasswordInput.value.length < 6) {
-        resetStatus.textContent = "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร";
+        resetStatus.textContent = translations[currentLanguage].passwordTooShort;
         newPasswordInput.focus();
         return;
     }
     if (newPasswordInput.value !== confirmPasswordInput.value) {
-        resetStatus.textContent = "รหัสผ่านใหม่และการยืนยันรหัสผ่านไม่ตรงกัน";
+        resetStatus.textContent = translations[currentLanguage].passwordMismatch;
         confirmPasswordInput.focus();
         return;
     }
@@ -329,10 +405,10 @@ newPasswordForm.addEventListener("submit", async (event) => {
         });
         const result = await response.json();
         if (!response.ok) throw new Error(result.message || "เปลี่ยนรหัสผ่านไม่สำเร็จ");
-        resetStatus.textContent = "เปลี่ยนรหัสผ่านสำเร็จแล้ว กรุณาเข้าสู่ระบบอีกครั้ง";
+        resetStatus.textContent = translations[currentLanguage].passwordChanged;
         window.setTimeout(hideResetFlow, 1200);
     } catch (error) {
-        resetStatus.textContent = error.message || "เปลี่ยนรหัสผ่านไม่สำเร็จ กรุณาลองใหม่";
+        resetStatus.textContent = error.message || translations[currentLanguage].passwordChangeFailed;
     }
 });
 

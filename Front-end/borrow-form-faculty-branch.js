@@ -38,7 +38,7 @@ const borrowFacultyBranches = {
 if (borrowBranchSelect && borrowBranchLabel) {
   const facultyLabel = document.createElement("label");
   facultyLabel.className = "borrow-faculty-field";
-  facultyLabel.innerHTML = '<span>คณะ</span><select name="faculty"><option value="all">ทั้งหมด</option><option value="engineering">คณะวิศวกรรมศาสตร์</option><option value="agriculture">คณะเทคโนโลยีการเกษตรและวิทยาศาสตร์</option><option value="business">คณะบริหารธุรกิจและนวัตกรรม</option></select>';
+  facultyLabel.innerHTML = '<span>หลักสูตร</span><select name="faculty"><option value="all">ทั้งหมด</option><option value="engineering">หลักสูตรวิศวกรรมศาสตร์</option><option value="agriculture">หลักสูตรเทคโนโลยีการเกษตรและวิทยาศาสตร์</option><option value="business">หลักสูตรบริหารธุรกิจและนวัตกรรม</option></select>';
   borrowBranchLabel.parentElement.insertBefore(facultyLabel, borrowBranchLabel);
   const branchLabelText = borrowBranchLabel.querySelector("span");
   if (branchLabelText) branchLabelText.textContent = "สาขา";

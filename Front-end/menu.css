@@ -176,10 +176,11 @@ h1, h2 { margin: 0; font-family: "Kanit", sans-serif; }
 .menu-hint { margin: 0; color: var(--muted); font-size: 0.82rem; }
 .menu-section .row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.5rem; }
 .menu-section .row > [class*="col-"] { min-width: 0; }
-.menu-card { display: block; height: 100%; overflow: hidden; border: 0; border-radius: 1.1rem; background: var(--white); text-decoration: none; box-shadow: 0 0.65rem 1.1rem rgba(50, 65, 130, 0.1); transition: transform 160ms ease, box-shadow 160ms ease; }
+.menu-section .row > [class*="col-"] { display: flex; align-items: stretch; min-width: 0; }
+.menu-card { display: flex; flex-direction: column; width: 100%; height: 100%; overflow: hidden; border: 0; border-radius: 1.1rem; background: var(--white); text-decoration: none; box-shadow: 0 0.65rem 1.1rem rgba(50, 65, 130, 0.1); transition: transform 160ms ease, box-shadow 160ms ease; }
 .menu-card:hover { transform: translateY(-0.3rem); box-shadow: 0 1rem 1.6rem rgba(50, 65, 130, 0.17); }
-.menu-card img { display: block; width: 100%; aspect-ratio: 1.35 / 1; object-fit: contain; padding: 0.55rem; background: #fff; }
-.menu-card-body { min-height: 5.4rem; padding: 0.75rem 0.9rem; background: var(--blue); }
+.menu-card img { display: block; flex: 0 0 auto; width: 100%; aspect-ratio: 1.35 / 1; object-fit: contain; padding: 0.55rem; background: #fff; }
+.menu-card-body { display: flex; flex: 1 1 auto; flex-direction: column; justify-content: flex-start; min-height: 5.4rem; padding: 0.75rem 0.9rem; background: var(--blue); }
 .menu-card:nth-child(even) .menu-card-body { background: var(--orange); }
 .menu-card h3 { margin: 0; color: var(--navy); font-family: "Kanit", sans-serif; font-size: clamp(1rem, 1.7vw, 1.2rem); font-weight: 600; }
 .menu-card p { margin: 0.24rem 0 0; color: var(--navy); font-size: clamp(0.76rem, 1.1vw, 0.86rem); }
@@ -289,6 +290,107 @@ body * {
 }
 
 @media (prefers-reduced-motion: reduce) { .menu-card { transition: none; } }
+
+/* Menu-only mobile topbar. This page uses .topbar-inner/.topbar-actions,
+   so keep its three controls in one balanced, easy-to-tap row. */
+@media (max-width: 600px) {
+  body .topbar-inner {
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    padding: .7rem .75rem !important;
+  }
+
+  body .topbar-inner > .brand {
+    display: none !important;
+  }
+
+  body .topbar-actions {
+    display: grid !important;
+    grid-template-columns: 42px minmax(100px, 1fr) minmax(126px, 1.25fr) !important;
+    align-items: center !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    gap: 8px !important;
+  }
+
+  body .topbar-actions > * {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  body .topbar-actions > .icon-button {
+    width: 42px !important;
+    height: 42px !important;
+    min-height: 42px !important;
+    margin: 0 !important;
+    border-radius: 50% !important;
+  }
+
+  body .topbar-actions > .icon-button svg {
+    width: 23px !important;
+    height: 23px !important;
+  }
+
+  body .topbar-actions > .language-switcher,
+  body .topbar-actions > .sign-out {
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 42px !important;
+    min-height: 42px !important;
+    margin: 0 !important;
+    border-radius: 12px !important;
+  }
+
+  body .topbar-actions > .language-switcher {
+    padding: 0 8px !important;
+    overflow: hidden !important;
+  }
+
+  body .topbar-actions > .sign-out {
+    justify-content: center !important;
+    gap: 7px !important;
+    padding: 0 10px !important;
+    font-size: 13px !important;
+  }
+
+  body .topbar-actions > .sign-out .sign-out-icon {
+    width: 22px !important;
+    height: 22px !important;
+  }
+
+  body .topbar-actions > .notification-panel {
+    position: absolute !important;
+    top: calc(100% + .5rem) !important;
+    right: 0 !important;
+    width: min(23rem, calc(100vw - 1.5rem)) !important;
+  }
+}
+
+@media (max-width: 350px) {
+  body .topbar-actions {
+    grid-template-columns: 36px minmax(82px, 1fr) minmax(108px, 1.2fr) !important;
+    gap: 5px !important;
+  }
+
+  body .topbar-actions > .icon-button {
+    width: 36px !important;
+    height: 36px !important;
+    min-height: 36px !important;
+  }
+
+  body .topbar-actions > .language-switcher,
+  body .topbar-actions > .sign-out {
+    height: 36px !important;
+    min-height: 36px !important;
+  }
+
+  body .topbar-actions > .sign-out {
+    font-size: 11px !important;
+  }
+}
 .topbar .icon-button{position:relative!important;display:grid!important;width:1.35rem!important;height:2rem!important;place-items:center!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;color:#fff!important}.topbar .icon-button svg{width:1rem!important;height:1rem!important;fill:none!important;stroke:currentColor!important;stroke-width:1.9!important}.topbar .notification-badge{top:-.12rem!important;right:-.28rem!important;min-width:.92rem!important;height:.92rem!important;border:0!important;background:#ef4545!important;font-size:.5rem!important}
 .menu-export-actions{display:flex;align-items:center;gap:.45rem}.menu-export-actions button{min-width:2.9rem;height:2rem;padding:0 .62rem;border:0;border-radius:.35rem;background:#fff;color:#123678;font:600 .7rem Kanit,sans-serif;cursor:pointer}
 /* Original menu topbar language control: white rounded box. */

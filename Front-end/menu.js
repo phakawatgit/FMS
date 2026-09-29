@@ -135,24 +135,7 @@ function getDateLabel(daysFromToday) {
 }
 
 function getNotifications() {
-  if (language === "th") {
-    return [
-      { level: "warning", title: "ยาใกล้หมดอายุ", detail: `Paracetamol 500 mg จะหมดอายุภายใน 1 เดือน (${getDateLabel(20)})` },
-      { level: "critical", title: "ยาหมดอายุแล้ว", detail: "Amoxicillin 250 mg หมดอายุแล้ว กรุณานำออกจากคลังทันที" },
-      { level: "warning", title: "ยาใกล้หมดสต็อก", detail: "Cetirizine 10 mg เหลือ 5 เม็ด (ขั้นต่ำ 20 เม็ด)" },
-      { level: "critical", title: "ยาหมดสต็อก", detail: "Alcohol swab ไม่มีคงเหลือ กรุณาสั่งซื้อเพิ่ม" },
-      { level: "warning", title: "รายการยืมใกล้ครบกำหนดคืน", detail: `เครื่องวัดความดัน: ครบกำหนดคืน ${getDateLabel(1)}` },
-      { level: "critical", title: "รายการยืมเกินกำหนด", detail: "รถเข็นผู้ป่วย เลยกำหนดคืนแล้วและยังไม่ได้คืน" }
-    ];
-  }
-  return [
-    { level: "warning", title: "Medicine expiring soon", detail: `Paracetamol 500 mg expires within one month (${getDateLabel(20)})` },
-    { level: "critical", title: "Expired medicine", detail: "Amoxicillin 250 mg has expired. Remove it from stock immediately." },
-    { level: "warning", title: "Low medicine stock", detail: "Cetirizine 10 mg has 5 tablets left (minimum: 20)." },
-    { level: "critical", title: "Out of stock", detail: "Alcohol swabs are out of stock. Please replenish." },
-    { level: "warning", title: "Borrowed item due soon", detail: `Blood-pressure monitor is due back on ${getDateLabel(1)}.` },
-    { level: "critical", title: "Overdue borrowed item", detail: "Wheelchair is overdue and has not been returned." }
-  ];
+  return window.FMSNotifications?.getAll(language) || [];
 }
 
 function renderNotifications() {

@@ -11,6 +11,31 @@
   const pending = new Set();
   let hydrated = false;
 
+  function readLocalStorage() {
+    const values = {};
+    for (let index = 0; index < nativeStorage.length; index += 1) {
+      const key = nativeStorage.key(index);
+      if (!key) continue;
+      const raw = nativeStorage.getItem(key);
+      try { values[key] = JSON.parse(raw); } catch (_) { values[key] = raw; }
+    }
+    return values;
+  }
+
+  function migrateMissingLocalData(remote) {
+    const local = readLocalStorage();
+    const missing = {};
+    Object.entries(local).forEach(([key, value]) => {
+      if (!Object.prototype.hasOwnProperty.call(remote, key)) missing[key] = value;
+    });
+    if (!Object.keys(missing).length) return;
+    fetch(`${endpoint}/bulk`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ data: missing, preserveExisting: true }),
+    }).catch(() => {});
+  }
+
   function sync(key, value) {
     if (pending.has(key)) return;
     pending.add(key);
@@ -30,6 +55,7 @@
     if (request.status >= 200 && request.status < 300) {
       const remote = JSON.parse(request.responseText).data || {};
       Object.entries(remote).forEach(([key, value]) => nativeSetItem(key, typeof value === "string" ? value : JSON.stringify(value)));
+      migrateMissingLocalData(remote);
       hydrated = true;
     }
   } catch (_) {
@@ -49,13 +75,4 @@
     if (this === nativeStorage && hydrated) fetch(`${endpoint}/${encodeURIComponent(key)}`, { method: "DELETE" }).catch(() => {});
   };
 
-  // Migrate an existing Live Server copy the first time the shared store is used.
-  if (hydrated) {
-    for (let index = 0; index < nativeStorage.length; index += 1) {
-      const key = nativeStorage.key(index);
-      if (key) {
-        try { sync(key, JSON.parse(nativeStorage.getItem(key))); } catch (_) { sync(key, nativeStorage.getItem(key)); }
-      }
-    }
-  }
 })();

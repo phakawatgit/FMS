@@ -7,7 +7,7 @@
     <link rel="icon" type="image/png" href="./assets/fms.png" />
     <link rel="apple-touch-icon" href="./assets/fms.png" />
     <link rel="stylesheet" href="./style.css" />
-  <link rel="stylesheet" href="./button-animations.css?v=3"><link rel="stylesheet" href="./font-kanit.css?v=1"><link rel="stylesheet" href="./theme-colors.css?v=2"><script src="./legacy-storage.js?v=1"></script></head>
+  <link rel="stylesheet" href="./button-animations.css?v=3"><link rel="stylesheet" href="./font-kanit.css?v=1"><link rel="stylesheet" href="./theme-colors.css?v=2"><script src="./legacy-storage.js?v=2"></script></head>
   <body>
     <main class="site-shell">
       <section class="brand-panel" aria-label="FMS introduction">
@@ -84,7 +84,13 @@
         </form>
 
         <section id="resetFlow" class="reset-flow" hidden aria-labelledby="resetTitle">
-          <button id="resetBack" class="reset-back" type="button">← กลับไปเข้าสู่ระบบ</button>
+          <button id="resetBack" class="reset-back" type="button">
+            <svg class="reset-back-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="9"></circle>
+              <path d="M13.5 8 9.5 12l4 4M9.5 12h6"></path>
+            </svg>
+            <span>กลับไปเข้าสู่ระบบ</span>
+          </button>
           <p class="auth-kicker">Password recovery</p>
           <h2 id="resetTitle">ยืนยันอีเมล</h2>
           <p id="resetDescription" class="reset-description">กรอกอีเมลเพื่อรับรหัส OTP</p>
@@ -108,11 +114,11 @@
           <form id="newPasswordForm" class="auth-form" hidden>
             <div class="field">
               <label for="newPassword">New password</label>
-              <input id="newPassword" type="password" autocomplete="new-password" minlength="6" placeholder="อย่างน้อย 6 ตัวอักษร" required />
+              <div class="password-field"><input id="newPassword" type="password" autocomplete="new-password" minlength="6" placeholder="อย่างน้อย 6 ตัวอักษร" required /><button class="password-toggle" type="button" data-password-toggle="newPassword" aria-label="แสดงรหัสผ่าน" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.4-5 9.5-5 9.5 5 9.5 5-3.4 5-9.5 5-9.5-5-9.5-5Z"></path><circle cx="12" cy="12" r="2.5"></circle></svg></button></div>
             </div>
             <div class="field">
               <label for="confirmPassword">Confirm password</label>
-              <input id="confirmPassword" type="password" autocomplete="new-password" minlength="6" placeholder="กรอกรหัสผ่านอีกครั้ง" required />
+              <div class="password-field"><input id="confirmPassword" type="password" autocomplete="new-password" minlength="6" placeholder="กรอกรหัสผ่านอีกครั้ง" required /><button class="password-toggle" type="button" data-password-toggle="confirmPassword" aria-label="แสดงรหัสผ่าน" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.4-5 9.5-5 9.5 5 9.5 5-3.4 5-9.5 5-9.5-5-9.5-5Z"></path><circle cx="12" cy="12" r="2.5"></circle></svg></button></div>
             </div>
             <button class="primary-button" type="submit">เปลี่ยนรหัสผ่าน</button>
           </form>

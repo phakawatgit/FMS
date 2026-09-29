@@ -9,20 +9,20 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./admin-settings.css?v=1" />
-<script src="./legacy-storage.js?v=1"></script></head>
+<script src="./legacy-storage.js?v=2"></script></head>
 <body>
   <header class="admin-topbar">
     <a class="admin-brand" href="./menu.html"><img src="./assets/fms.png" alt="" /> <span>First Aid &amp; Medicine Management System</span></a>
     <div class="admin-topbar-actions">
       <button id="backMenuButton" class="back-menu-button" type="button" aria-label="กลับเมนู" title="กลับเมนู"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg></button>
-      <button class="topbar-bell" type="button" aria-label="การแจ้งเตือน"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 17h12l-1.4-2.2V10a4.6 4.6 0 0 0-9.2 0v4.8L6 17Zm4 2a2 2 0 0 0 4 0"/></svg><b>6</b></button>
-      <button class="topbar-language" type="button">ไทย</button>
+      <button class="topbar-bell" type="button" aria-label="การแจ้งเตือน"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 17h12l-1.4-2.2V10a4.6 4.6 0 0 0-9.2 0v4.8L6 17Zm4 2a2 2 0 0 0 4 0"/></svg></button>
+      <button class="topbar-language" type="button" aria-label="เปลี่ยนภาษา">ไทย</button>
     </div>
   </header>
   <main class="admin-page">
     <section class="settings-hero">
-      <p class="eyebrow">ADMIN PANEL</p>
-      <h1>Settings</h1>
+      <p class="eyebrow">แผงควบคุมผู้ดูแลระบบ</p>
+      <h1>การตั้งค่า</h1>
       <p>จัดการการตั้งค่าระบบสำหรับผู้ดูแลระบบ</p>
     </section>
     <section class="admin-summary" aria-label="ภาพรวมข้อมูล">
@@ -32,31 +32,31 @@
       <article><span>ข้อมูลที่ถูกลบ</span><strong id="summaryDeleted">0</strong></article>
     </section>
     <nav class="settings-tabs" aria-label="เมนูตั้งค่า">
-      <button type="button" class="is-active" data-panel="databasePanel">Database</button>
+      <button type="button" class="is-active" data-panel="databasePanel">ฐานข้อมูล</button>
       <button type="button" data-panel="optionsPanel">ตัวเลือก Dropdown</button>
-      <button type="button" data-panel="activityPanel">User Activity</button>
-      <button type="button" data-panel="deletedPanel">Deleted Data</button>
+      <button type="button" data-panel="activityPanel">กิจกรรมผู้ใช้</button>
+      <button type="button" data-panel="deletedPanel">ข้อมูลที่ถูกลบ</button>
     </nav>
     <section id="databasePanel" class="admin-panel">
-      <div class="panel-heading"><div><p class="eyebrow">DATABASE</p><h2>ข้อมูลในระบบ</h2></div><span class="panel-note">ข้อมูลที่ระบบเก็บอยู่ใน Browser Database</span></div>
-      <div class="table-wrap"><table><thead><tr><th>ชุดข้อมูล</th><th>Storage key</th><th>จำนวน</th><th>อัปเดตล่าสุด</th></tr></thead><tbody id="databaseRows"></tbody></table></div>
+      <div class="panel-heading"><div><p class="eyebrow">ฐานข้อมูล</p><h2>ข้อมูลในระบบ</h2></div><span class="panel-note">ข้อมูลที่ระบบเก็บอยู่ใน Browser Database</span></div>
+      <div class="table-wrap"><table><thead><tr><th>ชุดข้อมูล</th><th>คีย์จัดเก็บข้อมูล</th><th>จำนวน</th><th>อัปเดตล่าสุด</th></tr></thead><tbody id="databaseRows"></tbody></table></div>
     </section>
     <section id="optionsPanel" class="admin-panel" hidden>
-      <div class="panel-heading"><div><p class="eyebrow">DROPDOWN OPTIONS</p><h2>เพิ่มข้อมูลตัวเลือก</h2></div><span class="panel-note">คณะ / สาขา / ยา</span></div>
-      <form id="optionForm" class="option-form"><div class="admin-select" id="optionTypeSelect"><button class="admin-select-trigger" id="optionTypeButton" type="button" aria-haspopup="listbox" aria-expanded="false"><span id="optionTypeLabel">คณะ</span><svg class="admin-select-chevron" viewBox="0 0 20 20" aria-hidden="true"><path d="m5.75 7.5 4.25 4.25 4.25-4.25" /></svg></button><div class="admin-select-menu" role="listbox" hidden><button type="button" role="option" data-option-type="faculties" aria-selected="true">คณะ</button><button type="button" role="option" data-option-type="branches" aria-selected="false">สาขา</button><button type="button" role="option" data-option-type="medicines" aria-selected="false">ยา</button></div><input id="optionTypeValue" type="hidden" name="type" value="faculties" /></div><input name="value" placeholder="พิมพ์ข้อมูลที่ต้องการเพิ่ม" required /><button type="submit">＋ เพิ่มข้อมูล</button></form>
-      <div id="optionsGrid" class="options-grid"><article><h3>คณะ</h3><ul data-options-list="faculties"></ul></article><article><h3>สาขา</h3><ul data-options-list="branches"></ul></article><article><h3>ยา</h3><ul data-options-list="medicines"></ul></article></div>
+      <div class="panel-heading"><div><p class="eyebrow">ตัวเลือก Dropdown</p><h2>เพิ่มข้อมูลตัวเลือก</h2></div><span class="panel-note">หลักสูตร / สาขา / ยา</span></div>
+      <form id="optionForm" class="option-form"><div class="admin-select" id="optionTypeSelect"><button class="admin-select-trigger" id="optionTypeButton" type="button" aria-haspopup="listbox" aria-expanded="false"><span id="optionTypeLabel">หลักสูตร</span><svg class="admin-select-chevron" viewBox="0 0 20 20" aria-hidden="true"><path d="m5.75 7.5 4.25 4.25 4.25-4.25" /></svg></button><div class="admin-select-menu" role="listbox" hidden><button type="button" role="option" data-option-type="faculties" aria-selected="true">หลักสูตร</button><button type="button" role="option" data-option-type="branches" aria-selected="false">สาขา</button><button type="button" role="option" data-option-type="medicines" aria-selected="false">ยา</button></div><input id="optionTypeValue" type="hidden" name="type" value="faculties" /></div><input name="value" placeholder="พิมพ์ข้อมูลที่ต้องการเพิ่ม" required /><button type="submit">＋ เพิ่มข้อมูล</button></form>
+      <div id="optionsGrid" class="options-grid"><article><h3>หลักสูตร</h3><ul data-options-list="faculties"></ul></article><article><h3>สาขา</h3><ul data-options-list="branches"></ul></article><article><h3>ยา</h3><ul data-options-list="medicines"></ul></article></div>
     </section>
     <section id="activityPanel" class="admin-panel" hidden>
-      <div class="panel-heading"><div><p class="eyebrow">USER ACTIVITY</p><h2>ประวัติการเข้าใช้งานและการกระทำ</h2></div><span class="panel-note">Create account / Google / Forgot password</span></div>
+      <div class="panel-heading"><div><p class="eyebrow">กิจกรรมผู้ใช้</p><h2>ประวัติการเข้าใช้งานและการกระทำ</h2></div><span class="panel-note">สมัครบัญชี / Google / ลืมรหัสผ่าน</span></div>
       <div class="table-wrap"><table><thead><tr><th>เวลา</th><th>การกระทำ</th><th>ผู้กระทำ</th><th>รายละเอียด</th></tr></thead><tbody id="activityRows"></tbody></table></div>
     </section>
     <section id="deletedPanel" class="admin-panel" hidden>
-      <div class="panel-heading"><div><p class="eyebrow">DELETED DATA</p><h2>ข้อมูลที่ถูกลบจากฝั่งผู้ใช้</h2></div><span class="panel-note">เก็บเป็นประวัติสำหรับ Admin ตรวจสอบ</span></div>
-      <div class="deleted-category-tabs" role="tablist" aria-label="ประเภทข้อมูลที่ถูกลบ"><button type="button" class="is-active" data-deleted-category="all">ทั้งหมด</button><button type="button" data-deleted-category="stock">Stock</button><button type="button" data-deleted-category="catalog">Catalog</button><button type="button" data-deleted-category="infirmary">Infirmary Visit</button><button type="button" data-deleted-category="borrow">Borrow &amp; Return</button><button type="button" data-deleted-category="duty">Duty Shift</button><button type="button" data-deleted-category="other">อื่น ๆ</button></div>
-      <div class="table-wrap"><table><thead><tr><th>เวลาที่ลบ</th><th>เมนู</th><th>ชุดข้อมูล</th><th>รายการ</th><th>เหตุผล</th></tr></thead><tbody id="deletedRows"></tbody></table></div>
+      <div class="panel-heading"><div><p class="eyebrow">ข้อมูลที่ถูกลบ</p><h2>ข้อมูลที่ถูกลบจากฝั่งผู้ใช้</h2></div><span class="panel-note">เก็บเป็นประวัติสำหรับ Admin ตรวจสอบ</span></div>
+      <div class="deleted-category-tabs" role="tablist" aria-label="ประเภทข้อมูลที่ถูกลบ"><button type="button" class="is-active" data-deleted-category="all">ทั้งหมด</button><button type="button" data-deleted-category="stock">คลังยา</button><button type="button" data-deleted-category="catalog">แคตตาล็อก</button><button type="button" data-deleted-category="infirmary">การเข้าห้องพยาบาล</button><button type="button" data-deleted-category="borrow">การยืมและคืน</button><button type="button" data-deleted-category="duty">ตารางเข้าเวร</button><button type="button" data-deleted-category="other">อื่น ๆ</button></div>
     </section>
   </main>
   <script src="./admin-audit.js?v=1"></script>
-  <script src="./admin-settings.js?v=1"></script>
+  <script src="./admin-settings.js?v=2"></script>
+  <script src="./language-toggle.js?v=14"></script>
 <script src="./header-controls.js?v=3"></script></body>
 </html>

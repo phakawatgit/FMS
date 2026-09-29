@@ -145,15 +145,7 @@
     document.querySelectorAll(".expiry-legend li").forEach((item, index) => { item.querySelector("span").textContent = `${labels[index]} · ${counts[index]}`; });
   };
   const renderAlerts = (items) => {
-    const alerts = [];
-    items.forEach((item) => {
-      const state = status(item);
-      if (state === "normal") return;
-      const title = language === "th"
-        ? { expired: "ยาหมดอายุแล้ว", expiring: "ยาใกล้หมดอายุ", low: "ยาเหลือน้อย" }[state]
-        : { expired: "Expired medicine", expiring: "Medicine expiring soon", low: "Low stock" }[state];
-      alerts.push([state === "expired" ? "critical" : "warning", title, `${item.name} · ${item.remaining} ${item.unit || ""}`]);
-    });
+    const alerts = (window.FMSNotifications?.getAll(language) || []).map((item) => [item.level, item.title, item.detail]);
     notificationList.innerHTML = alerts.length
       ? alerts.map(([level, title, detail]) => `<article class="notice ${level}${notificationsRead ? " read" : ""}"><i></i><div><b>${title}</b><p>${detail}</p></div></article>`).join("")
       : `<p>${language === "th" ? "ไม่มีการแจ้งเตือนจากข้อมูลปัจจุบัน" : "No alerts from current records"}</p>`;

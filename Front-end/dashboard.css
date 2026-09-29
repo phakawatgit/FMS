@@ -63,4 +63,125 @@ body .expiry{display:block!important;min-height:18rem!important}body .expiry .pa
 .top-actions .menu-link { display: grid; place-items: center; width: 2rem; height: 2rem; padding: 0; }
 .top-actions .menu-link svg { display: block !important; width: 1.2rem; height: 1.2rem; }
 .top-actions .menu-link::before, .top-actions .menu-link::after { display: none !important; content: none !important; }
+
+/* Keep dashboard filters readable on narrow phone screens. The desktop
+   two-column layout makes the date fields and selects overlap below 600px. */
+/* Tablet/iPad layout: the filter has six controls (two dates, separator,
+   curriculum, branch, and reset). Give each control an explicit grid track
+   so the selects never share or overlap a neighboring track. */
+@media (min-width: 601px) and (max-width: 1300px) {
+  body .filter-card {
+    grid-template-columns: minmax(0, 1.15fr) .9rem minmax(0, 1.15fr) minmax(10rem, 1fr) minmax(10rem, 1fr) auto !important;
+    align-items: end !important;
+    gap: .55rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  body .filter-card > label,
+  body .filter-card input,
+  body .filter-card select {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  body .filter-card input,
+  body .filter-card select {
+    width: 100% !important;
+  }
+}
+
+/* iPad portrait and other narrower tablets: use two balanced columns rather
+   than forcing all six controls into one row. */
+@media (min-width: 601px) and (max-width: 900px) {
+  body .filter-card {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+    align-items: stretch !important;
+  }
+
+  body .filter-card .range-line {
+    display: none !important;
+  }
+
+  body .filter-card > label:nth-of-type(1) { grid-column: 1; }
+  body .filter-card > label:nth-of-type(2) { grid-column: 2; }
+  body .filter-card > label:nth-of-type(3) { grid-column: 1; }
+  body .filter-card > label:nth-of-type(4) { grid-column: 2; }
+  body .filter-card > button { grid-column: 2; width: 100%; }
+
+  body .filter-card .date-end span {
+    display: block !important;
+    height: auto !important;
+    font-size: 0 !important;
+  }
+
+  body .filter-card .date-end span::after {
+    content: "ถึงวันที่";
+    font-size: .88rem;
+  }
+}
+
+@media (max-width: 600px) {
+  body .filter-card {
+    grid-template-columns: minmax(0, 1fr) !important;
+    align-items: stretch !important;
+    gap: .55rem !important;
+    padding: .75rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+  }
+
+  body .filter-card label,
+  body .filter-card input,
+  body .filter-card select {
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    max-width: 100% !important;
+  }
+
+  /* iOS/Android native date controls can ignore the grid item's width. Make
+     both date fields use exactly the same box as the faculty/branch selects. */
+  body .filter-card #startDate,
+  body .filter-card #endDate {
+    display: block !important;
+    width: 100% !important;
+    inline-size: 100% !important;
+    min-inline-size: 0 !important;
+    max-inline-size: 100% !important;
+    margin: 0 !important;
+    padding-inline: .65rem !important;
+    box-sizing: border-box !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+  }
+
+  body .filter-card label {
+    display: grid !important;
+    gap: .2rem !important;
+  }
+
+  body .filter-card .range-line {
+    display: none !important;
+  }
+
+  body .filter-card .date-end span {
+    display: block !important;
+    height: auto !important;
+    font-size: 0 !important;
+  }
+
+  body .filter-card .date-end span::after {
+    content: "ถึงวันที่";
+    font-size: .88rem;
+  }
+
+  body .filter-card button {
+    grid-column: auto !important;
+    width: 100% !important;
+    min-height: 2.2rem !important;
+  }
+}
 .topbar .icon-button{position:relative!important;display:grid!important;width:1.35rem!important;height:2rem!important;place-items:center!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;color:#fff!important}.topbar .icon-button svg{width:1rem!important;height:1rem!important;fill:none!important;stroke:currentColor!important;stroke-width:1.9!important}.topbar .notification-badge{top:-.12rem!important;right:-.28rem!important;min-width:.92rem!important;height:.92rem!important;border:0!important;background:#ef4545!important;font-size:.5rem!important}

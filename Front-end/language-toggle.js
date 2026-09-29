@@ -4,6 +4,7 @@
     ".topbar .language-tool",
     ".topbar .language-switcher",
     ".topbar #languageButton",
+    ".admin-topbar .topbar-language",
   ].join(", ");
 
   // Shared Thai/English copy used by every Front-end page. Page-specific
@@ -77,9 +78,76 @@
     "ประวัติคลังยา": "Inventory History",
     "กรุณาเลือกประเภทบุคลากรก่อนบันทึก": "Please select a staff type before saving",
     "กรุณาเลือกสถานะก่อนบันทึก": "Please select a status before saving",
+    "กลับเมนู": "Back to menu",
+    "การตั้งค่า": "Settings",
+    "จัดการการตั้งค่าระบบสำหรับผู้ดูแลระบบ": "Manage system settings for administrators",
+    "ภาพรวมข้อมูล": "Data overview",
+    "ข้อมูล Database": "Database data",
+    "ตัวเลือก Dropdown": "Dropdown options",
+    "กิจกรรมผู้ใช้": "User activity",
+    "ข้อมูลที่ถูกลบ": "Deleted data",
+    "เมนูตั้งค่า": "Settings menu",
+    "ข้อมูลในระบบ": "System data",
+    "ข้อมูลที่ระบบเก็บอยู่ใน Browser Database": "Data stored in the browser database",
+    "ชุดข้อมูล": "Collection",
+    "จำนวน": "Count",
+    "อัปเดตล่าสุด": "Last updated",
+    "เพิ่มข้อมูลตัวเลือก": "Add dropdown option",
+    "พิมพ์ข้อมูลที่ต้องการเพิ่ม": "Enter the option to add",
+    "＋ เพิ่มข้อมูล": "+ Add option",
+    "หลักสูตร": "Program",
+    "สาขา": "Branch",
+    "ยา": "Medicine",
+    "ประวัติการเข้าใช้งานและการกระทำ": "Access and action history",
+    "เวลา": "Time",
+    "การกระทำ": "Action",
+    "ผู้กระทำ": "Actor",
+    "รายละเอียด": "Details",
+    "ข้อมูลที่ถูกลบจากฝั่งผู้ใช้": "Data deleted by users",
+    "เก็บเป็นประวัติสำหรับ Admin ตรวจสอบ": "Stored for admin review",
+    "ประเภทข้อมูลที่ถูกลบ": "Deleted data type",
+    "อื่น ๆ": "Other",
+    "เวลาที่ลบ": "Deleted at",
+    "เมนู": "Menu",
+    "รายการ": "Item",
+    "เหตุผล": "Reason",
+    "ยังไม่มีข้อมูล": "No data yet",
+    "ยังไม่มีประวัติการใช้งาน": "No activity history yet",
+    "ยังไม่มีข้อมูลที่ถูกลบในประเภทนี้": "No deleted data in this category",
+    "ลบ": "Delete",
+    "แผงควบคุมผู้ดูแลระบบ": "ADMIN PANEL",
+    "ฐานข้อมูล": "Database",
+    "คีย์จัดเก็บข้อมูล": "Storage key",
+    "ตัวเลือก Dropdown": "Dropdown options",
+    "กิจกรรมผู้ใช้": "User Activity",
+    "ข้อมูลที่ถูกลบ": "Deleted Data",
+    "สมัครบัญชี / Google / ลืมรหัสผ่าน": "Create account / Google / Forgot password",
+    "คลังยา": "Stock",
+    "แคตตาล็อก": "Catalog",
+    "การเข้าห้องพยาบาล": "Infirmary Visit",
+    "การยืมและคืน": "Borrow & Return",
+    "ตารางเข้าเวร": "Duty Shift",
+    "ฟอร์มการเข้าใช้ห้องพยาบาล": "Infirmary visit form",
+    "บุคลากรภายใน": "Internal visitor",
+    "บุคลากรภายนอก": "External visitor",
+    "เลือกประเภทบุคลากรก่อน": "Select staff type first",
+    "ระบุอาการ": "Describe symptoms",
+    "ผลการวัดความดัน": "Vital signs",
+    "เลือกยา": "Select medicine",
+    "จำนวนยา /หน่วย": "Medicine quantity",
+    "รอดูอาการ": "Observation",
+    "ส่งโรงพยาบาล": "Hospital referral",
+    "ตะกร้าสินค้า": "Shopping cart",
+    "ยังไม่มีรายการยา": "No medicines in inventory",
+    "ยังไม่มีรายการสินค้าในแคตตาล็อก": "No products in the catalog",
+    "ยังไม่มีรายการสินค้า": "No products in the catalog",
+    "ยังไม่มีข้อมูล": "No data yet",
   };
   const reverseCopy = Object.fromEntries(Object.entries(copy).map(([thai, english]) => [english, thai]));
-  let pageIsEnglish = document.documentElement.lang === "en";
+  const languageStorageKey = "fms-language";
+  let savedLanguage = "";
+  try { savedLanguage = localStorage.getItem(languageStorageKey) || ""; } catch (_) {}
+  let pageIsEnglish = savedLanguage === "en" || (!savedLanguage && document.documentElement.lang === "en");
   let translating = false;
 
   const translatePage = (isEnglish) => {
@@ -120,15 +188,15 @@
     }
     ${languageSelector} {
       display: inline-flex !important;
-      flex: 0 0 88px !important;
-      width: 88px !important;
-      min-width: 88px !important;
-      max-width: 88px !important;
+      flex: 0 0 80px !important;
+      width: 80px !important;
+      min-width: 80px !important;
+      max-width: 80px !important;
       height: 34px !important;
       align-items: center !important;
       justify-content: center !important;
-      gap: 6px !important;
-      padding: 0 12px !important;
+      gap: 0 !important;
+      padding: 0 8px !important;
       border: 0 !important;
       border-radius: 8px !important;
       background: #fff !important;
@@ -200,6 +268,7 @@
     const label = button.querySelector("span");
 
     document.documentElement.lang = isEnglish ? "en" : "th";
+    try { localStorage.setItem(languageStorageKey, isEnglish ? "en" : "th"); } catch (_) {}
 
     if (label) {
       label.textContent = isEnglish ? "English" : "ไทย";
@@ -244,6 +313,16 @@
       lang: document.documentElement.lang,
       label: button.querySelector("span")?.textContent,
     };
+    window.setTimeout(() => {
+      const isEnglish = document.documentElement.lang === "en";
+      pageIsEnglish = isEnglish;
+      translatePage(isEnglish);
+      ensureLanguageButton(button);
+      const label = button.querySelector("span");
+      if (label) label.textContent = isEnglish ? "English" : "ไทย";
+      button.setAttribute("aria-label", isEnglish ? "Switch to Thai" : "เปลี่ยนภาษา");
+      try { localStorage.setItem(languageStorageKey, isEnglish ? "en" : "th"); } catch (_) {}
+    }, 0);
   }, true);
 
   document.addEventListener("click", (event) => {
@@ -257,4 +336,11 @@
     event.preventDefault();
     updateLanguageButton(button, document.documentElement.lang !== "en");
   });
+
+  // Apply the language chosen on another FMS page after that page's own
+  // renderer has initialized. This keeps page-specific translations working
+  // while preventing navigation from silently resetting to Thai.
+  if (savedLanguage && savedLanguage !== (document.documentElement.lang === "en" ? "en" : "th")) {
+    window.setTimeout(() => document.querySelector(languageSelector)?.click(), 0);
+  }
 })();
