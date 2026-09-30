@@ -28,6 +28,7 @@ app.use(cors({
     return callback(new Error("CORS origin is not allowed"));
   },
 }));
+app.use("/api/medicines", express.json({ limit: "3mb" }));
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
@@ -44,6 +45,7 @@ app.use((_req, res) => {
 });
 
 app.use((error, _req, res, _next) => {
+  if (error.type === "entity.too.large") return res.status(413).json({ success: false, message: "ข้อมูลหรือรูปภาพมีขนาดใหญ่เกินไป" });
   console.error(error);
   res.status(500).json({ success: false, message: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" });
 });

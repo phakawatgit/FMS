@@ -1,0 +1,7 @@
+/* Keep the original dashboard layout; only bind real chart data. */
+body [hidden]{display:none!important}
+body #medicinePie,body #symptomPie,body #expiryDonut{background:transparent!important}
+.symptom-legend li::before,.medicine-legend li::before{display:none!important}
+#dashboardDataStatus{color:#a02828;font-size:14px}
+.bars i{min-width:0;flex-shrink:1}
+@media print{#dashboardDataStatus{display:block!important}}

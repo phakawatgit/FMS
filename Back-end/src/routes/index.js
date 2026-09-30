@@ -6,6 +6,10 @@ const authRouter = require("./auth");
 const { getFirebaseAuth } = require("../lib/firebase-admin");
 
 const router = express.Router();
+router.use('/dashboard', require('./dashboard'));
+router.use('/catalog-orders', require('./catalog-orders'));
+router.use("/medicines", require("./medicines"));
+router.use("/loans", require("./loans"));
 
 router.use("/database", databaseRouter);
 router.use("/infirmary-visits", infirmaryVisitsRouter);
@@ -187,6 +191,7 @@ router.post("/duties", async (req, res) => {
 
 // Shared key/value storage used by the legacy static frontend. This keeps the
 // old pages compatible while their localStorage-backed modules are migrated.
+const retiredInventoryKeys = new Set(["fms-history-catalog-orders", "fms-stock-records", "fms-infirmary-visits", "fms-infirmary-history", "fms-borrow-return-records"]);
 router.get("/legacy-storage", async (_req, res) => {
   try {
     const rows = await prisma.legacyStorage.findMany();
@@ -207,7 +212,7 @@ router.post("/legacy-storage/bulk", async (req, res) => {
   }
 
   const entries = Object.entries(data)
-    .filter(([key]) => String(key).trim() && String(key).length <= 120)
+    .filter(([key]) => String(key).trim() && String(key).length <= 120 && !retiredInventoryKeys.has(String(key).trim()))
     .map(([key, value]) => [String(key).trim(), value]);
 
   try {
@@ -229,6 +234,7 @@ router.post("/legacy-storage/bulk", async (req, res) => {
 
 router.put("/legacy-storage/:key", async (req, res) => {
   const key = String(req.params.key || "").trim();
+  if (retiredInventoryKeys.has(key)) return res.status(409).json({ success: false, message: "ข้อมูลนี้ต้องบันทึกผ่าน API stock/คนไข้/ยืมคืนเท่านั้น" });
   if (!key || key.length > 120) return res.status(400).json({ success: false, message: "คีย์ไม่ถูกต้อง" });
   try {
     const row = await prisma.legacyStorage.upsert({
@@ -244,6 +250,7 @@ router.put("/legacy-storage/:key", async (req, res) => {
 });
 
 router.delete("/legacy-storage/:key", async (req, res) => {
+  if (retiredInventoryKeys.has(String(req.params.key).trim())) return res.status(409).json({ success: false, message: "ประวัติเดิมเก็บไว้สำหรับอ่านเท่านั้น" });
   try {
     await prisma.legacyStorage.delete({ where: { key: String(req.params.key) } });
   } catch (error) {

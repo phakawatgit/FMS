@@ -4,8 +4,9 @@
   "workspaces": ["apps/web", "apps/api", "packages/database"],
   "scripts": {
     "dev:web": "npm --workspace apps/web run dev",
-    "dev:api": "npm --workspace apps/api run dev",
-    "db:generate": "npm --workspace packages/database run generate",
-    "db:migrate": "npm --workspace packages/database run migrate"
+    "dev:api": "npm --prefix Back-end run dev",
+    "db:generate": "npm --prefix Back-end run prisma:generate",
+    "db:migrate": "npm --prefix Back-end run prisma:migrate",
+    "db:studio": "npm --prefix Back-end run prisma:studio"
   }
 }

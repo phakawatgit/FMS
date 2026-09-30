@@ -1,0 +1,21 @@
+.detail-visitor em {
+  padding: .3rem .55rem;
+  border-radius: .4rem;
+  background: #fff4ed;
+  color: #7d4a2d;
+  font-size: .7rem;
+  font-style: normal;
+}
+.visitor-summary {
+  flex-wrap: wrap;
+}
+.visitor-summary .role-input {
+  flex: 0 0 100%;
+  width: 100%;
+  min-width: 0;
+  border: 1px solid #b8c9ed;
+  border-radius: .38rem;
+  padding: .42rem .5rem;
+  color: #172557;
+  font: 400 .72rem Kanit,sans-serif;
+}

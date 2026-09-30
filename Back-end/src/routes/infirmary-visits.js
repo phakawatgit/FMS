@@ -2,6 +2,7 @@ const express = require("express");
 const prisma = require("../lib/prisma");
 
 const router = express.Router();
+const inv = require("../lib/inventory");
 const visitStatuses = new Set(["normal", "observe", "refer"]);
 
 function readText(value, maxLength, required = false) {
@@ -19,9 +20,10 @@ function readNumber(value, integer, maximum = Number.MAX_SAFE_INTEGER) {
   return number;
 }
 
-router.post("/", async (req, res) => {
+function validateVisit(req, res, next) {
   const body = req.body || {};
-  const visitorType = body.visitorType;
+  // Accept old open forms during the transition; persist only the canonical values.
+  const visitorType = ({student:'บุคคลภายใน',guest:'บุคคลภายนอก',internal:'บุคคลภายใน',external:'บุคคลภายนอก'})[body.visitorType] || body.visitorType;
   const status = body.status;
   const firstName = readText(body.firstName, 120, true);
   const lastName = readText(body.lastName, 120, true);
@@ -32,7 +34,6 @@ router.post("/", async (req, res) => {
     studentId: readText(body.studentId, 40),
     faculty: readText(body.faculty, 32),
     branch: readText(body.branch, 255),
-    medicine: readText(body.medicine, 160),
     hospitalName: readText(body.hospitalName, 200),
   };
   const numbers = {
@@ -42,11 +43,10 @@ router.post("/", async (req, res) => {
     sys: readNumber(body.sys, true, 400),
     dia: readNumber(body.dia, true, 300),
     pr: readNumber(body.pr, true, 300),
-    quantity: readNumber(body.quantity, true, 10000),
   };
 
   if (
-    !["student", "guest"].includes(visitorType) ||
+    !["บุคคลภายใน", "บุคคลภายนอก"].includes(visitorType) ||
     !visitStatuses.has(status) ||
     !firstName || !lastName || !symptom ||
     Object.values(textFields).some((value) => value === undefined) ||
@@ -69,7 +69,6 @@ router.post("/", async (req, res) => {
     sys: numbers.sys,
     dia: numbers.dia,
     pr: numbers.pr,
-    quantity: numbers.quantity,
     status,
   };
 
@@ -77,33 +76,48 @@ router.post("/", async (req, res) => {
     return res.status(400).json({ success: false, message: "กรุณาระบุชื่อโรงพยาบาลที่ส่งต่อ" });
   }
 
-  try {
-    const visit = await prisma.infirmaryVisit.create({ data });
-    return res.status(201).json({ success: true, data: visit });
-  } catch (error) {
-    console.error("Infirmary visit create failed:", error.message);
-    return res.status(503).json({ success: false, message: "บันทึกข้อมูลลงฐานข้อมูลไม่สำเร็จ" });
-  }
+  if (status !== "refer") data.hospitalName = null;
+
+  req.visitData = data;
+  next();
+}
+
+router.get("/", async (_req, res) => {
+  const visits = await prisma.infirmaryVisit.findMany({ include: inv.include, orderBy: [{ createdAt: "desc" }, { id: "desc" }] });
+  res.set("Cache-Control", "no-store").json({ success: true, data: visits });
 });
-
-router.patch("/:id", async (req, res) => {
-  const status = req.body?.status;
-  const hospitalName = req.body?.hospitalName === undefined ? undefined : readText(req.body.hospitalName, 200);
-  if (!visitStatuses.has(status) || (req.body?.hospitalName !== undefined && !hospitalName) || (status === "refer" && !hospitalName)) {
-    return res.status(400).json({ success: false, message: "สถานะการเข้าใช้ห้องพยาบาลไม่ถูกต้อง" });
-  }
-
-  try {
-    const visit = await prisma.infirmaryVisit.update({
-      where: { id: req.params.id },
-      data: { status, ...(hospitalName === undefined ? {} : { hospitalName }) },
-    });
-    return res.json({ success: true, data: visit });
-  } catch (error) {
-    if (error.code === "P2025") return res.status(404).json({ success: false, message: "ไม่พบรายการเข้าใช้ห้องพยาบาล" });
-    console.error("Infirmary visit update failed:", error.message);
-    return res.status(503).json({ success: false, message: "แก้ไขข้อมูลในฐานข้อมูลไม่สำเร็จ" });
-  }
+router.get("/:id", async (req, res) => {
+  const visit = await prisma.infirmaryVisit.findUnique({ where: { id: req.params.id }, include: inv.include });
+  if (!visit) throw inv.fail("ไม่พบรายการ", 404);
+  res.set("Cache-Control", "no-store").json({ success: true, data: visit });
 });
-
+router.post("/", validateVisit, async (req, res) => {
+  const result = await inv.atomic(req, async tx => {
+    const visit = await tx.infirmaryVisit.create({ data: req.visitData });
+    await inv.dispense(tx, visit, req.body.dispensations === undefined ? [] : req.body.dispensations);
+    return tx.infirmaryVisit.findUnique({ where: { id: visit.id }, include: inv.include });
+  });
+  res.status(201).json({ success: true, data: result });
+});
+router.patch("/:id", (req, res, next) => {
+  if (Object.keys(req.body || {}).some(key => !["status", "hospitalName"].includes(key))) return validateVisit(req, res, next);
+  next();
+}, async (req, res) => {
+  const result = await inv.atomic(req, async tx => {
+    await tx.$queryRaw`SELECT "id" FROM "InfirmaryVisit" WHERE "id" = ${req.params.id} FOR UPDATE`;
+    const visit = await tx.infirmaryVisit.findUnique({ where: { id: req.params.id }, include: inv.include });
+    if (!visit) throw inv.fail("ไม่พบรายการ", 404);
+    const status = req.body.status;
+    const hospitalName = readText(req.body.hospitalName, 200);
+    if (!visitStatuses.has(status) || hospitalName === undefined || status === "refer" && !hospitalName) throw inv.fail("สถานะหรือโรงพยาบาลไม่ถูกต้อง");
+    if (req.body.dispensations !== undefined) {
+      const requested = inv.items(req.body.dispensations);
+      await inv.dispense(tx, visit, requested);
+    }
+    const data = req.visitData || { status, hospitalName: status === "refer" ? hospitalName : null };
+    return tx.infirmaryVisit.update({ where: { id: visit.id }, data, include: inv.include });
+  });
+  res.json({ success: true, data: result });
+});
+router.use(inv.errorHandler);
 module.exports = router;

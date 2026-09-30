@@ -1,0 +1,27 @@
+.required-mark {
+  color: #ed1d2f!important;
+  font-weight: 700;
+}
+.borrow-choice {
+  position: relative!important;
+}
+.borrow-warning {
+  display: block!important;
+  grid-column: 2!important;
+  margin-top: .25rem!important;
+  color: #ed1d2f!important;
+  font-size: .58rem!important;
+  line-height: 1.35!important;
+  font-weight: 500!important;
+}
+.borrow-warning::first-line {
+  font-weight: 700!important;
+}
+@media(max-width:700px) {
+  .borrow-warning {
+    grid-column: 1!important;
+  }
+  .borrow-choice {
+    gap: .25rem!important;
+  }
+}

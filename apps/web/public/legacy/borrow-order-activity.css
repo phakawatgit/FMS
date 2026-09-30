@@ -1,0 +1,9 @@
+.activity-detail {
+  padding: .45rem .6rem;
+  border-radius: .5rem;
+  background: #f7f9fd;
+}
+.activity-detail .detail-value {
+  font-weight: 500;
+  color: #31415e;
+}

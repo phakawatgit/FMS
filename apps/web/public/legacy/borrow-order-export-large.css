@@ -1,0 +1,75 @@
+.export-modal {
+  background: rgba(19,28,49,.38)!important;
+  backdrop-filter: blur(3px)!important;
+  -webkit-backdrop-filter:blur(3px)!important;
+}
+.export-dialog {
+  width: min(28rem,calc(100vw - 2rem))!important;
+  padding: 1.3rem 1.5rem 1.45rem!important;
+  border: 1px solid #e5eaf1!important;
+  border-radius: 1.15rem!important;
+  box-shadow: 0 1rem 2.6rem rgba(18,31,56,.24)!important;
+}
+.export-close {
+  top: .45rem!important;
+  right: .6rem!important;
+  width: 1.7rem!important;
+  height: 1.7rem!important;
+  border-radius: 50%!important;
+  font-size: 1.15rem!important;
+}
+.export-folder {
+  width: 6.2rem!important;
+  height: 5.2rem!important;
+  margin: .2rem auto .55rem!important;
+  font-size: 5rem!important;
+  line-height: 1!important;
+}
+.export-folder span {
+  right: .05rem!important;
+  bottom: -.05rem!important;
+  width: 1.65rem!important;
+  height: 1.65rem!important;
+  font-size: 1rem!important;
+  box-shadow: 0 2px 5px rgba(0,0,0,.15)!important;
+}
+.export-dialog h2 {
+  margin: .25rem 0 1.25rem!important;
+  color: #111827!important;
+  font-size: clamp(1rem,3vw,1.3rem)!important;
+  line-height: 1.35!important;
+}
+.export-options {
+  gap: clamp(1rem,8vw,3rem)!important;
+}
+.export-options button {
+  min-width: 8rem!important;
+  padding: .5rem 1.1rem!important;
+  border-radius: 999px!important;
+  color: #111!important;
+  font-size: 1.15rem!important;
+  line-height: 1.5!important;
+  box-shadow: 0 .2rem .45rem rgba(18,31,56,.12)!important;
+}
+.pdf-option {
+  background: #f20d19!important;
+}
+.excel-option {
+  background: #26e000!important;
+}
+@media(max-width:420px) {
+  .export-dialog {
+    padding: 1.15rem 1rem 1.25rem!important;
+  }
+  .export-options {
+    gap: .8rem!important;
+  }
+  .export-options button {
+    min-width: 6.5rem!important;
+    font-size: 1rem!important;
+  }
+  .export-folder {
+    font-size: 4.3rem!important;
+    height: 4.7rem!important;
+  }
+}

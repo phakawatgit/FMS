@@ -5,22 +5,30 @@
   "description": "Backend services for the First Aid & Medicine Management System",
   "main": "src/server.js",
   "scripts": {
+    "test:inventory": "node tests/inventory-relations.cjs",
+    "test:inventory:browser": "node tests/inventory-browser.cjs",
+    "verify:inventory": "node tests/verify-inventory.cjs",
     "dev": "node --watch src/server.js",
     "start": "node src/server.js",
     "prisma:generate": "prisma generate",
     "prisma:format": "prisma format",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:studio": "prisma studio"
+    "prisma:studio": "prisma studio --schema prisma/schema.prisma --port 5555",
+    "test:dashboard": "node tests/dashboard.cjs"
   },
   "dependencies": {
+    "@prisma/client": "^6.7.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^5.1.0",
+    "firebase-admin": "^13.4.0",
     "helmet": "^8.1.0",
     "morgan": "^1.10.0",
     "nodemailer": "^7.0.3",
-    "firebase-admin": "^13.4.0",
-    "@prisma/client": "^6.7.0",
-    "prisma": "^6.7.0"
+    "prisma": "^6.7.0",
+    "sharp": "^0.35.5"
+  },
+  "devDependencies": {
+    "playwright": "^1.63.0"
   }
 }

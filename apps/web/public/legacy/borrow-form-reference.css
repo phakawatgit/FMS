@@ -1,0 +1,100 @@
+body {
+  background: #e7e9ff!important;
+}
+.borrow-form-page {
+  max-width: 1000px!important;
+  padding: 1rem .5rem 2rem!important;
+}
+.borrow-form-page>h1 {
+  margin: 0 0 1rem!important;
+  color: #10265c!important;
+  font-size: clamp(1.15rem,2.7vw,1.6rem)!important;
+  line-height: 1.05!important;
+}
+.form-section,.product-section {
+  border: 2px solid #c66bff!important;
+  border-radius: 1rem!important;
+  background: #fff!important;
+  box-shadow: 0 .25rem .7rem rgba(53,74,130,.06)!important;
+}
+.form-section h2,.product-heading h2 {
+  padding: .55rem .65rem!important;
+  border-bottom: 1px solid #edf0f5!important;
+  color: #171717!important;
+  font-size: 1.1rem!important;
+}
+.form-section form {
+  padding: .45rem .6rem .6rem!important;
+}
+.check-row {
+  gap: 1.2rem!important;
+}
+.form-grid {
+  grid-template-columns: 2fr 1fr 1fr!important;
+  gap: .45rem .6rem!important;
+}
+.form-grid label:first-child {
+  grid-column: auto!important;
+}
+.form-grid label {
+  font-size: .72rem!important;
+}
+.form-grid input,.form-grid select {
+  height: 2rem!important;
+  background: #ddd!important;
+}
+.borrow-choice {
+  grid-template-columns: 10rem 1fr!important;
+  gap: .45rem!important;
+}
+.borrow-choice label {
+  font-size: .75rem!important;
+}
+.borrow-choice input {
+  height: 2rem!important;
+}
+.form-actions {
+  margin-top: .65rem!important;
+}
+.form-actions button {
+  min-width: 5.5rem!important;
+}
+.product-section {
+  border-color: #ff7785!important;
+}
+.product-heading h2 {
+  font-size: 1.1rem!important;
+}
+.product-grid {
+  grid-template-columns: repeat(3,1fr)!important;
+  gap: .7rem!important;
+  padding: .6rem!important;
+}
+.product-card {
+  border: 1px solid #4c87d9!important;
+  background: #9bcbef!important;
+}
+.product-card img,.product-image {
+  height: 8rem!important;
+}
+@media(max-width:700px) {
+  .borrow-form-page {
+    padding: .75rem .35rem 1.5rem!important;
+  }
+  .form-grid {
+    grid-template-columns: 1fr 1fr!important;
+  }
+  .form-grid label:first-child {
+    grid-column: span 2!important;
+  }
+  .borrow-choice {
+    grid-template-columns: 1fr!important;
+  }
+  .product-grid {
+    grid-template-columns: repeat(2,1fr)!important;
+    gap: .45rem!important;
+  }
+  .product-card img,.product-image {
+    height: 7rem!important;
+  }
+}

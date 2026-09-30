@@ -1,0 +1,29 @@
+.status-readonly.editable .status-hospital {
+  display: none!important;
+  align-items: center;
+}
+.status-readonly.editable .status-hospital.is-open,.status-readonly.editable:has(input[value="refer"]:checked) .status-hospital {
+  display: flex!important;
+}
+.status-readonly.editable .status-hospital:before {
+  content: "ชื่อโรงพยาบาลที่ส่งต่อ";
+  white-space: nowrap;
+  font-size: .72rem;
+  color: #8b3d3d;
+}
+@media(max-width:550px) {
+  .status-readonly.editable .status-hospital {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .status-readonly.editable .status-hospital:before {
+    white-space: normal;
+  }
+}
+.status-readonly.editable .status-hospital input {
+  position: static!important;
+  opacity: 1!important;
+  display: block!important;
+  min-width: 12rem!important;
+  background: #fff!important;
+}

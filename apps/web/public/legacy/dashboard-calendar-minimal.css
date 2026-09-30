@@ -1,0 +1,52 @@
+/* Minimal, theme-aligned treatment for the nurse duty calendar. */
+.calendar-panel {
+  border: 1px solid #d8e8eb !important;
+  border-radius: .85rem !important;
+  background: #fff !important;
+  box-shadow: 0 4px 14px rgba(1, 64, 109, .045) !important;
+}
+.calendar-panel .panel-title {
+  color: #01406d !important;
+  font-weight: 700 !important;
+}
+.calendar-panel .calendar-week, .calendar-panel .duty-calendar {
+  gap: .28rem !important;
+}
+.calendar-panel .calendar-week span {
+  padding: .28rem .2rem !important;
+  border-radius: .35rem !important;
+  background: #eaf7f8 !important;
+  color: #456477 !important;
+  font-size: .68rem !important;
+  font-weight: 600 !important;
+}
+.calendar-panel .duty-calendar span, .calendar-panel .duty-calendar span:nth-child(7n + 1), .calendar-panel .duty-calendar span:nth-child(7n + 2), .calendar-panel .duty-calendar span:nth-child(7n + 3), .calendar-panel .duty-calendar span:nth-child(7n + 4), .calendar-panel .duty-calendar span:nth-child(7n + 5), .calendar-panel .duty-calendar span:nth-child(7n + 6), .calendar-panel .duty-calendar span:nth-child(7n) {
+  min-height: 2rem !important;
+  padding: .32rem .42rem !important;
+  border: 1px solid #e5edef !important;
+  border-radius: .4rem !important;
+  background: #fff !important;
+  color: #34556b !important;
+  box-shadow: none !important;
+  font-weight: 500 !important;
+  transition: border-color .15s ease, background-color .15s ease !important;
+}
+.calendar-panel .duty-calendar span:not(.blank):hover {
+  border-color: #9edadd !important;
+  background: #f5fefe !important;
+}
+.calendar-panel .duty-calendar span.blank {
+  border-color: transparent !important;
+  background: transparent !important;
+}
+.calendar-panel .duty-calendar span.is-range {
+  border-color: #d1eeee !important;
+  background: #eaf8f8 !important;
+  color: #01406d !important;
+}
+.calendar-panel .duty-calendar span.is-selected {
+  border-color: #01b4ba !important;
+  background: #01b4ba !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+}

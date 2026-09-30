@@ -1,0 +1,83 @@
+.export-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  background: rgba(20,23,44,.35);
+}
+.export-modal-backdrop[hidden] {
+  display: none;
+}
+.export-modal {
+  width: min(22rem,calc(100vw - 2rem));
+  padding: 1rem 1.2rem 1.1rem;
+  border-radius: 1.1rem;
+  background: #fff;
+  box-shadow: 0 .7rem 2rem rgba(20,23,44,.25);
+  text-align: center;
+}
+.export-folder {
+  position: relative;
+  width: 5rem;
+  height: 4.2rem;
+  margin: 0 auto .4rem;
+  color: #f3b400;
+  font-size: 4rem;
+  line-height: 1;
+}
+.export-folder span {
+  position: absolute;
+  right: .25rem;
+  bottom: -.1rem;
+  display: grid;
+  width: 1.8rem;
+  height: 1.8rem;
+  place-items: center;
+  border-radius: 50%;
+  background: #2dc77a;
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+.export-modal h2 {
+  margin: .2rem 0 1rem;
+  color: #15182e;
+  font: 700 1rem Kanit,sans-serif;
+}
+.export-actions {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+}
+.export-actions button {
+  width: 6.5rem;
+  padding: .5rem;
+  border: 0;
+  border-radius: 1rem;
+  color: #000;
+  font: 700 .9rem Kanit;
+  cursor: pointer;
+}
+.export-actions button:first-child {
+  background: #f00;
+}
+.export-actions button:last-child {
+  background: #65ee00;
+}
+.export-actions button:hover {
+  filter: brightness(.95);
+  transform: translateY(-2px);
+}
+@media print {
+  .order-topbar,.order-footer {
+    display: none!important;
+  }
+  .order-page {
+    max-width: none!important;
+    padding: 0!important;
+  }
+  .order-heading,.order-sheet {
+    box-shadow: none!important;
+  }
+}

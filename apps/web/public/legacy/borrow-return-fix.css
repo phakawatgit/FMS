@@ -1,0 +1,64 @@
+.borrow-card {
+  padding-left: 4.5rem!important;
+  overflow: hidden!important;
+}
+.borrow-card>div {
+  position: relative!important;
+  z-index: 1!important;
+}
+.borrow-card:before {
+  z-index: 0!important;
+  pointer-events: none!important;
+}
+.borrow-actions {
+  z-index: 2!important;
+}
+.borrow-meta {
+  display: flex!important;
+  align-items: center!important;
+  gap: .35rem!important;
+  flex-wrap: wrap!important;
+}
+.borrow-kind {
+  display: inline-flex!important;
+  align-items: center!important;
+  gap: .2rem!important;
+  padding: .18rem .45rem!important;
+  border-radius: .35rem!important;
+  font-size: .62rem!important;
+  font-weight: 600!important;
+}
+.borrow-kind.travel {
+  background: #fff0d5!important;
+  color: #a66b00!important;
+}
+.borrow-kind.personal {
+  background: #e9e2ff!important;
+  color: #6447aa!important;
+}
+.borrow-kind b {
+  font-size: .8rem!important;
+}
+.borrow-meta .status {
+  padding: .18rem .45rem!important;
+}
+.borrow-kind-icon {
+  position: absolute!important;
+  z-index: 1!important;
+  left: .75rem!important;
+  top: 50%!important;
+  display: grid!important;
+  width: 2.1rem!important;
+  height: 2.1rem!important;
+  place-items: center!important;
+  border-radius: .6rem!important;
+  background: #f8dbea!important;
+  font-size: 1.1rem!important;
+  transform: translateY(-50%)!important;
+}
+.borrow-card.kind-personal .borrow-kind-icon {
+  background: #e9e2ff!important;
+}
+.borrow-card.kind-nurse .borrow-kind-icon {
+  background: #ffe9cf!important;
+}

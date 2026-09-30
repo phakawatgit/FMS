@@ -1,0 +1,133 @@
+html,body {
+  min-width: 0;
+  overflow-x: hidden;
+}
+.borrow-page {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: clamp(.75rem,3vw,2rem) clamp(.5rem,3vw,2rem) 2rem;
+}
+.borrow-title {
+  width: 100%;
+  align-items: center;
+}
+.borrow-title h1 {
+  max-width: 100%;
+  font-size: clamp(1rem,4vw,1.6rem);
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.borrow-actions-top {
+  width: 100%;
+  justify-content: center;
+  gap: clamp(.35rem,2vw,1.5rem);
+  flex-wrap: wrap;
+}
+.borrow-actions-top button {
+  flex: 1 1 10rem;
+  min-height: 2rem;
+  white-space: nowrap;
+}
+.calendar-section,.borrow-panel {
+  width: 100%;
+  padding: clamp(.45rem,2vw,.8rem);
+}
+.calendar-section h2,.borrow-panel-title h2 {
+  font-size: clamp(1rem,3vw,1.3rem);
+}
+.calendar-grid {
+  gap: clamp(.1rem,.5vw,.25rem);
+}
+.calendar-day {
+  min-width: 0;
+  min-height: clamp(1.8rem,7vw,3.1rem);
+  font-size: clamp(.4rem,1.5vw,.65rem);
+}
+.calendar-week span {
+  font-size: clamp(.38rem,1.2vw,.55rem);
+}
+.calendar-head select {
+  max-width: 100%;
+  font-size: clamp(.9rem,3vw,1.2rem);
+}
+.calendar-legend {
+  gap: .45rem;
+  font-size: clamp(.5rem,1.8vw,.68rem);
+}
+.borrow-panel-title {
+  align-items: center;
+}
+.borrow-panel-title input {
+  max-width: 45%;
+  min-width: 8rem;
+}
+.borrow-card {
+  min-width: 0;
+  padding: .65rem 2.4rem .65rem .8rem;
+}
+.borrow-card h3,.borrow-card p {
+  overflow-wrap: anywhere;
+}
+.borrow-card p {
+  line-height: 1.35;
+}
+.borrow-actions {
+  right: .3rem;
+}
+@media(max-width:600px) {
+  .borrow-title {
+    align-items: stretch;
+    gap: .65rem;
+  }
+  .borrow-title h1 {
+    align-self: center;
+  }
+  .borrow-actions-top {
+    gap: .45rem;
+  }
+  .borrow-actions-top button {
+    flex: 1 1 calc(50% - .25rem);
+    padding: .35rem .25rem;
+    font-size: .65rem;
+  }
+  .borrow-panel-title {
+    align-items: stretch;
+    flex-direction: column;
+    gap: .45rem;
+  }
+  .borrow-panel-title input {
+    width: 100%;
+    max-width: none;
+  }
+  .calendar-section {
+    border-radius: .85rem;
+  }
+  .calendar-legend {
+    justify-content: center;
+  }
+  .borrow-card {
+    border-right-width: 4px;
+  }
+  .borrow-card:before {
+    font-size: 1.25rem;
+  }
+  .borrow-card p {
+    font-size: .6rem;
+  }
+  .borrow-card h3 {
+    font-size: .75rem;
+  }
+}
+@media(min-width:1000px) {
+  .borrow-page {
+    padding-left: 3rem;
+    padding-right: 3rem;
+  }
+  .calendar-section {
+    padding: 1rem;
+  }
+  .calendar-day {
+    min-height: 3.2rem;
+  }
+}

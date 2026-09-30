@@ -1,0 +1,1137 @@
+@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700&display=swap');
+.visitor-type {
+  flex-wrap: wrap;
+}
+.visitor-type>.visitor-detail {
+  flex: 0 0 100%;
+  width: 100%;
+  max-width: 19rem;
+  margin-top: .05rem;
+  border: 1px solid #d4d4d4;
+  border-radius: .4rem;
+  background: #f5f5f5;
+}
+.visitor-type>.visitor-detail:disabled {
+  opacity: .6;
+}
+.referral-hospital {
+  margin-top: .7rem;
+}
+.referral-hospital label {
+  display: grid;
+  gap: .18rem;
+  max-width: 22rem;
+  font-size: .8rem;
+  font-weight: 600;
+}
+.referral-hospital input {
+  width: 100%;
+  height: 2.05rem;
+  border: 1px solid #ff8e8e;
+  border-radius: .55rem;
+  padding: 0 .6rem;
+  background: #fff5f5;
+  color: #233256;
+  font: 400 .75rem Kanit,sans-serif;
+}
+.visit-form:has(.status input[value="refer"]:checked) #referralHospitalField {
+  display: block!important;
+}
+.info-button {
+  display: inline-block;
+  text-decoration: none;
+}
+.notification-panel {
+  position: fixed;
+  z-index: 20;
+  top: 3.55rem;
+  right: 1rem;
+  width: min(19rem,calc(100vw - 2rem));
+  padding: .8rem 1rem;
+  border: 1px solid #9bb8ff;
+  border-radius: .65rem;
+  background: #fff;
+  color: #102b6e;
+  box-shadow: 0 .5rem 1.4rem rgba(8,9,77,.22);
+  font-size: .78rem;
+}
+.notification-panel strong {
+  font-size: .9rem;
+}
+.notification-panel p {
+  margin: .45rem 0 0;
+}
+.notification-panel button {
+  float: right;
+  border: 0;
+  background: transparent;
+  color: #102b6e;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.visit-form {
+  --status-shadow: #c5c6ca;
+  box-shadow: 0 .7rem 0 var(--status-shadow)!important;
+  transition: box-shadow .2s ease;
+}
+.status input:checked+i {
+  display: grid;
+  place-items: center;
+  box-shadow: none!important;
+  color: #fff;
+}
+.status input:checked+i:after {
+  content: "✓";
+  font: 700 .58rem/1 Arial,sans-serif;
+}
+.visitor-option.is-selected>i {
+  display: grid;
+  place-items: center;
+  box-shadow: none!important;
+  color: #fff;
+}
+.visitor-option.is-selected>i:after {
+  content: "✓";
+  font: 700 .64rem/1 Arial,sans-serif;
+}
+.topbar {
+  min-height: 3.5rem!important;
+  padding: .5rem clamp(.8rem,3vw,1.5rem)!important;
+}
+.brand {
+  gap: .7rem!important;
+  font-size: 1rem!important;
+}
+.actions button,.menu-button {
+  height: 1.8rem!important;
+  min-height: 1.8rem!important;
+  border-color: #8aaaff!important;
+  color: #0b2461!important;
+  font-size: .68rem!important;
+}
+.menu-button {
+  width: 1.9rem!important;
+  background: rgba(255,255,255,.12)!important;
+  color: #fff!important;
+}
+.menu-button svg {
+  width: 1.15rem!important;
+  stroke-width: 2.25!important;
+}
+.export {
+  padding: 0 .55rem!important;
+}
+.excel,.pdf {
+  width: 1.85rem;
+  padding: 0!important;
+  font-size: .57rem!important;
+}
+.bell {
+  color: #fff!important;
+  font-size: .46rem!important;
+}
+.bell b {
+  border: 1px solid #fff!important;
+}
+.language {
+  padding: 0 .6rem!important;
+}
+.topbar .actions {
+  position: relative;
+  margin-left: auto;
+  gap: .3rem;
+}
+.topbar .menu-button {
+  border-radius: .45rem!important;
+}
+.topbar .export {
+  border-radius: .35rem!important;
+}
+.topbar .bell {
+  width: 1.85rem!important;
+  height: 1.85rem!important;
+}
+.topbar .language {
+  height: 1.8rem!important;
+  border-radius: 999px!important;
+}
+.topbar .actions {
+  gap: .42rem!important;
+}
+.topbar .menu-button {
+  width: 2.05rem!important;
+  height: 2.05rem!important;
+  background: rgba(255,255,255,.1)!important;
+}
+.topbar .export {
+  height: 2rem!important;
+  min-height: 2rem!important;
+  padding: 0 .62rem!important;
+  border: 0!important;
+  border-radius: .35rem!important;
+  background: #fff!important;
+  font-size: .7rem!important;
+}
+.topbar .excel {
+  width: auto!important;
+  color: #123678!important;
+}
+.topbar .pdf {
+  width: auto!important;
+  color: #123678!important;
+}
+.topbar .bell {
+  width: 1.35rem!important;
+  height: 2rem!important;
+  border: 0!important;
+  background: transparent!important;
+  color: #fff!important;
+}
+.topbar .bell svg {
+  width: 1rem;
+  height: 1rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.topbar .bell b {
+  top: -.12rem!important;
+  right: -.28rem!important;
+  width: .92rem!important;
+  height: .92rem!important;
+  border: 0!important;
+  font-size: .5rem!important;
+}
+.topbar .language {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  height: 2rem!important;
+  padding: 0 .5rem!important;
+  border: 1px solid rgba(255,255,255,.55)!important;
+  background: transparent!important;
+  color: #fff!important;
+}
+.topbar .language svg {
+  width: .92rem;
+  height: .92rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+}
+.topbar .language i {
+  width: .62rem;
+  height: .62rem;
+  border-radius: 50%;
+  background: #76b9ff;
+  box-shadow: 0 0 0 .13rem rgba(255,255,255,.2);
+}
+.topbar .language span {
+  font-size: .67rem;
+}
+.visitor-option {
+  display: flex;
+  align-items: center;
+  gap: .38rem;
+  padding: .22rem .38rem;
+  border: 1.5px solid #ff9b64;
+  border-radius: .35rem;
+  background: #fff;
+  color: #4a3a35;
+  font-size: .68rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+.visitor-option.external {
+  border-color: #4dbf61;
+}
+.visitor-option>input[type=checkbox] {
+  position: absolute;
+  opacity: 0;
+}
+.visitor-option>i {
+  width: .72rem;
+  height: .72rem;
+  border: 1.5px solid #ff8d48;
+  border-radius: .12rem;
+  background: #fff;
+}
+.visitor-option.external>i {
+  border-color: #4dbf61;
+}
+.visitor-option.is-selected>i {
+  background: #ff8d48;
+  box-shadow: inset 0 0 0 2px #fff;
+}
+.visitor-option.external.is-selected>i {
+  background: #4dbf61;
+}
+.visitor-detail {
+  width: 9.7rem;
+  height: 1.55rem;
+  padding: 0 .4rem;
+  border: 0;
+  border-left: 1px solid #ffb17f;
+  background: transparent;
+  color: #556079;
+  font: 400 .55rem Kanit,sans-serif;
+  outline: 0;
+}
+.visitor-option.external .visitor-detail {
+  border-color: #84d58e;
+}
+.visitor-detail:disabled {
+  cursor: not-allowed;
+  opacity: .55;
+}
+@media(max-width:440px) {
+  .visitor-option {
+    width: 100%;
+  }
+  .visitor-detail {
+    flex: 1;
+    width: auto;
+  }
+}
+@media(max-width:700px) {
+  body .topbar {
+    align-items: center!important;
+    flex-direction: row!important;
+    flex-wrap: wrap;
+  }
+  body .topbar .actions {
+    align-self: auto!important;
+    margin-left: auto!important;
+  }
+}
+@media(max-width:440px) {
+  body .topbar .actions {
+    width: auto!important;
+  }
+}
+:root {
+  --navy: #08094d;
+  --blue: #315fd5;
+  --line: #ffad7b;
+  --bg: #e6e8ff;
+  --ink: #091957;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  min-width: 320px;
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: Kanit,sans-serif;
+}
+.topbar {
+  min-height: 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .55rem clamp(.9rem,3vw,2rem);
+  background: var(--navy);
+  color: #fff;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  color: #fff;
+  text-decoration: none;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+.brand img {
+  width: 2.4rem;
+  border-radius: .65rem;
+}
+.actions {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+}
+.actions button,.menu-button {
+  min-height: 1.8rem;
+  border: 1px solid #9bb8ff;
+  border-radius: .38rem;
+  background: #fff;
+  color: #123678;
+  font: 600 .7rem Kanit,sans-serif;
+}
+.menu-button {
+  display: grid;
+  place-items: center;
+  width: 1.9rem;
+  background: rgba(255,255,255,.1);
+  color: #fff;
+}
+.menu-button svg {
+  width: 1.1rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+}
+.export {
+  padding: 0 .5rem;
+}
+.excel {
+  color: #18854c!important;
+}
+.pdf {
+  color: #e55b42!important;
+}
+.bell {
+  position: relative;
+  width: 1.85rem;
+  border-radius: 50%!important;
+  background: #ffe34c!important;
+  color: #ffe34c!important;
+}
+.bell b {
+  position: absolute;
+  top: -.45rem;
+  right: -.38rem;
+  display: grid;
+  width: 1rem;
+  height: 1rem;
+  place-items: center;
+  border-radius: 50%;
+  background: #ef5350;
+  color: #fff;
+  font-size: .52rem;
+}
+.language {
+  border-radius: 999px!important;
+  padding: 0 .6rem;
+  background: #bcecff!important;
+  color: #0742cd!important;
+}
+.page {
+  width: min(100%,62rem);
+  margin: 0 auto;
+  padding: 1rem;
+}
+.page h1 {
+  margin: 0 0 .55rem;
+  font-size: 1.1rem;
+}
+.info-button {
+  margin-bottom: .8rem;
+  padding: .18rem 1.15rem;
+  border: 0;
+  border-radius: .35rem;
+  background: #7ba9f3;
+  color: #09235c;
+  font: 500 .75rem Kanit,sans-serif;
+}
+.visit-form {
+  padding: 1rem;
+  border: 2px solid var(--line);
+  border-radius: 1rem;
+  background: #fff;
+  box-shadow: 0 .7rem 0 #c5c6ca;
+}
+.visit-form h2 {
+  margin: 0 0 .7rem;
+  font-size: 1.35rem;
+}
+.visitor-type {
+  display: flex;
+  gap: .5rem;
+  margin-bottom: 1rem;
+}
+.type-button {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .25rem .45rem;
+  border: 1.5px solid #ff8d48;
+  border-radius: .35rem;
+  background: #fff;
+  color: #4a3a35;
+  font: 500 .65rem Kanit,sans-serif;
+  cursor: pointer;
+}
+.type-button small {
+  padding-left: .35rem;
+  border-left: 1px solid #ff9b64;
+  color: #9a9a9a;
+  font: 400 .55rem Kanit,sans-serif;
+}
+.type-button i {
+  width: .65rem;
+  height: .65rem;
+  border: 1px solid currentColor;
+  border-radius: .12rem;
+}
+.type-button.active {
+  background: #fff4ed;
+}
+.type-button[data-type=guest] {
+  border-color: #4dbf61;
+}
+.type-button[data-type=guest] small {
+  border-color: #75cd84;
+}
+.type-button[data-type=guest].active {
+  background: #effff2;
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: 1.2fr .55fr .72fr .55fr;
+  gap: .65rem .85rem;
+}
+.form-grid label,.bottom-grid label {
+  display: grid;
+  gap: .18rem;
+  font-size: .8rem;
+  font-weight: 600;
+}
+.form-grid .wide {
+  grid-column: span 4;
+}
+.form-grid input,.form-grid select,.bottom-grid input,.bottom-grid select {
+  width: 100%;
+  height: 2.05rem;
+  border: 1px solid #d4d4d4;
+  border-radius: .55rem;
+  padding: 0 .6rem;
+  background: #f5f5f5;
+  color: #233256;
+  font: 400 .75rem Kanit,sans-serif;
+}
+.vitals {
+  margin: 1rem 0;
+  padding: .35rem .45rem .45rem;
+  border: 1.5px solid #4b9dff;
+  border-radius: .65rem;
+  background: #cce5ff;
+}
+.vitals-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: .8rem;
+  font-weight: 600;
+}
+.vitals-head button {
+  display: grid;
+  width: 1.3rem;
+  height: 1.3rem;
+  place-items: center;
+  border: 1px solid #5e98e5;
+  border-radius: 50%;
+  background: #e8f2ff;
+  color: #356dbc;
+}
+.vital-inputs {
+  display: flex;
+  gap: .75rem;
+  margin-top: .3rem;
+}
+.vital-inputs label {
+  display: flex;
+  align-items: center;
+  gap: .3rem;
+  font-size: .9rem;
+}
+.vital-inputs input {
+  width: 5.2rem;
+  height: 1.9rem;
+  border: 0;
+  border-radius: .5rem;
+  padding: 0 .45rem;
+  text-align: center;
+  font: 600 .85rem Kanit,sans-serif;
+}
+.bottom-grid {
+  display: grid;
+  grid-template-columns: 1fr .6fr;
+  gap: 1rem;
+  max-width: 32rem;
+}
+.status {
+  display: grid;
+  gap: .28rem;
+  width: max-content;
+  margin: .95rem 0 0;
+  padding: 0;
+  border: 0;
+}
+.status legend {
+  padding: 0;
+  font-size: .8rem;
+  font-weight: 600;
+}
+.status label {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  font-size: .82rem;
+}
+.status input {
+  position: absolute;
+  opacity: 0;
+}
+.status i {
+  width: .65rem;
+  height: .65rem;
+  border: 1.5px solid #42ba5a;
+}
+.status label:nth-of-type(2) i {
+  border-color: #ffb01e;
+}
+.status label:nth-of-type(3) i {
+  border-color: #ff4545;
+}
+.status input:checked+i {
+  box-shadow: inset 0 0 0 2px #fff;
+  background: #42ba5a;
+}
+.status label:nth-of-type(2) input:checked+i {
+  background: #ffb01e;
+}
+.status label:nth-of-type(3) input:checked+i {
+  background: #ff4545;
+}
+.form-message {
+  min-height: 1rem;
+  margin: .5rem 0 0;
+  color: #16823b;
+  font-size: .7rem;
+}
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: .65rem;
+}
+.form-actions button {
+  min-width: 5.3rem;
+  height: 2rem;
+  border: 0;
+  border-radius: .35rem;
+  color: #fff;
+  font: 500 .7rem Kanit,sans-serif;
+}
+.cancel {
+  background: #bb3630;
+}
+.save {
+  background: #37b954;
+}
+@media(max-width:700px) {
+  .topbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .actions {
+    align-self: flex-end;
+  }
+  .form-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .form-grid .wide {
+    grid-column: span 2;
+  }
+  .visitor-type {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .type-button {
+    justify-content: flex-start;
+  }
+  .bottom-grid {
+    max-width: none;
+  }
+  .visit-form {
+    padding: .8rem;
+  }
+}
+@media(max-width:440px) {
+  .topbar {
+    padding: .55rem .7rem;
+  }
+  .brand {
+    font-size: .82rem;
+  }
+  .actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  .export {
+    padding: 0 .35rem;
+  }
+  .page {
+    padding: .75rem .5rem;
+  }
+  .visit-form h2 {
+    font-size: 1.1rem;
+  }
+  .form-grid,.bottom-grid {
+    grid-template-columns: 1fr;
+  }
+  .form-grid .wide {
+    grid-column: auto;
+  }
+  .vital-inputs {
+    justify-content: space-between;
+    gap: .25rem;
+  }
+  .vital-inputs input {
+    width: 4rem;
+  }
+  .form-actions button {
+    flex: 1;
+  }
+  .type-button small {
+    font-size: .5rem;
+  }
+}
+
+/* Full-screen layout and accessible sizing across desktop, tablet, and mobile. */
+body {
+  min-height: 100vh;
+}
+.page {
+  width: 100%;
+  max-width: none;
+  padding: clamp(1rem, 3vw, 2.5rem) clamp(1rem, 4vw, 4rem) 3rem;
+}
+.page h1 {
+  font-size: clamp(1.5rem, 2.5vw, 2.25rem);
+  margin-bottom: clamp(.75rem, 1.5vw, 1.25rem);
+}
+.info-button {
+  padding: .4rem 1.35rem;
+  font-size: clamp(.9rem, 1.15vw, 1.1rem);
+}
+.visit-form {
+  width: 100%;
+  min-height: calc(100vh - 9rem);
+  padding: clamp(1.25rem, 3vw, 3rem);
+  border-radius: clamp(.8rem, 1.5vw, 1.4rem);
+}
+.visit-form h2 {
+  margin-bottom: clamp(1rem, 1.8vw, 1.5rem);
+  font-size: clamp(1.7rem, 3vw, 2.5rem);
+}
+.visitor-type {
+  gap: .75rem;
+  margin-bottom: clamp(1.1rem, 2vw, 1.75rem);
+}
+.visitor-option {
+  padding: .45rem .7rem;
+  font-size: clamp(.9rem, 1.1vw, 1.05rem);
+}
+.visitor-option>i {
+  width: 1rem;
+  height: 1rem;
+}
+.visitor-detail {
+  height: 2.3rem;
+  font-size: clamp(.8rem, 1vw, .95rem);
+}
+.form-grid {
+  gap: clamp(.9rem, 1.8vw, 1.35rem) clamp(1rem, 2.2vw, 1.75rem);
+}
+.form-grid label, .bottom-grid label {
+  gap: .35rem;
+  font-size: clamp(.95rem, 1.15vw, 1.15rem);
+}
+.form-grid input, .form-grid select, .bottom-grid input, .bottom-grid select {
+  height: clamp(2.75rem, 4vw, 3.4rem);
+  padding: 0 .8rem;
+  font-size: clamp(.95rem, 1.15vw, 1.1rem);
+}
+.vitals {
+  margin: clamp(1.25rem, 2.2vw, 1.8rem) 0;
+  padding: .7rem .85rem .85rem;
+}
+.vitals-head {
+  font-size: clamp(1rem, 1.25vw, 1.2rem);
+}
+.vital-inputs {
+  gap: clamp(.8rem, 2vw, 1.5rem);
+  margin-top: .6rem;
+}
+.vital-inputs label {
+  gap: .45rem;
+  font-size: clamp(1rem, 1.25vw, 1.2rem);
+}
+.vital-inputs input {
+  width: clamp(5.5rem, 9vw, 8rem);
+  height: clamp(2.4rem, 3.5vw, 3rem);
+  font-size: clamp(1rem, 1.2vw, 1.15rem);
+}
+.bottom-grid {
+  gap: clamp(1rem, 2vw, 1.5rem);
+  max-width: 42rem;
+}
+.status {
+  gap: .5rem;
+  margin-top: 1.35rem;
+}
+.status legend, .status label {
+  font-size: clamp(.95rem, 1.15vw, 1.1rem);
+}
+.status i {
+  width: 1rem;
+  height: 1rem;
+}
+.form-message {
+  font-size: clamp(.85rem, 1vw, 1rem);
+}
+.form-actions {
+  gap: .85rem;
+  margin-top: 1rem;
+}
+.form-actions button {
+  min-width: 7rem;
+  height: 2.75rem;
+  font-size: clamp(.95rem, 1.1vw, 1.1rem);
+}
+.vitals {
+  width: 100%;
+  max-width: 100%;
+  overflow: visible;
+}
+.vital-inputs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(.5rem, 2vw, 1.5rem);
+}
+.vital-inputs label {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  min-width: 0;
+  gap: clamp(.25rem, .7vw, .5rem);
+}
+.vital-inputs input {
+  width: 100%;
+  min-width: 0;
+}
+@media (max-width: 900px) {
+  .page {
+    padding: 1.25rem 1.25rem 2rem;
+}
+  .visit-form {
+    min-height: 0;
+}
+  .form-grid {
+    grid-template-columns: 1fr 1fr;
+}
+  .form-grid .wide {
+    grid-column: span 2;
+}
+  .bottom-grid {
+    max-width: none;
+}
+}
+@media (max-width: 560px) {
+  .page {
+    padding: .9rem .7rem 1.5rem;
+}
+  .visit-form {
+    padding: 1rem;
+}
+  .visit-form h2 {
+    font-size: 1.5rem;
+}
+  .form-grid, .bottom-grid {
+    grid-template-columns: 1fr;
+}
+  .form-grid .wide {
+    grid-column: auto;
+}
+  .vital-inputs {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: .4rem;
+}
+  .vital-inputs label {
+    gap: .2rem;
+    font-size: .9rem;
+}
+  .vital-inputs input {
+    width: 100%;
+    min-width: 0;
+    padding: 0 .25rem;
+}
+  .form-actions button {
+    flex: 1;
+    min-width: 0;
+}
+}
+@media (max-width: 360px) {
+  .vital-inputs {
+    grid-template-columns: 1fr;
+    gap: .55rem;
+}
+  .vital-inputs label {
+    grid-template-columns: 2.3rem minmax(0, 1fr);
+}
+  .vital-inputs input {
+    max-width: none;
+}
+}
+
+/* Use the same circular back-arrow treatment for navigation links. */
+.menu-button {
+  width: auto !important;
+  min-width: 2.05rem;
+  padding: 0 .55rem;
+  gap: .35rem;
+}
+.menu-button svg {
+  display: none;
+}
+.menu-button::before {
+  content: "";
+  display: block;
+  width: 1.1rem;
+  height: 1.1rem;
+  background-color: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 8l-4 4 4 4M8 12h8'/%3E%3C/svg%3E") center/contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 8l-4 4 4 4M8 12h8'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+.menu-button::after {
+  content: "กลับหน้าเมนู";
+  font-size: .72rem;
+  white-space: nowrap;
+}
+@media (max-width: 440px) {
+  .menu-button::after {
+    content: "เมนู";
+}
+}
+.history-link {
+  margin-left: .35rem;
+  background: #e7f8f8;
+  color: #01406d;
+}
+
+/* Infirmary Visit back control uses the circular left-arrow icon. */
+.menu-button svg {
+  display: none!important;
+}
+.menu-button::before {
+  display: block!important;
+  content: ""!important;
+  width: 1.15rem;
+  height: 1.15rem;
+  background-color: currentColor;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='m12 8-4 4 4 4M8 12h8'/%3E%3C/svg%3E") center/contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='m12 8-4 4 4 4M8 12h8'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+.menu-button::after {
+  display: none!important;
+  content: none!important;
+}
+
+/* This page uses the grid shortcut, without a back-navigation label. */
+.menu-button {
+  display: grid !important;
+  place-items: center;
+  width: 2rem !important;
+  height: 2rem !important;
+  min-width: 0;
+  padding: 0;
+}
+.menu-button svg {
+  display: block !important;
+  width: 1.2rem;
+  height: 1.2rem;
+}
+.menu-button::before, .menu-button::after {
+  display: none !important;
+  content: none !important;
+}
+
+/* Compact form scale; keep the status choices and their visible check boxes. */
+.page {
+  padding: clamp(.9rem, 2vw, 1.6rem) clamp(1rem, 2.5vw, 2.25rem) 2rem;
+}
+.page h1 {
+  margin-bottom: .65rem;
+  font-size: clamp(1.35rem, 2vw, 1.8rem);
+}
+.pending-link {
+  width: 6.6rem;
+  height: 1.45rem;
+  margin: 0 0 .75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: .4rem;
+  background: #78aaf2;
+  color: #102b6e;
+  font: 500 .75rem Kanit,sans-serif;
+  text-decoration: none;
+}
+.pending-link:hover {
+  background: #6499e5;
+  color: #102b6e;
+}
+.info-button {
+  margin-bottom: .65rem;
+  padding: .28rem 1rem;
+  font-size: .9rem;
+}
+.visit-form {
+  min-height: 0;
+  padding: clamp(1rem, 1.8vw, 1.6rem);
+}
+.visit-form h2 {
+  margin-bottom: .9rem;
+  font-size: clamp(1.25rem, 1.8vw, 1.65rem);
+}
+.visitor-type {
+  gap: .55rem;
+  margin-bottom: 1rem;
+}
+.visitor-option {
+  padding: .35rem .55rem;
+  font-size: .9rem;
+}
+.visitor-option>i {
+  width: .9rem;
+  height: .9rem;
+  flex: none;
+}
+.visitor-detail {
+  height: 2rem;
+  font-size: .85rem;
+}
+.form-grid {
+  gap: .8rem 1rem;
+}
+.form-grid label, .bottom-grid label {
+  gap: .25rem;
+  font-size: .9rem;
+}
+.form-grid input, .form-grid select, .bottom-grid input, .bottom-grid select {
+  height: 2.45rem;
+  padding: 0 .7rem;
+  font-size: .9rem;
+}
+.vitals {
+  margin: 1rem 0;
+  padding: .55rem .7rem .65rem;
+}
+.vitals-head {
+  font-size: .95rem;
+}
+.vital-inputs {
+  gap: 1rem;
+  margin-top: .4rem;
+}
+.vital-inputs label {
+  gap: .35rem;
+  font-size: .9rem;
+}
+.vital-inputs input {
+  height: 2rem;
+  font-size: .95rem;
+}
+.bottom-grid {
+  gap: .85rem;
+}
+.status {
+  gap: .35rem;
+  margin-top: 1rem;
+}
+.status legend, .status label {
+  font-size: .9rem;
+}
+.status i {
+  display: inline-grid;
+  place-items: center;
+  width: .95rem;
+  height: .95rem;
+  flex: none;
+}
+.status input:focus-visible+i {
+  outline: 2px solid #5b91ed;
+  outline-offset: 2px;
+}
+.form-actions {
+  gap: .65rem;
+  margin-top: .8rem;
+}
+.form-actions button {
+  min-width: 6rem;
+  height: 2.35rem;
+  font-size: .9rem;
+}
+@media(max-width:560px) {
+  .page {
+    padding: .8rem .7rem 1.4rem;
+}
+  .page h1 {
+    font-size: 1.35rem;
+}
+  .visit-form {
+    padding: .9rem;
+}
+  .visit-form h2 {
+    font-size: 1.2rem;
+}
+  .visitor-type {
+    gap: .4rem;
+}
+  .visitor-option {
+    padding: .32rem .45rem;
+    font-size: .82rem;
+}
+  .form-grid {
+    gap: .65rem;
+}
+  .form-grid label, .bottom-grid label {
+    font-size: .84rem;
+}
+  .form-grid input, .form-grid select, .bottom-grid input, .bottom-grid select {
+    height: 2.3rem;
+    font-size: .85rem;
+}
+  .status legend, .status label {
+    font-size: .85rem;
+}
+}
+.pending-link {
+  width: 9rem;
+  height: 2.5rem;
+  margin: 0 0 1rem;
+  border: 2px solid #01406d;
+  border-radius: .55rem;
+  background: #78aaf2;
+  color: #102b6e;
+  font-size: 1rem;
+  font-weight: 600;
+  box-shadow: 0 2px 0 #01406d;
+}
+.pending-link:hover {
+  background: #6499e5;
+}
+
+/* Infirmary visit topbar: keep one Earth icon only. */
+body .topbar .language::before, body .topbar .language::after, body .topbar .language i {
+  content: none !important;
+  display: none !important;
+}
+body .topbar .language > svg {
+  display: block !important;
+  width: 16px !important;
+  height: 16px !important;
+  fill: none !important;
+  stroke: #08aeb8 !important;
+}
+body .topbar.dashboard-topbar .language > svg {
+  display: none !important;
+}
