@@ -47,6 +47,7 @@ button {
   overflow: hidden;
 }
 .brand-panel {
+  position: relative;
   isolation: isolate;
   min-height: 100vh;
   min-height: 100svh;
@@ -105,6 +106,18 @@ button {
   flex-direction: column;
   align-items: flex-end;
   gap: clamp(0.25rem, 0.8vw, 0.55rem);
+}
+.auth-panel .institution-lockup {
+  top: clamp(1rem, 2.5vh, 2rem);
+  right: auto;
+  left: clamp(0.75rem, 2vw, 1.5rem);
+  align-items: flex-start;
+}
+.brand-panel .institution-lockup {
+  top: clamp(1.2rem, 3vw, 3rem);
+  right: clamp(2rem, 6vw, 5.5rem);
+  left: auto;
+  align-items: flex-end;
 }
 .brand-label {
   color: rgba(255, 255, 255, 0.8);
@@ -168,7 +181,12 @@ button {
   object-position: center;
   filter: drop-shadow(0 1rem 1rem rgba(18, 55, 110, 0.18));
 }
+.auth-panel .institution-logo {
+  width: clamp(6rem, 10vw, 8.5rem);
+  height: clamp(5rem, 8vw, 6.5rem);
+}
 .auth-panel {
+  position: relative;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -181,7 +199,7 @@ button {
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
   scrollbar-color: var(--blue-deep) var(--blue-pale);
-  padding: clamp(2rem, 8vh, 6rem) clamp(2rem, 6vw, 6rem);
+  padding: clamp(2rem, 4vh, 3rem) clamp(2rem, 6vw, 6rem) clamp(2rem, 8vh, 6rem);
   background: var(--white);
 }
 .language-switcher {
@@ -529,7 +547,7 @@ button {
     overflow-y: auto;
     overscroll-behavior: contain;
     scrollbar-width: thin;
-    padding: clamp(1.5rem, 6vh, 3rem) clamp(2.2rem, 7vw, 4rem);
+    padding: clamp(1.5rem, 4vh, 3rem) clamp(2.2rem, 7vw, 4rem) clamp(1.5rem, 6vh, 3rem);
 }
 }
 @media (max-width: 520px) {
@@ -585,6 +603,15 @@ button {
     overscroll-behavior: contain;
     scrollbar-width: thin;
     padding: 1rem 1.2rem 1.2rem;
+}
+  .auth-panel .institution-lockup {
+    top: 0.55rem;
+    right: auto;
+    left: 0.8rem;
+}
+  .auth-panel .institution-logo {
+    width: 5.6rem;
+    height: 4.5rem;
 }
   .auth-header {
     margin-bottom: 0.8rem;
