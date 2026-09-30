@@ -381,9 +381,163 @@ body,body button,body input,body select,body textarea {
   color: #173e9b;
   font: 700 1.1rem Kanit,sans-serif;
 }
+
+/* Medicine detail dialog: clearer hierarchy and a softer dashboard surface. */
+.medicine-modal {
+  width: min(35rem, calc(100vw - 2rem));
+  max-height: min(90vh, 42rem);
+  padding: 1.5rem;
+  border: 1px solid #e1e9f8;
+  border-radius: 1.25rem;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  box-shadow: 0 1.5rem 4rem rgba(16, 38, 92, .25);
+}
+.medicine-modal-close {
+  top: .8rem;
+  right: .8rem;
+  width: 2rem;
+  height: 2rem;
+  background: #eef3ff;
+  color: #2454ad;
+  font-size: 1.25rem;
+  transition: background .2s ease, transform .2s ease;
+}
+.medicine-modal-close:hover {
+  background: #dce8ff;
+  transform: rotate(90deg);
+}
+.medicine-picker-bar {
+  min-height: 2rem;
+  margin: 0 2.6rem .8rem 0;
+  color: #405579;
+  font-size: .78rem;
+  font-weight: 600;
+}
+.medicine-picker-bar div {
+  gap: .4rem;
+}
+.medicine-picker-bar button {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-color: #d7e3fb;
+  border-radius: .55rem;
+  background: #f4f7ff;
+  color: #3163b5;
+  transition: background .2s ease, border-color .2s ease;
+}
+.medicine-picker-bar button:not(:disabled):hover {
+  border-color: #9ebbf0;
+  background: #eaf1ff;
+}
+.medicine-picker-label {
+  gap: .35rem;
+  margin-bottom: 1.1rem;
+  color: #496080;
+  font-size: .76rem;
+  font-weight: 600;
+}
+.medicine-picker-label select {
+  height: 2.65rem;
+  padding: 0 .8rem;
+  border-color: #b9cff5;
+  border-radius: .7rem;
+  background: #fff;
+  color: #173e72;
+  font-size: .82rem;
+  outline: 0;
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+.medicine-picker-label select:focus {
+  border-color: #4f91e8;
+  box-shadow: 0 0 0 3px rgba(79, 145, 232, .14);
+}
+.medicine-modal-head {
+  gap: 1.1rem;
+  min-height: 6rem;
+  padding: .25rem 2rem .25rem 0;
+}
+.medicine-visual {
+  width: 5.75rem;
+  height: 5.75rem;
+  flex-basis: 5.75rem;
+  border: 1px solid rgba(123, 157, 226, .18);
+  border-radius: 1.15rem;
+  background: linear-gradient(135deg, #dff1ff 0%, #e6ddff 100%);
+  font-size: 3.2rem;
+}
+.medicine-visual img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: inherit;
+}
+.medicine-status {
+  display: inline-flex;
+  margin-bottom: .35rem;
+  padding: .22rem .6rem;
+  border-radius: 999px;
+  background: #fff0f0;
+  color: #d74646;
+  font-size: .7rem;
+}
+.medicine-modal h2 {
+  color: #123b74;
+  font-size: 1.45rem;
+  line-height: 1.2;
+}
+.medicine-code {
+  margin-top: .3rem;
+  color: #7b8da9;
+  font-size: .76rem;
+}
+.medicine-expiry {
+  margin: 1.15rem 0 .9rem;
+  padding: .95rem 1.05rem;
+  border-color: #ffcaca;
+  border-radius: .85rem;
+  background: #fff5f5;
+}
+.medicine-expiry span {
+  font-size: .72rem;
+  font-weight: 600;
+}
+.medicine-expiry strong {
+  margin: .15rem 0 .05rem;
+  font-size: 1.55rem;
+}
+.medicine-expiry p {
+  font-size: .7rem;
+}
+.medicine-stock-grid {
+  gap: .65rem;
+}
+.medicine-stock-grid div {
+  min-height: 4.1rem;
+  padding: .8rem .5rem;
+  border: 1px solid #e2eafa;
+  border-radius: .8rem;
+  background: #f5f8ff;
+}
+.medicine-stock-grid span {
+  margin-bottom: .2rem;
+  font-size: .65rem;
+}
+.medicine-stock-grid strong {
+  font-size: 1.35rem;
+}
 @media(max-width:420px) {
   .medicine-modal {
+    width: min(100vw - 1rem, 35rem);
     padding: 1rem;
+    border-radius: 1rem;
+  }
+  .medicine-picker-bar {
+    margin-right: 2.2rem;
+    font-size: .7rem;
+  }
+  .medicine-modal-head {
+    gap: .75rem;
+    padding-right: 1rem;
   }
   .medicine-visual {
     width: 4.3rem;
@@ -393,6 +547,13 @@ body,body button,body input,body select,body textarea {
   }
   .medicine-modal h2 {
     font-size: 1.05rem;
+  }
+  .medicine-stock-grid {
+    gap: .4rem;
+  }
+  .medicine-stock-grid div {
+    min-height: 3.7rem;
+    padding-inline: .25rem;
   }
 }
 .gender-bars {
