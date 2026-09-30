@@ -51,12 +51,7 @@
   const renderLegend = (selector, rows) => {
     const list = document.querySelector(selector);
     list.replaceChildren();
-    if (!rows.length) {
-      const item = document.createElement("li");
-      item.textContent = emptyText(selector.includes("medicine") ? "medicine" : "symptom");
-      list.append(item);
-      return;
-    }
+    if (!rows.length) return;
     rows.forEach((row) => {
       const item = document.createElement("li"), swatch = document.createElement("i"), label = document.createElement("span");
       swatch.style.cssText = `display:inline-block;width:9px;height:9px;border-radius:50%;background:${row.color};margin-right:7px`;
@@ -66,9 +61,15 @@
     });
   };
   const renderPie = (id, selector, rows, type) => {
+    const chart = document.getElementById(id);
+    const empty = chart.parentElement.querySelector(".chart-empty");
     const total = rows.reduce((sum, row) => sum + row.count, 0);
+    chart.hidden = !total;
+    document.querySelector(selector).hidden = !total;
+    empty.hidden = Boolean(total);
+    empty.textContent = emptyText(type);
     if (!total) {
-      document.getElementById(id).replaceChildren();
+      chart.replaceChildren();
       renderLegend(selector, []);
       return;
     }

@@ -152,6 +152,44 @@ document.querySelectorAll("[data-deleted-category]").forEach((button) => button.
 }));
 
 document.querySelector("#backMenuButton").addEventListener("click", () => window.location.replace("./menu.html"));
+const notificationButton = document.querySelector("#notificationButton");
+const notificationPanel = document.querySelector("#notificationPanel");
+const closeNotification = document.querySelector("#closeNotification");
+const notificationBadge = document.querySelector("#notificationBadge");
+const notificationList = document.querySelector("#notificationList");
+const escapeNotificationText = (value) => String(value ?? "");
+function renderNotifications() {
+  const notifications = window.FMSNotifications?.getAll(document.documentElement.lang === "en" ? "en" : "th") || [];
+  notificationBadge.textContent = notifications.length > 99 ? "99+" : String(notifications.length);
+  notificationBadge.hidden = notifications.length === 0;
+  notificationButton.setAttribute("aria-label", notifications.length ? `การแจ้งเตือน ${notifications.length} รายการ` : "การแจ้งเตือน");
+  notificationList.replaceChildren();
+  if (!notifications.length) {
+    const empty = document.createElement("p");
+    empty.className = "admin-notification-empty";
+    empty.textContent = "ไม่มีรายการแจ้งเตือน";
+    notificationList.append(empty);
+    return;
+  }
+  notifications.forEach((item) => {
+    const article = document.createElement("article");
+    article.className = "admin-notification-item";
+    article.innerHTML = `<span aria-hidden="true"></span><div><strong></strong><p></p></div>`;
+    article.querySelector("strong").textContent = escapeNotificationText(item.title);
+    article.querySelector("p").textContent = escapeNotificationText(item.detail);
+    notificationList.append(article);
+  });
+}
+const setNotificationVisibility = (isOpen) => {
+  notificationPanel.hidden = !isOpen;
+  notificationButton.setAttribute("aria-expanded", String(isOpen));
+};
+notificationButton.addEventListener("click", () => setNotificationVisibility(notificationPanel.hidden));
+closeNotification.addEventListener("click", () => setNotificationVisibility(false));
+document.addEventListener("click", (event) => {
+  if (!notificationPanel.hidden && !notificationPanel.contains(event.target) && !notificationButton.contains(event.target)) setNotificationVisibility(false);
+});
+renderNotifications();
 let session = null;
 try { session = JSON.parse(localStorage.getItem(ADMIN_SESSION_KEY) || "null"); } catch {}
 if (session?.role !== "admin") window.location.replace("./index.html");

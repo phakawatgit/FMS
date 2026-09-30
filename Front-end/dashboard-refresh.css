@@ -365,6 +365,51 @@ body {
   padding-bottom: .7rem !important;
   color: #9aabb4;
 }
+.filter-card > label:first-child,
+.filter-card > .date-end {
+  position: relative;
+}
+.filter-card > label:first-child > span,
+.filter-card > .date-end > span {
+  color: #527187 !important;
+  font-size: .72rem !important;
+  font-weight: 600 !important;
+}
+.filter-card #startDate,
+.filter-card #endDate {
+  color-scheme: light;
+  accent-color: #01b4ba;
+  min-width: 0;
+  border-color: #b8d9df !important;
+  background: linear-gradient(180deg, #fff 0%, #fafdfe 100%) !important;
+  color: #244a63 !important;
+  font-weight: 500 !important;
+  transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease;
+}
+.filter-card #startDate:hover,
+.filter-card #endDate:hover {
+  border-color: #62aeb5 !important;
+  background: #f4fbfb !important;
+}
+.filter-card #startDate:focus,
+.filter-card #endDate:focus {
+  border-color: #087f8c !important;
+  box-shadow: 0 0 0 3px rgba(1,180,186,.14) !important;
+  outline: none !important;
+}
+.filter-card #startDate::-webkit-calendar-picker-indicator,
+.filter-card #endDate::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  padding: .2rem;
+  border-radius: .35rem;
+  opacity: .8;
+  transition: background-color .16s ease, opacity .16s ease;
+}
+.filter-card #startDate::-webkit-calendar-picker-indicator:hover,
+.filter-card #endDate::-webkit-calendar-picker-indicator:hover {
+  background: rgba(1,180,186,.12);
+  opacity: 1;
+}
 .panel {
   min-width: 0;
   margin-bottom: 1rem !important;
@@ -449,6 +494,17 @@ body .medicine-legend li, body .symptom-legend li {
   gap: .5rem !important;
   color: #526c79;
   font-size: .8rem !important;
+}
+.chart-empty {
+  grid-column: 1 / -1;
+  display: grid;
+  min-height: 9rem;
+  place-items: center;
+  margin: 0;
+  color: #91a3ab;
+  font-size: .82rem;
+  font-weight: 500;
+  text-align: center;
 }
 body .medicine-legend li:before, body .symptom-legend li:before {
   width: .55rem !important;

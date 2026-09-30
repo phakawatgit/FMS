@@ -89,6 +89,20 @@
           <button id="submitButton" class="primary-button" type="submit">Log in</button>
         </form>
 
+        <section id="signupOtpFlow" class="reset-flow" hidden aria-labelledby="signupOtpTitle">
+          <button id="signupOtpBack" class="reset-back" type="button"><span>กลับไปสร้างบัญชี</span></button>
+          <p class="auth-kicker">EMAIL VERIFICATION</p>
+          <h2 id="signupOtpTitle">ยืนยันอีเมล</h2>
+          <p id="signupOtpDescription" class="reset-description">กรอกรหัส OTP ที่ส่งไปยังอีเมลของคุณ</p>
+          <p id="signupOtpEmail" class="signup-otp-email"></p>
+          <form id="signupOtpForm" class="auth-form">
+            <div class="field"><label for="signupOtp">รหัส OTP</label><input id="signupOtp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="กรอกรหัส 6 หลัก" required /></div>
+            <button id="signupOtpSubmit" class="primary-button" type="submit">ยืนยันอีเมล</button>
+            <button id="signupOtpResend" class="otp-resend" type="button">ส่ง OTP อีกครั้ง</button>
+          </form>
+          <p id="signupOtpStatus" class="status" aria-live="polite"></p>
+        </section>
+
         <section id="resetFlow" class="reset-flow" hidden aria-labelledby="resetTitle">
           <button id="resetBack" class="reset-back" type="button">
             <svg class="reset-back-icon" viewBox="0 0 24 24" aria-hidden="true">

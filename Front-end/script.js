@@ -3,8 +3,10 @@ import {
     createUserWithEmailAndPassword,
     getAuth,
     GoogleAuthProvider,
+    deleteUser,
     signInWithEmailAndPassword,
     signInWithPopup,
+    signOut,
     updateProfile
 } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
 import "./admin-audit.js";
@@ -32,6 +34,13 @@ const forgotButton = document.querySelector(".forgot-button");
 const languageSwitcher = document.querySelector(".language-switcher");
 const resetFlow = document.getElementById("resetFlow");
 const resetBackButton = document.getElementById("resetBack");
+const signupOtpFlow = document.getElementById("signupOtpFlow");
+const signupOtpBack = document.getElementById("signupOtpBack");
+const signupOtpForm = document.getElementById("signupOtpForm");
+const signupOtpInput = document.getElementById("signupOtp");
+const signupOtpStatus = document.getElementById("signupOtpStatus");
+const signupOtpEmail = document.getElementById("signupOtpEmail");
+const signupOtpResend = document.getElementById("signupOtpResend");
 const resetEmailForm = document.getElementById("resetEmailForm");
 const resetOtpForm = document.getElementById("resetOtpForm");
 const newPasswordForm = document.getElementById("newPasswordForm");
@@ -75,6 +84,7 @@ googleProvider.setCustomParameters({ prompt: "select_account" });
 
 let currentMode = "login";
 let currentLanguage = "en";
+let pendingSignup = null;
 
 const translations = {
     en: {
@@ -236,6 +246,14 @@ function renderLanguage() {
     resetOtpInput.placeholder = t.otpPlaceholder;
     newPasswordInput.placeholder = t.newPasswordPlaceholder;
     confirmPasswordInput.placeholder = t.confirmPasswordPlaceholder;
+    setText(signupOtpBack.querySelector("span"), currentLanguage === "th" ? "กลับไปสร้างบัญชี" : "Back to create account");
+    setText(signupOtpFlow.querySelector(".auth-kicker"), currentLanguage === "th" ? "ยืนยันอีเมล" : "EMAIL VERIFICATION");
+    setText(document.getElementById("signupOtpTitle"), currentLanguage === "th" ? "ยืนยันอีเมล" : "Verify your email");
+    setText(document.getElementById("signupOtpDescription"), currentLanguage === "th" ? "กรอกรหัส OTP ที่ส่งไปยังอีเมลของคุณ" : "Enter the OTP sent to your email");
+    setText(signupOtpForm.querySelector("label"), currentLanguage === "th" ? "รหัส OTP" : "OTP code");
+    setText(signupOtpForm.querySelector("button"), currentLanguage === "th" ? "ยืนยันอีเมล" : "Verify email");
+    setText(signupOtpResend, currentLanguage === "th" ? "ส่ง OTP อีกครั้ง" : "Resend OTP");
+    signupOtpInput.placeholder = currentLanguage === "th" ? "กรอกรหัส 6 หลัก" : "Enter 6-digit code";
 }
 
 function setMode(mode) {
@@ -289,6 +307,38 @@ authForm.addEventListener("submit", (event) => {
     }
     // A Firebase user must never inherit the local demo-admin session.
     localStorage.removeItem(ADMIN_SESSION_KEY);
+    if (currentMode === "signup") {
+        submitButton.disabled = true;
+        createUserWithEmailAndPassword(firebaseAuth, email, password)
+            .then(async ({ user }) => {
+                if (fullName) await updateProfile(user, { displayName: fullName });
+                const response = await fetch(`${API_BASE}/api/auth/signup-otp`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email: user.email || email, firebaseUid: user.uid }),
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.message || "ส่ง OTP ไม่สำเร็จ");
+                pendingSignup = { email: user.email || email, firebaseUid: user.uid, password, displayName: user.displayName || fullName };
+                await signOut(firebaseAuth);
+                authForm.hidden = true;
+                document.querySelector(".divider").hidden = true;
+                googleButton.hidden = true;
+                terms.hidden = true;
+                resetFlow.hidden = true;
+                signupOtpFlow.hidden = false;
+                signupOtpEmail.textContent = pendingSignup.email;
+                signupOtpInput.value = "";
+                signupOtpStatus.textContent = translations[currentLanguage].otpSent;
+                signupOtpInput.focus();
+            })
+            .catch(async (error) => {
+                if (firebaseAuth.currentUser && error.message !== "auth/email-already-in-use") await deleteUser(firebaseAuth.currentUser).catch(() => {});
+                showFirebaseError(error);
+            })
+            .finally(() => { submitButton.disabled = false; });
+        return;
+    }
     const authTask = currentMode === "signup"
         ? createUserWithEmailAndPassword(firebaseAuth, email, password).then(async ({ user }) => {
             if (fullName) await updateProfile(user, { displayName: fullName });
@@ -342,6 +392,66 @@ function hideResetFlow() {
 
 forgotButton.addEventListener("click", showResetFlow);
 resetBackButton.addEventListener("click", hideResetFlow);
+
+signupOtpBack.addEventListener("click", () => {
+    pendingSignup = null;
+    signupOtpFlow.hidden = true;
+    authForm.hidden = false;
+    document.querySelector(".divider").hidden = false;
+    googleButton.hidden = false;
+    terms.hidden = false;
+    setMode("signup");
+});
+
+async function resendSignupOtp() {
+    if (!pendingSignup) return;
+    signupOtpResend.disabled = true;
+    signupOtpStatus.textContent = translations[currentLanguage].sendingOtp;
+    try {
+        const response = await fetch(`${API_BASE}/api/auth/signup-otp`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: pendingSignup.email, firebaseUid: pendingSignup.firebaseUid }),
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.message || "ส่ง OTP ไม่สำเร็จ");
+        signupOtpInput.value = "";
+        signupOtpStatus.textContent = translations[currentLanguage].otpSent;
+        signupOtpInput.focus();
+    } catch (error) {
+        signupOtpStatus.textContent = error.message || translations[currentLanguage].otpSendFailed;
+    } finally {
+        signupOtpResend.disabled = false;
+    }
+}
+
+signupOtpResend.addEventListener("click", resendSignupOtp);
+
+signupOtpForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!pendingSignup) return;
+    const button = signupOtpForm.querySelector("button[type=submit]");
+    button.disabled = true;
+    signupOtpStatus.textContent = translations[currentLanguage].verifyingOtp;
+    try {
+        const response = await fetch(`${API_BASE}/api/auth/verify-signup-otp`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: pendingSignup.email, firebaseUid: pendingSignup.firebaseUid, otp: signupOtpInput.value.trim() }),
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.message || "OTP ไม่ถูกต้อง");
+        const { user } = await signInWithEmailAndPassword(firebaseAuth, pendingSignup.email, pendingSignup.password);
+        window.FMSAdminAudit?.log("create-account", { provider: "email", email: user.email || pendingSignup.email });
+        pendingSignup = null;
+        showSignedInMessage(user);
+    } catch (error) {
+        signupOtpStatus.textContent = error.message || translations[currentLanguage].otpInvalid;
+        signupOtpInput.focus();
+    } finally {
+        button.disabled = false;
+    }
+});
 
 resetEmailForm.addEventListener("submit", async (event) => {
     event.preventDefault();

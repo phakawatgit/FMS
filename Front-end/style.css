@@ -858,6 +858,38 @@ body.is-thai .language-switcher, body.is-thai .language-switcher label, .languag
   color: #65738a;
   font-size: 0.8rem;
 }
+.signup-otp-email {
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 0 1rem;
+  padding: .4rem .7rem;
+  overflow-wrap: anywhere;
+  border: 1px solid rgba(1, 180, 186, .2);
+  border-radius: .55rem;
+  background: #effafa;
+  color: #087f8c;
+  font-size: .78rem;
+  font-weight: 600;
+}
+.otp-resend {
+  display: block;
+  margin: .7rem auto 0;
+  border: 0;
+  background: transparent;
+  color: #087f8c;
+  font: inherit;
+  font-size: .78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.otp-resend:hover {
+  color: #01406d;
+  text-decoration: underline;
+}
+.otp-resend:disabled {
+  cursor: wait;
+  opacity: .55;
+}
 .demo-otp {
   margin: 0.25rem 0 0.85rem;
   padding: 0.7rem 0.8rem;

@@ -13,6 +13,15 @@ const firebaseConfig = {
 const auth = getAuth(initializeApp(firebaseConfig));
 const cardsTarget = document.getElementById("activityCards");
 let language = "th";
+const ADMIN_SESSION_KEY = "fms-admin-session";
+
+function hasAdminSession() {
+  try {
+    return JSON.parse(localStorage.getItem(ADMIN_SESSION_KEY) || "null")?.role === "admin";
+  } catch {
+    return false;
+  }
+}
 
 const languageButton = document.getElementById("languageButton");
 if (languageButton) {
@@ -106,7 +115,11 @@ document.addEventListener("click", (event) => {
   if (!notificationPanel.hidden && !notificationPanel.contains(event.target) && !notificationButton.contains(event.target)) notificationPanel.hidden = true;
 });
 
-onAuthStateChanged(auth, (user) => { if (!user) window.location.href = "./index.html"; });
+// The demo Admin account uses a local session instead of Firebase Auth.
+// Keep that session valid on this page so Admin is not redirected to login.
+onAuthStateChanged(auth, (user) => {
+  if (!user && !hasAdminSession()) window.location.replace("./index.html");
+});
 
 window.addEventListener("storage", renderCards);
 window.addEventListener("focus", renderCards);

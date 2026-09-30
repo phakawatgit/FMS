@@ -282,7 +282,12 @@
     );
   };
 
-  document.querySelectorAll(languageSelector).forEach(ensureLanguageButton);
+  document.querySelectorAll(languageSelector).forEach((button) => {
+    ensureLanguageButton(button);
+    const label = button.querySelector("span");
+    if (label) label.textContent = pageIsEnglish ? "English" : "ไทย";
+    button.setAttribute("aria-label", pageIsEnglish ? "Switch to Thai" : "เปลี่ยนภาษา");
+  });
 
   const translationObserver = new MutationObserver(() => {
     if (pageIsEnglish) translatePage(true);

@@ -30,6 +30,61 @@ function getMailer() {
   });
 }
 
+router.post("/signup-otp", async (req, res) => {
+  const email = normalizeEmail(req.body?.email);
+  const firebaseUid = String(req.body?.firebaseUid || "").trim();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !firebaseUid) {
+    return res.status(400).json({ success: false, message: "ข้อมูลสมัครสมาชิกไม่ถูกต้อง" });
+  }
+
+  try {
+    const firebaseUser = await getFirebaseAuth().getUser(firebaseUid);
+    if (normalizeEmail(firebaseUser.email) !== email) {
+      return res.status(400).json({ success: false, message: "อีเมลไม่ตรงกับบัญชีที่สมัคร" });
+    }
+
+    const otp = String(crypto.randomInt(100000, 1000000));
+    await prisma.passwordResetOtp.deleteMany({ where: { email } });
+    await prisma.passwordResetOtp.create({
+      data: {
+        email,
+        firebaseUid,
+        codeHash: hash(otp),
+        expiresAt: new Date(Date.now() + OTP_TTL_MS),
+      },
+    });
+
+    await getMailer().sendMail({
+      from: process.env.SMTP_USER,
+      to: email,
+      subject: "FMS Account Verification OTP",
+      text: `รหัส OTP สำหรับยืนยันบัญชี FMS คือ ${otp} รหัสนี้หมดอายุภายใน 5 นาที`,
+      html: `<p>รหัส OTP สำหรับยืนยันบัญชี FMS คือ</p><h1 style="letter-spacing:6px">${otp}</h1><p>รหัสนี้หมดอายุภายใน 5 นาที</p>`,
+    });
+    return res.json({ success: true, message: "ส่ง OTP ไปยังอีเมลแล้ว" });
+  } catch (error) {
+    console.error("Signup OTP failed:", error.message);
+    return res.status(503).json({ success: false, message: "ไม่สามารถส่ง OTP ได้ กรุณาตรวจสอบการตั้งค่าอีเมล" });
+  }
+});
+
+router.post("/verify-signup-otp", async (req, res) => {
+  const email = normalizeEmail(req.body?.email);
+  const firebaseUid = String(req.body?.firebaseUid || "").trim();
+  const otp = String(req.body?.otp || "").trim();
+  const record = await prisma.passwordResetOtp.findFirst({ where: { email, firebaseUid }, orderBy: { createdAt: "desc" } });
+  if (!record || record.verifiedAt || record.expiresAt < new Date() || record.attempts >= MAX_ATTEMPTS) {
+    return res.status(400).json({ success: false, message: "OTP หมดอายุหรือไม่ถูกต้อง" });
+  }
+  if (hash(otp) !== record.codeHash) {
+    await prisma.passwordResetOtp.update({ where: { id: record.id }, data: { attempts: { increment: 1 } } });
+    return res.status(400).json({ success: false, message: "OTP ไม่ถูกต้อง" });
+  }
+  await getFirebaseAuth().updateUser(firebaseUid, { emailVerified: true });
+  await prisma.passwordResetOtp.delete({ where: { id: record.id } });
+  return res.json({ success: true, message: "ยืนยันอีเมลสำเร็จ" });
+});
+
 router.post("/forgot-password", async (req, res) => {
   const email = normalizeEmail(req.body?.email);
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
