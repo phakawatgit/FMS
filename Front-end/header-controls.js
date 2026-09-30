@@ -17,6 +17,16 @@
     controls.insertAdjacentHTML("afterbegin", '<a class="menu-link" href="./menu.html" aria-label="กลับไปหน้าเมนู" title="เมนู"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx=".7"/><rect x="14" y="3" width="7" height="7" rx=".7"/><rect x="3" y="14" width="7" height="7" rx=".7"/><rect x="14" y="14" width="7" height="7" rx=".7"/></svg></a>');
   }
 
+  controls.querySelectorAll(".bell, .icon-button, .topbar-bell").forEach((button) => {
+    if (button.querySelector(".notification-badge, b")) return;
+
+    const badge = document.createElement("span");
+    badge.className = "notification-badge";
+    badge.textContent = "0";
+    badge.setAttribute("aria-label", "0 รายการแจ้งเตือน");
+    button.append(badge);
+  });
+
   if (!document.querySelector('link[data-fms-header-controls]')) {
     const stylesheet = document.createElement("link");
     stylesheet.rel = "stylesheet";

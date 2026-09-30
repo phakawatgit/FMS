@@ -12,53 +12,250 @@
   border-bottom: 5px solid #073d65 !important;
   color: #fff !important;
 }
-.dashboard-topbar .topbar-inner { display: contents !important; }
-.dashboard-topbar .brand { display: inline-flex !important; align-items: center !important; gap: 10px !important; color: #fff !important; font: 600 15px/1.15 "Kanit", Arial, sans-serif !important; text-decoration: none !important; white-space: nowrap !important; }
-.dashboard-topbar .brand img { width: 38px !important; height: 38px !important; object-fit: contain !important; }
-.dashboard-topbar .actions, .dashboard-topbar .top-actions { display: flex !important; align-items: center !important; gap: 8px !important; margin-left: auto !important; }
-.dashboard-topbar .menu-link, .dashboard-topbar .menu-button, .dashboard-topbar .export, .dashboard-topbar .language-switcher, .dashboard-topbar .language { height: 32px !important; min-height: 32px !important; border: 0 !important; border-radius: 8px !important; background: #fff !important; color: #214967 !important; box-shadow: none !important; font: 700 12px/1 "Kanit", Arial, sans-serif !important; cursor: pointer !important; }
-.dashboard-topbar .menu-link, .dashboard-topbar .menu-button { display: inline-flex !important; width: 32px !important; align-items: center !important; justify-content: center !important; padding: 0 !important; text-decoration: none !important; }
-.dashboard-topbar .menu-link svg, .dashboard-topbar .menu-button svg { width: 18px !important; height: 18px !important; stroke: #08aeb8 !important; fill: none !important; stroke-width: 1.8 !important; }
-.dashboard-topbar .export { padding: 0 13px !important; }
-.dashboard-topbar .bell.icon-button, .dashboard-topbar .bell { position: relative !important; display: inline-flex !important; width: 32px !important; align-items: center !important; justify-content: center !important; padding: 0 !important; border: 0 !important; border-radius: 0 !important; background: transparent !important; color: #08b0ba !important; }
-.dashboard-topbar .bell svg { width: 20px !important; height: 20px !important; fill: none !important; stroke: currentColor !important; stroke-width: 1.6 !important; }
-.dashboard-topbar .bell b, .dashboard-topbar .notification-badge { position: absolute !important; top: -3px !important; right: 0 !important; display: grid !important; width: 15px !important; height: 15px !important; place-items: center !important; border-radius: 50% !important; background: #ff5864 !important; color: #fff !important; font: 700 9px/1 Arial, sans-serif !important; }
-.dashboard-topbar .language-switcher, .dashboard-topbar .language { display: inline-flex !important; min-width: 84px !important; align-items: center !important; justify-content: center !important; gap: 6px !important; padding: 0 12px !important; }
-.dashboard-topbar .language-switcher svg, .dashboard-topbar .language svg { display: none !important; }
-.dashboard-topbar .language-switcher i, .dashboard-topbar .language i { display: none !important; }
-.dashboard-topbar .menu-link:hover, .dashboard-topbar .menu-button:hover, .dashboard-topbar .export:hover, .dashboard-topbar .language-switcher:hover, .dashboard-topbar .language:hover { background: #eaf9fa !important; color: #124363 !important; }
-.dashboard-topbar .bell:hover { background: transparent !important; color: #8decef !important; }
-@media (max-width: 760px) { .dashboard-topbar { padding-inline: 22px !important; } .dashboard-topbar .brand { display: none !important; } .dashboard-topbar .actions, .dashboard-topbar .top-actions { margin-left: 0 !important; } }
-@media (max-width: 430px) { .dashboard-topbar { padding-inline: 16px !important; } .dashboard-topbar .actions, .dashboard-topbar .top-actions { gap: 5px !important; } .dashboard-topbar .export { padding-inline: 10px !important; } .dashboard-topbar .language-switcher, .dashboard-topbar .language { min-width: 70px !important; padding-inline: 8px !important; } }
+.dashboard-topbar .topbar-inner {
+  display: contents !important;
+}
+.dashboard-topbar .brand {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  color: #fff !important;
+  font: 600 15px/1.15 "Kanit", Arial, sans-serif !important;
+  text-decoration: none !important;
+  white-space: nowrap !important;
+}
+.dashboard-topbar .brand img {
+  width: 38px !important;
+  height: 38px !important;
+  object-fit: contain !important;
+}
+.dashboard-topbar .actions, .dashboard-topbar .top-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin-left: auto !important;
+}
+.dashboard-topbar .menu-link, .dashboard-topbar .menu-button, .dashboard-topbar .export, .dashboard-topbar .language-switcher, .dashboard-topbar .language {
+  height: 32px !important;
+  min-height: 32px !important;
+  border: 0 !important;
+  border-radius: 8px !important;
+  background: #fff !important;
+  color: #214967 !important;
+  box-shadow: none !important;
+  font: 700 12px/1 "Kanit", Arial, sans-serif !important;
+  cursor: pointer !important;
+}
+.dashboard-topbar .menu-link, .dashboard-topbar .menu-button {
+  display: inline-flex !important;
+  width: 32px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  text-decoration: none !important;
+}
+.dashboard-topbar .menu-link svg, .dashboard-topbar .menu-button svg {
+  width: 18px !important;
+  height: 18px !important;
+  stroke: #08aeb8 !important;
+  fill: none !important;
+  stroke-width: 1.8 !important;
+}
+.dashboard-topbar .export {
+  padding: 0 13px !important;
+}
+.dashboard-topbar .bell.icon-button, .dashboard-topbar .bell {
+  position: relative !important;
+  display: inline-flex !important;
+  width: 32px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: #08b0ba !important;
+}
+.dashboard-topbar .bell svg {
+  width: 20px !important;
+  height: 20px !important;
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 1.6 !important;
+}
+.dashboard-topbar .bell b, .dashboard-topbar .notification-badge {
+  position: absolute !important;
+  top: -3px !important;
+  right: 0 !important;
+  display: grid !important;
+  width: 15px !important;
+  height: 15px !important;
+  place-items: center !important;
+  border-radius: 50% !important;
+  background: #ff5864 !important;
+  color: #fff !important;
+  font: 700 9px/1 Arial, sans-serif !important;
+}
+.dashboard-topbar .language-switcher, .dashboard-topbar .language {
+  display: inline-flex !important;
+  min-width: 84px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  padding: 0 12px !important;
+}
+.dashboard-topbar .language-switcher svg, .dashboard-topbar .language svg {
+  display: none !important;
+}
+.dashboard-topbar .language-switcher i, .dashboard-topbar .language i {
+  display: none !important;
+}
+.dashboard-topbar .menu-link:hover, .dashboard-topbar .menu-button:hover, .dashboard-topbar .export:hover, .dashboard-topbar .language-switcher:hover, .dashboard-topbar .language:hover {
+  background: #eaf9fa !important;
+  color: #124363 !important;
+}
+.dashboard-topbar .bell:hover {
+  background: transparent !important;
+  color: #8decef !important;
+}
+@media (max-width: 760px) {
+  .dashboard-topbar {
+    padding-inline: 22px !important;
+}
+  .dashboard-topbar .brand {
+    display: none !important;
+}
+  .dashboard-topbar .actions, .dashboard-topbar .top-actions {
+    margin-left: 0 !important;
+}
+}
+@media (max-width: 430px) {
+  .dashboard-topbar {
+    padding-inline: 16px !important;
+}
+  .dashboard-topbar .actions, .dashboard-topbar .top-actions {
+    gap: 5px !important;
+}
+  .dashboard-topbar .export {
+    padding-inline: 10px !important;
+}
+  .dashboard-topbar .language-switcher, .dashboard-topbar .language {
+    min-width: 70px !important;
+    padding-inline: 8px !important;
+}
+}
 
 /* Win against page-specific legacy topbar rules. */
-body .topbar.dashboard-topbar { min-height: 68px !important; height: 68px !important; padding: 6px 48px !important; background: #064d75 !important; border-bottom: 5px solid #073d65 !important; }
-body .topbar.dashboard-topbar .menu-button,
-body .topbar.dashboard-topbar .menu-link { background: #fff !important; color: #214967 !important; border: 0 !important; border-radius: 8px !important; }
-body .topbar.dashboard-topbar .menu-button,
-body .topbar.dashboard-topbar .menu-link { display: inline-flex !important; align-items: center !important; justify-content: center !important; }
-body .topbar.dashboard-topbar .export { background: #fff !important; color: #214967 !important; border: 0 !important; }
-body .topbar.dashboard-topbar .menu-button svg,
-body .topbar.dashboard-topbar .menu-link svg { stroke: #08aeb8 !important; }
-body .topbar.dashboard-topbar .bell { background: transparent !important; color: #08b0ba !important; border: 0 !important; }
-body .topbar.dashboard-topbar .language { min-width: 84px !important; border: 0 !important; border-radius: 8px !important; background: #fff !important; color: #214967 !important; }
-body .topbar.dashboard-topbar .language::before { display: block !important; }
-body .topbar.dashboard-topbar .language:hover { background: #eaf9fa !important; color: #214967 !important; }
+body .topbar.dashboard-topbar {
+  min-height: 68px !important;
+  height: 68px !important;
+  padding: 6px 48px !important;
+  background: #064d75 !important;
+  border-bottom: 5px solid #073d65 !important;
+}
+body .topbar.dashboard-topbar .menu-button, body .topbar.dashboard-topbar .menu-link {
+  background: #fff !important;
+  color: #214967 !important;
+  border: 0 !important;
+  border-radius: 8px !important;
+}
+body .topbar.dashboard-topbar .menu-button, body .topbar.dashboard-topbar .menu-link {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+body .topbar.dashboard-topbar .export {
+  background: #fff !important;
+  color: #214967 !important;
+  border: 0 !important;
+}
+body .topbar.dashboard-topbar .menu-button svg, body .topbar.dashboard-topbar .menu-link svg {
+  stroke: #08aeb8 !important;
+}
+body .topbar.dashboard-topbar .bell {
+  background: transparent !important;
+  color: #08b0ba !important;
+  border: 0 !important;
+}
+body .topbar.dashboard-topbar .language {
+  min-width: 84px !important;
+  border: 0 !important;
+  border-radius: 8px !important;
+  background: #fff !important;
+  color: #214967 !important;
+}
+body .topbar.dashboard-topbar .language::before {
+  display: block !important;
+}
+body .topbar.dashboard-topbar .language:hover {
+  background: #eaf9fa !important;
+  color: #214967 !important;
+}
+
 /* Language toggle: keep the globe and let the button fit its label. */
-.dashboard-topbar .language{display:inline-flex!important;width:auto!important;min-width:0!important;height:32px!important;align-items:center!important;justify-content:center!important;gap:6px!important;padding:0 12px!important}
-.dashboard-topbar .language::before{display:none!important}
-.dashboard-topbar .language svg{display:block!important;width:16px!important;height:16px!important;fill:none!important;stroke:#08aeb8!important;stroke-width:1.8!important}
-.dashboard-topbar .language i{display:none!important}
-.dashboard-topbar .language svg{display:none!important}
-.dashboard-topbar .language{width:auto!important;min-width:0!important;height:32px!important;padding:0 12px!important;border:0!important;border-radius:8px!important;background:#fff!important;color:#214967!important}
-.dashboard-topbar .language::before{display:none!important}
-.dashboard-topbar .language svg{display:block!important;width:16px!important;height:16px!important;fill:none!important;stroke:#08aeb8!important;stroke-width:1.8!important}
-.dashboard-topbar .language i{display:none!important}
+.dashboard-topbar .language {
+  display: inline-flex!important;
+  width: auto!important;
+  min-width: 0!important;
+  height: 32px!important;
+  align-items: center!important;
+  justify-content: center!important;
+  gap: 6px!important;
+  padding: 0 12px!important;
+}
+.dashboard-topbar .language::before {
+  display: none!important;
+}
+.dashboard-topbar .language svg {
+  display: block!important;
+  width: 16px!important;
+  height: 16px!important;
+  fill: none!important;
+  stroke: #08aeb8!important;
+  stroke-width: 1.8!important;
+}
+.dashboard-topbar .language i {
+  display: none!important;
+}
+.dashboard-topbar .language svg {
+  display: none!important;
+}
+.dashboard-topbar .language {
+  width: auto!important;
+  min-width: 0!important;
+  height: 32px!important;
+  padding: 0 12px!important;
+  border: 0!important;
+  border-radius: 8px!important;
+  background: #fff!important;
+  color: #214967!important;
+}
+.dashboard-topbar .language::before {
+  display: none!important;
+}
+.dashboard-topbar .language svg {
+  display: block!important;
+  width: 16px!important;
+  height: 16px!important;
+  fill: none!important;
+  stroke: #08aeb8!important;
+  stroke-width: 1.8!important;
+}
+.dashboard-topbar .language i {
+  display: none!important;
+}
+
 /* Borrow and Return language button: visible Catalog-style pop animation. */
 @keyframes borrowReturnLanguagePop {
-  0% { transform: scale(1); }
-  45% { transform: scale(1.12); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+}
+  45% {
+    transform: scale(1.12);
+}
+  100% {
+    transform: scale(1);
+}
 }
 body .topbar.dashboard-topbar .language {
   transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease !important;
@@ -67,28 +264,21 @@ body .topbar.dashboard-topbar .language:hover {
   transform: translateY(-2px) scale(1.06) !important;
   box-shadow: 0 .35rem .65rem rgba(53,97,208,.28) !important;
 }
-body .topbar.dashboard-topbar .language:active,
-body .topbar.dashboard-topbar .language.language-pop {
+body .topbar.dashboard-topbar .language:active, body .topbar.dashboard-topbar .language.language-pop {
   animation: borrowReturnLanguagePop .32s ease-out !important;
   transform-origin: center !important;
 }
 
 /* Borrow and Return topbar controls: match Catalog's button pop behavior. */
-body .topbar.dashboard-topbar .menu-button,
-body .topbar.dashboard-topbar .export,
-body .topbar.dashboard-topbar .bell {
+body .topbar.dashboard-topbar .menu-button, body .topbar.dashboard-topbar .export, body .topbar.dashboard-topbar .bell {
   transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease, filter .18s ease !important;
 }
-body .topbar.dashboard-topbar .menu-button:hover,
-body .topbar.dashboard-topbar .export:hover,
-body .topbar.dashboard-topbar .bell:hover {
+body .topbar.dashboard-topbar .menu-button:hover, body .topbar.dashboard-topbar .export:hover, body .topbar.dashboard-topbar .bell:hover {
   transform: translateY(-2px) scale(1.06) !important;
   filter: brightness(1.03) !important;
   box-shadow: 0 .35rem .65rem rgba(53,97,208,.28) !important;
 }
-body .topbar.dashboard-topbar .menu-button:active,
-body .topbar.dashboard-topbar .export:active,
-body .topbar.dashboard-topbar .bell:active {
+body .topbar.dashboard-topbar .menu-button:active, body .topbar.dashboard-topbar .export:active, body .topbar.dashboard-topbar .bell:active {
   transform: translateY(1px) scale(.94) !important;
   filter: brightness(.96) !important;
   box-shadow: 0 .12rem .25rem rgba(53,97,208,.2) !important;

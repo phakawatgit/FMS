@@ -15,6 +15,7 @@ const firebaseConfig = {
 // Change this to true only after Firestore rules have been published.
 const USE_FIRESTORE = false;
 const LOCAL_DUTY_STORAGE_KEY = "fms-local-duty-records";
+const DUTY_PROFILE_KEY = "fms-duty-profiles";
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -94,6 +95,78 @@ function loadLocalDutyRecords() {
   } catch {
     dutyRecords = new Map();
   }
+}
+
+function readDutyProfiles() {
+  try {
+    const profiles = JSON.parse(localStorage.getItem(DUTY_PROFILE_KEY) || "{}");
+    return profiles && typeof profiles === "object" && !Array.isArray(profiles) ? profiles : {};
+  } catch {
+    return {};
+  }
+}
+
+function getCurrentUser() {
+  return auth.currentUser || (isAdminSession() ? { uid: "admin", email: "" } : null);
+}
+
+function recordBelongsToUser(record, user = getCurrentUser()) {
+  if (!user) return false;
+  const uid = String(user.uid || "").trim();
+  const email = String(user.email || "").trim().toLowerCase();
+  const recordUid = String(record?.uid || "").trim();
+  const recordEmail = String(record?.email || record?.userEmail || record?.accountEmail || "").trim().toLowerCase();
+  return recordUid === uid || (email && (recordEmail === email || recordUid.toLowerCase() === email));
+}
+
+function restoreDutyProfile(user = getCurrentUser()) {
+  if (!user) return;
+  const email = String(user.email || "").trim().toLowerCase();
+  const profiles = readDutyProfiles();
+  const savedProfile = profiles[email] || profiles[String(user.uid || "")] || null;
+  const savedRecord = Array.from(dutyRecords.values())
+    .flat()
+    .filter((record) => recordBelongsToUser(record, user))
+    .sort((a, b) => String(b.updatedAt || "").localeCompare(String(a.updatedAt || "")))[0];
+  const profile = savedProfile || savedRecord;
+  if (!profile) return;
+  selectedColor = profile.colorId || selectedColor;
+  document.getElementById("nurseFirstName").value = profile.firstName || savedRecord?.firstName || "";
+  document.getElementById("nurseLastName").value = profile.lastName || savedRecord?.lastName || "";
+  document.getElementById("nurseNickname").value = profile.nickname || savedRecord?.nickname || "";
+  document.getElementById("nurseAffiliation").value = profile.affiliation || savedRecord?.affiliation || "";
+}
+
+// A successful sign-in represents today's attendance when the account already
+// has a saved duty profile. Create today's record once, without duplicating it
+// when the user refreshes or revisits the menu.
+function ensureTodayDutyRecord(user = getCurrentUser()) {
+  if (!user || !selectedColor) return false;
+  const firstName = document.getElementById("nurseFirstName").value.trim();
+  const lastName = document.getElementById("nurseLastName").value.trim();
+  if (!firstName || !lastName) return false;
+  const date = getDateKey(new Date());
+  const recordsForToday = dutyRecords.get(date) || [];
+  if (recordsForToday.some((record) => recordBelongsToUser(record, user))) return false;
+  const color = colors.find((item) => item.id === selectedColor);
+  if (!color) return false;
+  const dutyRecord = {
+    uid: user.uid,
+    email: user.email || "",
+    nurseName: `${firstName} ${lastName}`.trim(),
+    firstName,
+    lastName,
+    nickname: document.getElementById("nurseNickname").value.trim(),
+    affiliation: document.getElementById("nurseAffiliation").value.trim(),
+    colorId: color.id,
+    colorValue: color.value,
+    date,
+    updatedAt: new Date().toISOString(),
+  };
+  dutyRecords.set(date, [...recordsForToday, dutyRecord]);
+  saveLocalDutyRecords();
+  saveDutyProfile(dutyRecord, user);
+  return true;
 }
 
 function saveLocalDutyRecords() {
@@ -182,16 +255,6 @@ function renderCalendar() {
   }
 }
 
-function getCalendarDots(date) {
-  const savedRecords = dutyRecords.get(date) || [];
-  if (savedRecords.length) return savedRecords.slice(0, 3).map((record) => record.colorValue || "#315dd4");
-  const day = Number(date.slice(-2));
-  const month = Number(date.slice(5, 7));
-  if ((day * 3 + month) % 11 === 0) return ["#f49a73", "#6d92ed"];
-  if ((day + month * 2) % 7 === 0) return ["#59b890"];
-  return [];
-}
-
 function renderYearCalendar() {
   const todayKey = getDateKey(new Date());
   const locale = language === "th" ? "th-TH" : "en-US";
@@ -210,7 +273,7 @@ function renderYearCalendar() {
         const records = dutyRecords.get(date) || [];
         const dots = records.length
           ? records.slice(0, 3).map((record) => { const tooltip = escapeAttribute(getDutyTooltip(record)); return `<i data-tooltip="${tooltip}" aria-label="${tooltip}" style="background:${record.colorValue || "#315dd4"}"></i>`; }).join("")
-          : getCalendarDots(date).map((color) => `<i style="background:${color}"></i>`).join("");
+          : "";
         return `<span class="mini-day${date === todayKey ? " is-today" : ""}">${day}<span class="mini-dots">${dots}</span></span>`;
       }).join("");
       return `<section class="mini-month"><h4>${monthName}</h4><div class="mini-weekdays">${weekdays.map((day) => `<span>${day}</span>`).join("")}</div><div class="mini-days">${emptyDays}${days}</div></section>`;
@@ -312,6 +375,7 @@ async function saveDutyRecord(event) {
   const dutyRef = doc(db, "dutyRecords", `${date}_${user.uid}`);
   const dutyRecord = {
     uid: user.uid,
+    email: user.email || "",
     nurseName,
     firstName,
     lastName,
@@ -328,6 +392,7 @@ async function saveDutyRecord(event) {
     const otherRecords = recordsForToday.filter((record) => record.uid !== user.uid);
     dutyRecords.set(date, [...otherRecords, dutyRecord]);
     saveLocalDutyRecords();
+    saveDutyProfile(dutyRecord, user);
     renderCalendar();
     dutyStatus.textContent = t.saved;
     return;
@@ -354,10 +419,29 @@ async function saveDutyRecord(event) {
   }
 }
 
+function saveDutyProfile(record, user = getCurrentUser()) {
+  const profileKey = String(user?.email || user?.uid || "").trim().toLowerCase();
+  if (!profileKey) return;
+  const profiles = readDutyProfiles();
+  profiles[profileKey] = {
+    uid: record.uid,
+    email: record.email,
+    colorId: record.colorId,
+    colorValue: record.colorValue,
+    firstName: record.firstName,
+    lastName: record.lastName,
+    nickname: record.nickname,
+    affiliation: record.affiliation,
+    updatedAt: record.updatedAt,
+  };
+  localStorage.setItem(DUTY_PROFILE_KEY, JSON.stringify(profiles));
+}
+
 languageInputs.forEach((input) => input.addEventListener("change", () => { language = input.value; renderLanguage(); }));
 window.addEventListener("storage", (event) => {
-  if (event.key !== LOCAL_DUTY_STORAGE_KEY) return;
+  if (![LOCAL_DUTY_STORAGE_KEY, DUTY_PROFILE_KEY].includes(event.key)) return;
   loadLocalDutyRecords();
+  restoreDutyProfile();
   renderCalendar();
   if (!yearCalendarModal.hidden) renderYearCalendar();
 });
@@ -394,6 +478,8 @@ signOutButton.addEventListener("click", () => {
 onAuthStateChanged(auth, (user) => {
   if (isAdminSession()) {
     loadLocalDutyRecords();
+    restoreDutyProfile();
+    ensureTodayDutyRecord();
     renderPalette();
     renderCalendar();
     return;
@@ -401,6 +487,8 @@ onAuthStateChanged(auth, (user) => {
   if (!user) { window.location.href = "./index.html"; return; }
   if (!USE_FIRESTORE) {
     loadLocalDutyRecords();
+    restoreDutyProfile(user);
+    ensureTodayDutyRecord(user);
     renderPalette();
     renderCalendar();
     return;

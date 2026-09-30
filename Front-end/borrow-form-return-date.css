@@ -1,7 +1,38 @@
-.return-date-field { display:grid; grid-template-columns:minmax(12rem,.4fr) minmax(12rem,1fr); align-items:center; gap:.65rem; margin:.65rem 0 .8rem; padding:.65rem .75rem; border:1px solid #c8e5e7; border-radius:.75rem; background:#f5fbfb; color:#123b56; font:600 .86rem Kanit,sans-serif; }
-.return-date-field input { width:100%; min-height:2.55rem; padding:.4rem .65rem; border:1px solid #c8e5e7; border-radius:.55rem; background:#fff; color:#123b56; font:500 .9rem Kanit,sans-serif; }
-.return-date-field input:focus { border-color:#01b4ba; outline:3px solid rgba(1,180,186,.14); }
-@media(max-width:700px) { .return-date-field { grid-template-columns:1fr; gap:.35rem; margin:.55rem 0; padding:.55rem; } }
+.return-date-field {
+  display: grid;
+  grid-template-columns: minmax(12rem,.4fr) minmax(12rem,1fr);
+  align-items: center;
+  gap: .65rem;
+  margin: .65rem 0 .8rem;
+  padding: .65rem .75rem;
+  border: 1px solid #c8e5e7;
+  border-radius: .75rem;
+  background: #f5fbfb;
+  color: #123b56;
+  font: 600 .86rem Kanit,sans-serif;
+}
+.return-date-field input {
+  width: 100%;
+  min-height: 2.55rem;
+  padding: .4rem .65rem;
+  border: 1px solid #c8e5e7;
+  border-radius: .55rem;
+  background: #fff;
+  color: #123b56;
+  font: 500 .9rem Kanit,sans-serif;
+}
+.return-date-field input:focus {
+  border-color: #01b4ba;
+  outline: 3px solid rgba(1,180,186,.14);
+}
+@media(max-width:700px) {
+  .return-date-field {
+    grid-template-columns: 1fr;
+    gap: .35rem;
+    margin: .55rem 0;
+    padding: .55rem;
+}
+}
 
 /* Borrow Form language button: match Catalog's pop interaction. */
 body .topbar .actions button.language {
@@ -19,9 +50,15 @@ body .topbar .actions button.language:active {
   box-shadow: 0 .12rem .25rem rgba(53,97,208,.2) !important;
 }
 @keyframes borrowLanguagePop {
-  0% { transform: scale(1); }
-  45% { transform: scale(1.1); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+}
+  45% {
+    transform: scale(1.1);
+}
+  100% {
+    transform: scale(1);
+}
 }
 body .topbar .actions button.language.language-pop {
   animation: borrowLanguagePop .28s ease-out !important;

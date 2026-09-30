@@ -7,8 +7,9 @@
   --dash-bg: #f5f8f9;
   --dash-shadow: 0 5px 20px rgba(25, 63, 78, .045);
 }
-
-html { font-size: 16px !important; }
+html {
+  font-size: 16px !important;
+}
 body {
   min-width: 320px;
   background: var(--dash-bg) !important;
@@ -22,14 +23,29 @@ body {
   color: var(--dash-ink) !important;
   border-bottom: 1px solid var(--dash-line);
 }
-.brand { color: var(--dash-ink) !important; font-size: .95rem !important; gap: .55rem !important; }
-.brand img { width: 2rem !important; border-radius: .55rem !important; }
-.top-actions { gap: .5rem !important; }
-.top-actions .menu-link { background: #f2f7f8 !important; color: #476574 !important; }
-.top-actions .menu-link:hover { background: #e7f2f3 !important; }
-.topbar .icon-button { color: #526c79 !important; }
-.topbar .export,
-.top-actions .language-switcher {
+.brand {
+  color: var(--dash-ink) !important;
+  font-size: .95rem !important;
+  gap: .55rem !important;
+}
+.brand img {
+  width: 2rem !important;
+  border-radius: .55rem !important;
+}
+.top-actions {
+  gap: .5rem !important;
+}
+.top-actions .menu-link {
+  background: #f2f7f8 !important;
+  color: #476574 !important;
+}
+.top-actions .menu-link:hover {
+  background: #e7f2f3 !important;
+}
+.topbar .icon-button {
+  color: #526c79 !important;
+}
+.topbar .export, .top-actions .language-switcher {
   min-height: 2rem !important;
   padding: 0 .75rem !important;
   border: 1px solid var(--dash-line) !important;
@@ -38,8 +54,24 @@ body {
   color: #365866 !important;
   font-size: .78rem !important;
 }
-.top-actions button.language-switcher { display:inline-flex!important; align-items:center; justify-content:center; gap:.4rem; min-width:5.2rem; cursor:pointer; font-family:Kanit,sans-serif; }
-.top-actions .language-switcher span { display:inline!important; visibility:visible!important; opacity:1!important; color:inherit!important; font-size:inherit!important; font-weight:600; line-height:1; }
+.top-actions button.language-switcher {
+  display: inline-flex!important;
+  align-items: center;
+  justify-content: center;
+  gap: .4rem;
+  min-width: 5.2rem;
+  cursor: pointer;
+  font-family: Kanit,sans-serif;
+}
+.top-actions .language-switcher span {
+  display: inline!important;
+  visibility: visible!important;
+  opacity: 1!important;
+  color: inherit!important;
+  font-size: inherit!important;
+  font-weight: 600;
+  line-height: 1;
+}
 .page {
   width: min(100% - 2rem, 1440px) !important;
   max-width: 1440px !important;
@@ -64,7 +96,11 @@ body {
   background: #fff !important;
   box-shadow: var(--dash-shadow);
 }
-.filter-card label { gap: .3rem !important; color: var(--dash-muted) !important; font-size: .78rem !important; }
+.filter-card label {
+  gap: .3rem !important;
+  color: var(--dash-muted) !important;
+  font-size: .78rem !important;
+}
 .filter-card input {
   height: 2.55rem !important;
   padding: 0 .75rem !important;
@@ -94,23 +130,118 @@ body {
   cursor: pointer;
   transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
 }
-.filter-card select:hover { border-color: #5baab2 !important; background-color: #f1fbfa !important; }
-.filter-card select:focus { border-color: #087f8c !important; background-color: #fff !important; box-shadow: 0 0 0 3px rgba(8,127,140,.14); }
-.filter-card select option { padding: .55rem .7rem; background: #fff; color: #244a63; font: 500 .86rem Kanit, "IBM Plex Sans Thai", sans-serif; }
-#facultySelect { min-width: 0; }
-#branchInput { min-width: 0; }
-.custom-select { position: relative; width: 100%; }
-.custom-select > select[hidden] { display: none !important; }
-.filter-card .custom-select > select { display: none !important; }
-.custom-select-trigger { display: flex !important; width: 100% !important; min-height: 2.55rem !important; height: auto !important; align-items: center; justify-content: space-between; gap: .6rem; padding: 0 .7rem 0 .75rem !important; border: 1px solid #d5e1e5 !important; border-radius: .45rem !important; background: #fff !important; color: #365866 !important; font: 500 .84rem/1.2 Kanit, "IBM Plex Sans Thai", sans-serif !important; text-align: left; cursor: pointer; transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease; }
-.custom-select-trigger:hover, .custom-select.is-open .custom-select-trigger { border-color: #75b8bd; background: #fff; box-shadow: 0 0 0 2px rgba(8,127,140,.08); }
-.custom-select-trigger > svg { width: 1rem; height: 1rem; flex: 0 0 1rem; fill: none; stroke: #087f8c; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; transition: transform .15s ease; }
-.custom-select.is-open .custom-select-trigger > svg { transform: rotate(180deg); }
-.custom-select-menu { position: absolute; z-index: 30; top: calc(100% + .3rem); right: 0; left: 0; display: grid; gap: .1rem; max-height: 18rem; overflow-y: auto; padding: .25rem; border: 1px solid #d5e1e5; border-radius: .5rem; background: #fff; box-shadow: 0 .5rem 1.2rem rgba(24,59,80,.12); }
-.custom-select-menu[hidden] { display: none; }
-.custom-select-option { display: block !important; width: 100% !important; height: auto !important; min-height: 0 !important; padding: .48rem .55rem !important; border: 1px solid transparent !important; border-radius: .3rem !important; background: #fff !important; color: #426575 !important; font: 500 .78rem/1.3 Kanit, "IBM Plex Sans Thai", sans-serif !important; text-align: left; cursor: pointer; }
-.custom-select-option:hover { border-color: #d7eceb !important; background: #f2f9f8 !important; color: #075b79 !important; }
-.custom-select-option.is-selected { border-color: #a8d3d2 !important; background: #edf8f7 !important; color: #087f87 !important; font-weight: 700; }
+.filter-card select:hover {
+  border-color: #5baab2 !important;
+  background-color: #f1fbfa !important;
+}
+.filter-card select:focus {
+  border-color: #087f8c !important;
+  background-color: #fff !important;
+  box-shadow: 0 0 0 3px rgba(8,127,140,.14);
+}
+.filter-card select option {
+  padding: .55rem .7rem;
+  background: #fff;
+  color: #244a63;
+  font: 500 .86rem Kanit, "IBM Plex Sans Thai", sans-serif;
+}
+#facultySelect {
+  min-width: 0;
+}
+#branchInput {
+  min-width: 0;
+}
+.custom-select {
+  position: relative;
+  width: 100%;
+}
+.custom-select > select[hidden] {
+  display: none !important;
+}
+.filter-card .custom-select > select {
+  display: none !important;
+}
+.custom-select-trigger {
+  display: flex !important;
+  width: 100% !important;
+  min-height: 2.55rem !important;
+  height: auto !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: .6rem;
+  padding: 0 .7rem 0 .75rem !important;
+  border: 1px solid #d5e1e5 !important;
+  border-radius: .45rem !important;
+  background: #fff !important;
+  color: #365866 !important;
+  font: 500 .84rem/1.2 Kanit, "IBM Plex Sans Thai", sans-serif !important;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
+}
+.custom-select-trigger:hover, .custom-select.is-open .custom-select-trigger {
+  border-color: #75b8bd;
+  background: #fff;
+  box-shadow: 0 0 0 2px rgba(8,127,140,.08);
+}
+.custom-select-trigger > svg {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 1rem;
+  fill: none;
+  stroke: #087f8c;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform .15s ease;
+}
+.custom-select.is-open .custom-select-trigger > svg {
+  transform: rotate(180deg);
+}
+.custom-select-menu {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + .3rem);
+  right: 0;
+  left: 0;
+  display: grid;
+  gap: .1rem;
+  max-height: 18rem;
+  overflow-y: auto;
+  padding: .25rem;
+  border: 1px solid #d5e1e5;
+  border-radius: .5rem;
+  background: #fff;
+  box-shadow: 0 .5rem 1.2rem rgba(24,59,80,.12);
+}
+.custom-select-menu[hidden] {
+  display: none;
+}
+.custom-select-option {
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  padding: .48rem .55rem !important;
+  border: 1px solid transparent !important;
+  border-radius: .3rem !important;
+  background: #fff !important;
+  color: #426575 !important;
+  font: 500 .78rem/1.3 Kanit, "IBM Plex Sans Thai", sans-serif !important;
+  text-align: left;
+  cursor: pointer;
+}
+.custom-select-option:hover {
+  border-color: #d7eceb !important;
+  background: #f2f9f8 !important;
+  color: #075b79 !important;
+}
+.custom-select-option.is-selected {
+  border-color: #a8d3d2 !important;
+  background: #edf8f7 !important;
+  color: #087f87 !important;
+  font-weight: 700;
+}
 
 /* Hospital minimal dropdown: white surface with the approved teal outline. */
 .filter-card .custom-select-trigger {
@@ -132,15 +263,29 @@ body {
   overflow-wrap: anywhere;
   line-height: 1.3;
 }
-.filter-card .custom-select-trigger:hover,
-.filter-card .custom-select.is-open .custom-select-trigger {
+.filter-card .custom-select-trigger:hover, .filter-card .custom-select.is-open .custom-select-trigger {
   border-color: #01B4BA !important;
   background: #fff !important;
   box-shadow: 0 0 0 3px rgba(1,180,186,.12) !important;
 }
-.filter-card .custom-select-trigger > svg { stroke: #01B4BA; }
-.filter-card .custom-select-chevron { width: 1.1rem !important; height: 1.1rem !important; flex: 0 0 1.1rem; align-self: center !important; margin-top: 0 !important; fill: none; stroke: #01B4BA; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-.filter-card .custom-select.is-open .custom-select-chevron { transform: rotate(180deg); }
+.filter-card .custom-select-trigger > svg {
+  stroke: #01B4BA;
+}
+.filter-card .custom-select-chevron {
+  width: 1.1rem !important;
+  height: 1.1rem !important;
+  flex: 0 0 1.1rem;
+  align-self: center !important;
+  margin-top: 0 !important;
+  fill: none;
+  stroke: #01B4BA;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.filter-card .custom-select.is-open .custom-select-chevron {
+  transform: rotate(180deg);
+}
 .filter-card .custom-select-menu {
   border: 1px solid #b8e7e8 !important;
   border-radius: .55rem !important;
@@ -174,9 +319,17 @@ body {
   scrollbar-width: thin;
   scrollbar-color: #91a7ad #f1f6f7;
 }
-.filter-card .custom-select-menu::-webkit-scrollbar { width: .35rem; }
-.filter-card .custom-select-menu::-webkit-scrollbar-track { background: #f1f6f7; border-radius: 999px; }
-.filter-card .custom-select-menu::-webkit-scrollbar-thumb { background: #91a7ad; border-radius: 999px; }
+.filter-card .custom-select-menu::-webkit-scrollbar {
+  width: .35rem;
+}
+.filter-card .custom-select-menu::-webkit-scrollbar-track {
+  background: #f1f6f7;
+  border-radius: 999px;
+}
+.filter-card .custom-select-menu::-webkit-scrollbar-thumb {
+  background: #91a7ad;
+  border-radius: 999px;
+}
 .filter-card .custom-select-option {
   padding: .32rem .5rem !important;
   font-size: .72rem !important;
@@ -184,9 +337,7 @@ body {
 }
 
 /* Keep stock detail chevrons centered; the shared button hover animation must not move them. */
-.page .status-panel .stock-detail-button,
-.page .status-panel .stock-detail-button:hover,
-.page .status-panel .stock-detail-button:active {
+.page .status-panel .stock-detail-button, .page .status-panel .stock-detail-button:hover, .page .status-panel .stock-detail-button:active {
   top: 50% !important;
   transform: translateY(-50%) !important;
   transition: background-color .15s ease, color .15s ease, box-shadow .15s ease !important;
@@ -194,7 +345,10 @@ body {
 .page .status-panel .stock-detail-button:hover {
   box-shadow: 0 3px 10px rgba(8,127,140,.16) !important;
 }
-.filter-card input:focus { border-color: #62aeb5 !important; box-shadow: 0 0 0 3px rgba(8,127,140,.1); }
+.filter-card input:focus {
+  border-color: #62aeb5 !important;
+  box-shadow: 0 0 0 3px rgba(8,127,140,.1);
+}
 .filter-card button {
   height: 2.55rem !important;
   padding: 0 1rem !important;
@@ -204,8 +358,13 @@ body {
   font-size: .85rem !important;
   font-weight: 600;
 }
-.filter-card button:hover { background: #066e79 !important; }
-.range-line { padding-bottom: .7rem !important; color: #9aabb4; }
+.filter-card button:hover {
+  background: #066e79 !important;
+}
+.range-line {
+  padding-bottom: .7rem !important;
+  color: #9aabb4;
+}
 .panel {
   min-width: 0;
   margin-bottom: 1rem !important;
@@ -220,14 +379,20 @@ body {
   color: #264b5e !important;
   font: 600 .98rem/1.4 Kanit, sans-serif !important;
 }
-.visits { height: 18rem !important; }
+.visits {
+  height: 18rem !important;
+}
 .bar-chart {
   height: 13rem !important;
   margin: 0 1.5rem 0 2.3rem !important;
   border-bottom: 1px solid #dce7eb !important;
 }
-.grid { border-color: #edf2f4 !important; }
-.bars { align-items: end; }
+.grid {
+  border-color: #edf2f4 !important;
+}
+.bars {
+  align-items: end;
+}
 .bars i {
   width: clamp(1.5rem, 3vw, 2.25rem) !important;
   border-radius: .55rem .55rem .2rem .2rem !important;
@@ -235,11 +400,28 @@ body {
   box-shadow: 0 3px 8px rgba(8,127,140,.12);
   transition: filter .15s ease, transform .15s ease;
 }
-.bars i:hover { filter: brightness(1.08); transform: translateY(-2px); }
-.bars b { color: #738893 !important; font: 500 .75rem Kanit, sans-serif !important; }
-.two-col { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 1rem !important; }
-.compact { height: auto !important; min-height: 18rem; }
-body .medicine-chart, body .symptom-chart { display: grid !important; grid-template-columns: minmax(120px, .8fr) minmax(0, 1.2fr) !important; align-items: center; gap: 1rem; }
+.bars i:hover {
+  filter: brightness(1.08);
+  transform: translateY(-2px);
+}
+.bars b {
+  color: #738893 !important;
+  font: 500 .75rem Kanit, sans-serif !important;
+}
+.two-col {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 1rem !important;
+}
+.compact {
+  height: auto !important;
+  min-height: 18rem;
+}
+body .medicine-chart, body .symptom-chart {
+  display: grid !important;
+  grid-template-columns: minmax(120px, .8fr) minmax(0, 1.2fr) !important;
+  align-items: center;
+  gap: 1rem;
+}
 body .medicine-chart .pie-medicine, body .symptom-chart .pie-symptom {
   width: min(100%, 12rem) !important;
   height: auto !important;
@@ -247,8 +429,12 @@ body .medicine-chart .pie-medicine, body .symptom-chart .pie-symptom {
   margin: .25rem auto !important;
   clip-path: none !important;
 }
-body .symptom-chart .pie-symptom { background: conic-gradient(#32a6c0 0 15%, #8678cd 15% 32%, #43b7a4 32% 53%, #e5a15b 53% 75%, #64b6d0 75% 100%) !important; }
-body .medicine-chart .pie-medicine { background: conic-gradient(#087f8c 0 30%, #43b7a4 30% 52%, #77c8bb 52% 68%, #9bdbd0 68% 83%, #c2e9e3 83% 100%) !important; }
+body .symptom-chart .pie-symptom {
+  background: conic-gradient(#32a6c0 0 15%, #8678cd 15% 32%, #43b7a4 32% 53%, #e5a15b 53% 75%, #64b6d0 75% 100%) !important;
+}
+body .medicine-chart .pie-medicine {
+  background: conic-gradient(#087f8c 0 30%, #43b7a4 30% 52%, #77c8bb 52% 68%, #9bdbd0 68% 83%, #c2e9e3 83% 100%) !important;
+}
 body .medicine-legend, body .symptom-legend {
   display: grid !important;
   grid-template-columns: 1fr !important;
@@ -257,11 +443,29 @@ body .medicine-legend, body .symptom-legend {
   padding: 0 !important;
   list-style: none !important;
 }
-body .medicine-legend li, body .symptom-legend li { display: flex; align-items: center; gap: .5rem !important; color: #526c79; font-size: .8rem !important; }
-body .medicine-legend li:before, body .symptom-legend li:before { width: .55rem !important; height: .55rem !important; flex: 0 0 .55rem !important; border-radius: 50%; }
-.calendar-panel { min-height: 0 !important; }
-.calendar-panel .calendar-week span { background: #f0f6f7 !important; color: #627c88 !important; }
-.calendar-panel .duty-calendar span { min-height: 2.5rem !important; }
+body .medicine-legend li, body .symptom-legend li {
+  display: flex;
+  align-items: center;
+  gap: .5rem !important;
+  color: #526c79;
+  font-size: .8rem !important;
+}
+body .medicine-legend li:before, body .symptom-legend li:before {
+  width: .55rem !important;
+  height: .55rem !important;
+  flex: 0 0 .55rem !important;
+  border-radius: 50%;
+}
+.calendar-panel {
+  min-height: 0 !important;
+}
+.calendar-panel .calendar-week span {
+  background: #f0f6f7 !important;
+  color: #627c88 !important;
+}
+.calendar-panel .duty-calendar span {
+  min-height: 2.5rem !important;
+}
 .status-panel .stock {
   margin: .55rem 0 !important;
   padding: .7rem .8rem !important;
@@ -272,19 +476,51 @@ body .medicine-legend li:before, body .symptom-legend li:before { width: .55rem 
   color: #345667;
   font-size: .84rem !important;
 }
-.status-panel .stock.critical { border-left-color: #d87575 !important; }
-.status-panel .stock.warning { border-left-color: #d6a34c !important; }
-.status-panel .stock.low { border-left-color: #88ae61 !important; }
-.status-panel .stock.normal { border-left-color: #4b9da4 !important; }
-.status-panel .stock small { color: var(--dash-muted); font-size: .72rem !important; }
-.expiry .donut { width: 9rem !important; height: 9rem !important; margin: 1rem auto !important; }
-.gender-row strong { color: #087f8c !important; }
-.gender-row div + div strong { color: #9a6fa8 !important; }
-.gender-bars .male-track i { background: #087f8c !important; }
-.gender-bars .female-track i { background: #9a6fa8 !important; }
-.referral-main strong { color: #183b50 !important; }
-.referral-list li { padding: .45rem .55rem !important; background: #f5f8f9 !important; font-size: .75rem !important; }
-footer { height: 0 !important; background: transparent !important; }
+.status-panel .stock.critical {
+  border-left-color: #d87575 !important;
+}
+.status-panel .stock.warning {
+  border-left-color: #d6a34c !important;
+}
+.status-panel .stock.low {
+  border-left-color: #88ae61 !important;
+}
+.status-panel .stock.normal {
+  border-left-color: #4b9da4 !important;
+}
+.status-panel .stock small {
+  color: var(--dash-muted);
+  font-size: .72rem !important;
+}
+.expiry .donut {
+  width: 9rem !important;
+  height: 9rem !important;
+  margin: 1rem auto !important;
+}
+.gender-row strong {
+  color: #087f8c !important;
+}
+.gender-row div + div strong {
+  color: #9a6fa8 !important;
+}
+.gender-bars .male-track i {
+  background: #087f8c !important;
+}
+.gender-bars .female-track i {
+  background: #9a6fa8 !important;
+}
+.referral-main strong {
+  color: #183b50 !important;
+}
+.referral-list li {
+  padding: .45rem .55rem !important;
+  background: #f5f8f9 !important;
+  font-size: .75rem !important;
+}
+footer {
+  height: 0 !important;
+  background: transparent !important;
+}
 
 /* Clean, compact notification popover. */
 .dashboard-notification {
@@ -339,47 +575,115 @@ footer { height: 0 !important; background: transparent !important; }
   padding: .75rem .9rem;
   border-bottom-color: #edf3f4;
 }
-.dashboard-notification .notice b { color: #315b6e; font: 700 .74rem Kanit, sans-serif; }
-.dashboard-notification .notice p { color: #78909d; font-size: .68rem; }
-
+.dashboard-notification .notice b {
+  color: #315b6e;
+  font: 700 .74rem Kanit, sans-serif;
+}
+.dashboard-notification .notice p {
+  color: #78909d;
+  font-size: .68rem;
+}
 @media (max-width: 760px) {
-  .page { width: min(100% - 1.25rem, 1440px) !important; padding-top: 1.25rem !important; }
-  .filter-card { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) !important; }
-  .filter-card label:nth-of-type(4), .filter-card label:nth-of-type(5) { grid-column: span 1; }
-  .filter-card button { grid-column: 3; }
-  .two-col { grid-template-columns: 1fr !important; }
+  .page {
+    width: min(100% - 1.25rem, 1440px) !important;
+    padding-top: 1.25rem !important;
+}
+  .filter-card {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) !important;
+}
+  .filter-card label:nth-of-type(4), .filter-card label:nth-of-type(5) {
+    grid-column: span 1;
+}
+  .filter-card button {
+    grid-column: 3;
+}
+  .two-col {
+    grid-template-columns: 1fr !important;
+}
 }
 @media (max-width: 520px) {
-  .topbar { align-items: center !important; }
-  .brand span { max-width: 10rem; font-size: .75rem !important; line-height: 1.2; }
-  .top-actions { width: auto !important; margin-left: auto; gap: .3rem !important; }
-  .topbar .export { min-height: 1.8rem !important; padding: 0 .5rem !important; font-size: .68rem !important; }
-  .page { width: min(100% - 1rem, 1440px) !important; padding: 1rem 0 2rem !important; }
-  .page h1 { font-size: 1.3rem !important; }
-  .filter-card { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) !important; padding: .75rem !important; gap: .45rem !important; }
-  .filter-card label { font-size: .7rem !important; }
-  .filter-card input, .filter-card select, .custom-select-trigger { min-width: 0; min-height: 2.35rem !important; height: 2.35rem !important; font-size: .75rem !important; }
-  .filter-card label:nth-of-type(4), .filter-card label:nth-of-type(5) { grid-column: span 1; }
-  .filter-card button { grid-column: 3; height: 2.35rem !important; padding: 0 .7rem !important; }
-  .panel { padding: .9rem !important; }
-  .visits { height: 15rem !important; }
-  .bar-chart { height: 10.5rem !important; margin: 0 .5rem 0 1.1rem !important; }
-  .bars i { width: 1.1rem !important; }
-  body .medicine-chart, body .symptom-chart { grid-template-columns: 1fr !important; }
-  body .medicine-chart .pie-medicine, body .symptom-chart .pie-symptom { width: 9rem !important; }
-  body .medicine-legend, body .symptom-legend { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
-  .calendar-panel { overflow-x: auto; }
-  .calendar-week, .duty-calendar { min-width: 22rem; }
+  .topbar {
+    align-items: center !important;
 }
+  .brand span {
+    max-width: 10rem;
+    font-size: .75rem !important;
+    line-height: 1.2;
+}
+  .top-actions {
+    width: auto !important;
+    margin-left: auto;
+    gap: .3rem !important;
+}
+  .topbar .export {
+    min-height: 1.8rem !important;
+    padding: 0 .5rem !important;
+    font-size: .68rem !important;
+}
+  .page {
+    width: min(100% - 1rem, 1440px) !important;
+    padding: 1rem 0 2rem !important;
+}
+  .page h1 {
+    font-size: 1.3rem !important;
+}
+  .filter-card {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) !important;
+    padding: .75rem !important;
+    gap: .45rem !important;
+}
+  .filter-card label {
+    font-size: .7rem !important;
+}
+  .filter-card input, .filter-card select, .custom-select-trigger {
+    min-width: 0;
+    min-height: 2.35rem !important;
+    height: 2.35rem !important;
+    font-size: .75rem !important;
+}
+  .filter-card label:nth-of-type(4), .filter-card label:nth-of-type(5) {
+    grid-column: span 1;
+}
+  .filter-card button {
+    grid-column: 3;
+    height: 2.35rem !important;
+    padding: 0 .7rem !important;
+}
+  .panel {
+    padding: .9rem !important;
+}
+  .visits {
+    height: 15rem !important;
+}
+  .bar-chart {
+    height: 10.5rem !important;
+    margin: 0 .5rem 0 1.1rem !important;
+}
+  .bars i {
+    width: 1.1rem !important;
+}
+  body .medicine-chart, body .symptom-chart {
+    grid-template-columns: 1fr !important;
+}
+  body .medicine-chart .pie-medicine, body .symptom-chart .pie-symptom {
+    width: 9rem !important;
+}
+  body .medicine-legend, body .symptom-legend {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+  .calendar-panel {
+    overflow-x: auto;
+}
+  .calendar-week, .duty-calendar {
+    min-width: 22rem;
+}
+}
+
 /* Dashboard topbar: only the real Earth SVG should be visible. */
-body .topbar .language-switcher::before,
-body .topbar .language-switcher::after,
-body .topbar .language-switcher span::before,
-body .topbar .language-switcher span::after {
+body .topbar .language-switcher::before, body .topbar .language-switcher::after, body .topbar .language-switcher span::before, body .topbar .language-switcher span::after {
   content: none !important;
   display: none !important;
 }
-
 body .topbar .language-switcher > svg {
   display: block !important;
   width: 16px !important;

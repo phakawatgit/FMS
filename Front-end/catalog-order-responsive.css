@@ -1,1 +1,94 @@
-html,body{width:100%;min-width:0;overflow-x:hidden}.order-page{width:100%;max-width:1200px!important;margin:0 auto;padding:clamp(1.25rem,4vw,3rem) clamp(1rem,4vw,3.5rem) 7rem!important}.order-page>h1{font-size:clamp(1.5rem,3.5vw,2.5rem)!important}.order-heading{width:100%;padding:clamp(.8rem,2vw,1.1rem) clamp(1rem,2vw,1.5rem)!important}.order-heading h2{font-size:clamp(1.1rem,2vw,1.45rem)!important}.order-sheet{width:100%;padding:clamp(1rem,2.5vw,1.5rem)!important}.order-sheet-title h2{font-size:clamp(1rem,2vw,1.25rem)!important}.order-item{grid-template-columns:clamp(4.5rem,8vw,6rem) 1fr!important;gap:clamp(.75rem,2vw,1.25rem)!important;padding:clamp(.75rem,2vw,1rem)!important;min-height:clamp(5.5rem,10vw,7rem)!important}.order-item img,.order-empty-image{width:clamp(4.5rem,8vw,6rem)!important;height:clamp(4.5rem,8vw,6rem)!important}.order-item strong{font-size:clamp(.9rem,1.5vw,1.1rem)!important}.order-meta{gap:.65rem!important}.order-footer{padding:.75rem max(1rem,calc((100% - 1200px)/2 + clamp(1rem,4vw,3.5rem)))!important}.order-footer span{font-size:clamp(.65rem,1vw,.8rem)!important}@media(max-width:700px){.order-page{padding:1rem .75rem 6.5rem!important}.order-sheet-title{align-items:flex-start!important;flex-direction:column!important;gap:.2rem!important}.order-footer{justify-content:center!important;gap:.5rem!important;padding:.65rem .75rem!important;flex-wrap:wrap!important}.order-footer span{width:100%;margin:0;text-align:center}.order-footer button{flex:1;min-width:0!important}.order-item{grid-template-columns:4.5rem 1fr!important}.order-item img,.order-empty-image{width:4.5rem!important;height:4.5rem!important}.order-meta{font-size:.75rem!important}}@media(min-width:1400px){.order-page{max-width:1320px!important}.order-footer{padding-left:max(1rem,calc((100% - 1320px)/2 + 3rem))!important;padding-right:max(1rem,calc((100% - 1320px)/2 + 3rem))!important}}
+html,body {
+  width: 100%;
+  min-width: 0;
+  overflow-x: hidden;
+}
+.order-page {
+  width: 100%;
+  max-width: 1200px!important;
+  margin: 0 auto;
+  padding: clamp(1.25rem,4vw,3rem) clamp(1rem,4vw,3.5rem) 7rem!important;
+}
+.order-page>h1 {
+  font-size: clamp(1.5rem,3.5vw,2.5rem)!important;
+}
+.order-heading {
+  width: 100%;
+  padding: clamp(.8rem,2vw,1.1rem) clamp(1rem,2vw,1.5rem)!important;
+}
+.order-heading h2 {
+  font-size: clamp(1.1rem,2vw,1.45rem)!important;
+}
+.order-sheet {
+  width: 100%;
+  padding: clamp(1rem,2.5vw,1.5rem)!important;
+}
+.order-sheet-title h2 {
+  font-size: clamp(1rem,2vw,1.25rem)!important;
+}
+.order-item {
+  grid-template-columns: clamp(4.5rem,8vw,6rem) 1fr!important;
+  gap: clamp(.75rem,2vw,1.25rem)!important;
+  padding: clamp(.75rem,2vw,1rem)!important;
+  min-height: clamp(5.5rem,10vw,7rem)!important;
+}
+.order-item img,.order-empty-image {
+  width: clamp(4.5rem,8vw,6rem)!important;
+  height: clamp(4.5rem,8vw,6rem)!important;
+}
+.order-item strong {
+  font-size: clamp(.9rem,1.5vw,1.1rem)!important;
+}
+.order-meta {
+  gap: .65rem!important;
+}
+.order-footer {
+  padding: .75rem max(1rem,calc((100% - 1200px)/2 + clamp(1rem,4vw,3.5rem)))!important;
+}
+.order-footer span {
+  font-size: clamp(.65rem,1vw,.8rem)!important;
+}
+@media(max-width:700px) {
+  .order-page {
+    padding: 1rem .75rem 6.5rem!important;
+  }
+  .order-sheet-title {
+    align-items: flex-start!important;
+    flex-direction: column!important;
+    gap: .2rem!important;
+  }
+  .order-footer {
+    justify-content: center!important;
+    gap: .5rem!important;
+    padding: .65rem .75rem!important;
+    flex-wrap: wrap!important;
+  }
+  .order-footer span {
+    width: 100%;
+    margin: 0;
+    text-align: center;
+  }
+  .order-footer button {
+    flex: 1;
+    min-width: 0!important;
+  }
+  .order-item {
+    grid-template-columns: 4.5rem 1fr!important;
+  }
+  .order-item img,.order-empty-image {
+    width: 4.5rem!important;
+    height: 4.5rem!important;
+  }
+  .order-meta {
+    font-size: .75rem!important;
+  }
+}
+@media(min-width:1400px) {
+  .order-page {
+    max-width: 1320px!important;
+  }
+  .order-footer {
+    padding-left: max(1rem,calc((100% - 1320px)/2 + 3rem))!important;
+    padding-right: max(1rem,calc((100% - 1320px)/2 + 3rem))!important;
+  }
+}

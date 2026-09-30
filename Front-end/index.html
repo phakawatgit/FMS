@@ -72,7 +72,13 @@
 
           <div class="field">
             <label for="password" data-i18n="password">Password</label>
-            <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Enter your password" required />
+            <div class="password-field">
+              <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Enter your password" required />
+              <button class="password-toggle" type="button" data-password-toggle="password" aria-label="แสดงรหัสผ่าน" aria-pressed="false">
+                <svg class="eye-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.4-5 9.5-5 9.5 5 9.5 5-3.4 5-9.5 5-9.5-5-9.5-5Z"></path><circle cx="12" cy="12" r="2.5"></circle></svg>
+                <svg class="eye-closed" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.4-5 9.5-5 9.5 5 9.5 5-3.4 5-9.5 5-9.5-5-9.5-5Z"></path><path d="M4 4 20 20"></path></svg>
+              </button>
+            </div>
           </div>
 
           <div class="form-meta">
@@ -114,11 +120,11 @@
           <form id="newPasswordForm" class="auth-form" hidden>
             <div class="field">
               <label for="newPassword">New password</label>
-              <div class="password-field"><input id="newPassword" type="password" autocomplete="new-password" minlength="6" placeholder="อย่างน้อย 6 ตัวอักษร" required /><button class="password-toggle" type="button" data-password-toggle="newPassword" aria-label="แสดงรหัสผ่าน" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.4-5 9.5-5 9.5 5 9.5 5-3.4 5-9.5 5-9.5-5-9.5-5Z"></path><circle cx="12" cy="12" r="2.5"></circle></svg></button></div>
+              <div class="password-field"><input id="newPassword" type="password" autocomplete="new-password" minlength="6" placeholder="อย่างน้อย 6 ตัวอักษร" required /><button class="password-toggle" type="button" data-password-toggle="newPassword" aria-label="แสดงรหัสผ่าน" aria-pressed="false"><svg class="eye-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.4-5 9.5-5 9.5 5 9.5 5-3.4 5-9.5 5-9.5-5-9.5-5Z"></path><circle cx="12" cy="12" r="2.5"></circle></svg><svg class="eye-closed" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.4-5 9.5-5 9.5 5 9.5 5-3.4 5-9.5 5-9.5-5-9.5-5Z"></path><path d="M4 4 20 20"></path></svg></button></div>
             </div>
             <div class="field">
               <label for="confirmPassword">Confirm password</label>
-              <div class="password-field"><input id="confirmPassword" type="password" autocomplete="new-password" minlength="6" placeholder="กรอกรหัสผ่านอีกครั้ง" required /><button class="password-toggle" type="button" data-password-toggle="confirmPassword" aria-label="แสดงรหัสผ่าน" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.4-5 9.5-5 9.5 5 9.5 5-3.4 5-9.5 5-9.5-5-9.5-5Z"></path><circle cx="12" cy="12" r="2.5"></circle></svg></button></div>
+              <div class="password-field"><input id="confirmPassword" type="password" autocomplete="new-password" minlength="6" placeholder="กรอกรหัสผ่านอีกครั้ง" required /><button class="password-toggle" type="button" data-password-toggle="confirmPassword" aria-label="แสดงรหัสผ่าน" aria-pressed="false"><svg class="eye-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.4-5 9.5-5 9.5 5 9.5 5-3.4 5-9.5 5-9.5-5-9.5-5Z"></path><circle cx="12" cy="12" r="2.5"></circle></svg><svg class="eye-closed" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.4-5 9.5-5 9.5 5 9.5 5-3.4 5-9.5 5-9.5-5-9.5-5Z"></path><path d="M4 4 20 20"></path></svg></button></div>
             </div>
             <button class="primary-button" type="submit">เปลี่ยนรหัสผ่าน</button>
           </form>
@@ -142,7 +148,7 @@
       </section>
     </main>
 
-    <script type="module" src="./script.js"></script>
+    <script type="module" src="./script.js?v=3"></script>
   </body>
 </html>
 

@@ -1,2 +1,81 @@
-.page-tools .bell{position:relative;width:1.35rem;height:2rem;padding:0;border:0;border-radius:0;background:transparent;color:#fff}.page-tools .bell svg{width:1rem;height:1rem;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}.page-tools .bell b{position:absolute;top:-.12rem;right:-.28rem;display:grid;width:.92rem;height:.92rem;place-items:center;border:0;border-radius:50%;background:#ef4545;color:#fff;font-size:.5rem}.page-tools .notification-panel{position:fixed;z-index:20;top:4.5rem;right:1rem;width:min(20rem,calc(100vw - 2rem));padding:1rem;border:1px solid #91b2ff;border-radius:.7rem;background:#fff;color:#07164f;box-shadow:0 .8rem 2rem #0003}.page-tools .notification-panel button{float:right;border:0;background:transparent;font-size:1.2rem;cursor:pointer}.page-tools .notification-panel p{margin:.5rem 0 0;color:#53617a}
-.notification-panel{position:fixed;z-index:20;top:4.5rem;right:1rem;width:min(20rem,calc(100vw - 2rem));padding:1rem;border:1px solid #91b2ff;border-radius:.7rem;background:#fff;color:#07164f;box-shadow:0 .8rem 2rem #0003}.notification-panel button{float:right;border:0;background:transparent;font-size:1.2rem;cursor:pointer}.notification-panel p{margin:.5rem 0 0;color:#53617a}
+.page-tools .bell {
+  position: relative;
+  width: 1.35rem;
+  height: 2rem;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #fff;
+}
+.page-tools .bell svg {
+  width: 1rem;
+  height: 1rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.page-tools .bell b {
+  position: absolute;
+  top: -.12rem;
+  right: -.28rem;
+  display: grid;
+  width: .92rem;
+  height: .92rem;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: #ef4545;
+  color: #fff;
+  font-size: .5rem;
+}
+.page-tools .notification-panel {
+  position: fixed;
+  z-index: 20;
+  top: 4.5rem;
+  right: 1rem;
+  width: min(20rem,calc(100vw - 2rem));
+  padding: 1rem;
+  border: 1px solid #91b2ff;
+  border-radius: .7rem;
+  background: #fff;
+  color: #07164f;
+  box-shadow: 0 .8rem 2rem #0003;
+}
+.page-tools .notification-panel button {
+  float: right;
+  border: 0;
+  background: transparent;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+.page-tools .notification-panel p {
+  margin: .5rem 0 0;
+  color: #53617a;
+}
+.notification-panel {
+  position: fixed;
+  z-index: 20;
+  top: 4.5rem;
+  right: 1rem;
+  width: min(20rem,calc(100vw - 2rem));
+  padding: 1rem;
+  border: 1px solid #91b2ff;
+  border-radius: .7rem;
+  background: #fff;
+  color: #07164f;
+  box-shadow: 0 .8rem 2rem #0003;
+}
+.notification-panel button {
+  float: right;
+  border: 0;
+  background: transparent;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+.notification-panel p {
+  margin: .5rem 0 0;
+  color: #53617a;
+}

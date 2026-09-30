@@ -12,6 +12,7 @@ const firebaseConfig = {
 
 const DUTY_KEY = "fms-local-duty-records";
 const API_BASE = window.FMS_API_URL || `${location.protocol}//${location.hostname}:4000`;
+const DUTY_PROFILE_KEY = "fms-duty-profiles";
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const monthSelect = document.getElementById("calendarMonth");
@@ -57,6 +58,47 @@ function readRecords() {
     const saved = JSON.parse(localStorage.getItem(DUTY_KEY) || "[]");
     return Array.isArray(saved) ? saved.filter((record) => record?.date) : [];
   } catch { return []; }
+}
+
+function readProfiles() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(DUTY_PROFILE_KEY) || "{}");
+    return saved && typeof saved === "object" && !Array.isArray(saved) ? saved : {};
+  } catch { return {}; }
+}
+
+// Use the Firebase uid as the primary identity and email as a fallback. The
+// fallback is useful for older records created before email was stored.
+function getUserKey(user = currentUser) {
+  return String(user?.uid || user?.email || "").trim();
+}
+
+function belongsToUser(record, user = currentUser) {
+  const userKey = getUserKey(user);
+  const email = String(user?.email || "").trim().toLowerCase();
+  if (!userKey && !email) return false;
+  const recordUid = String(record?.uid || "").trim();
+  const recordEmail = String(record?.email || record?.userEmail || record?.accountEmail || "").trim().toLowerCase();
+  return recordUid === userKey || (email && (recordEmail === email || recordUid.toLowerCase() === email));
+}
+
+function restoreCurrentUserProfile(user = currentUser) {
+  const email = String(user?.email || "").trim().toLowerCase();
+  const profiles = readProfiles();
+  const savedProfile = profiles[email] || profiles[getUserKey(user)] || null;
+  const previous = records
+    .filter((record) => belongsToUser(record, user))
+    .sort((a, b) => String(b.updatedAt || "").localeCompare(String(a.updatedAt || "")))[0];
+  if (!previous && !savedProfile) {
+    selectedColor = null;
+    return;
+  }
+  const profile = savedProfile || previous;
+  selectedColor = profile.colorId || previous?.colorId || null;
+  document.getElementById("nurseFirstName").value = profile.firstName || previous?.firstName || "";
+  document.getElementById("nurseLastName").value = profile.lastName || previous?.lastName || "";
+  document.getElementById("nurseNickname").value = profile.nickname || previous?.nickname || "";
+  document.getElementById("nurseAffiliation").value = profile.affiliation || previous?.affiliation || "";
 }
 
 function getDateKey(date) {
@@ -183,7 +225,7 @@ function renderPalette() {
   const pageCount = Math.ceil(colors.length / pageSize);
   const visibleColors = colors.slice(colorPage * pageSize, (colorPage + 1) * pageSize);
   palette.innerHTML = visibleColors.map((color) => {
-    const usedByOther = records.some((record) => record.colorId === color.id && record.uid !== currentUser?.uid);
+    const usedByOther = records.some((record) => record.colorId === color.id && !belongsToUser(record));
     return `<button class="color-choice${selectedColor === color.id ? " is-selected" : ""}${usedByOther ? " is-locked" : ""}" type="button" data-color="${color.id}" style="background:${color.value}" aria-label="${color.id}" title="${color.id}" ${usedByOther ? "disabled" : ""}></button>`;
   }).join("");
   pageDots.innerHTML = Array.from({ length: pageCount }, (_, index) => `<button class="color-page-dot${index === colorPage ? " is-active" : ""}" type="button" aria-label="Palette page ${index + 1}" aria-pressed="${index === colorPage}" data-page="${index}"></button>`).join("");
@@ -237,9 +279,26 @@ function renderLanguage() {
 }
 
 function saveLocalRecord(record) {
-  records = records.filter((item) => !(item.uid === record.uid && item.date === record.date));
+  records = records.filter((item) => !(belongsToUser(item, currentUser) && item.date === record.date));
   records.push(record);
   localStorage.setItem(DUTY_KEY, JSON.stringify(records));
+
+  const profileKey = String(currentUser?.email || getUserKey(currentUser) || "").trim().toLowerCase();
+  if (profileKey) {
+    const profiles = readProfiles();
+    profiles[profileKey] = {
+      uid: record.uid,
+      email: record.email,
+      colorId: record.colorId,
+      colorValue: record.colorValue,
+      firstName: record.firstName,
+      lastName: record.lastName,
+      nickname: record.nickname,
+      affiliation: record.affiliation,
+      updatedAt: record.updatedAt,
+    };
+    localStorage.setItem(DUTY_PROFILE_KEY, JSON.stringify(profiles));
+  }
 }
 
 async function saveDuty(event) {
@@ -250,7 +309,8 @@ async function saveDuty(event) {
   if (!selectedColor) { dutyStatus.textContent = copy[language].chooseColor; return; }
   const color = colors.find((item) => item.id === selectedColor);
   const record = {
-    uid: currentUser.uid,
+    uid: getUserKey(currentUser),
+    email: currentUser.email || "",
     nurseName: `${firstName} ${lastName}`.trim(),
     firstName,
     lastName,
@@ -318,14 +378,20 @@ document.getElementById("notificationButton").addEventListener("click", () => { 
 document.getElementById("closeNotification").addEventListener("click", () => { notificationPanel.hidden = true; });
 document.addEventListener("click", (event) => { if (!notificationPanel.hidden && !notificationPanel.contains(event.target) && !document.getElementById("notificationButton").contains(event.target)) notificationPanel.hidden = true; });
 document.getElementById("calendarGrid").addEventListener("keydown", (event) => { if (event.key === "Escape") document.activeElement.blur(); });
-window.addEventListener("storage", (event) => { if (event.key !== DUTY_KEY) return; records = readRecords(); renderCalendar(); renderPalette(); renderRecords(); });
+window.addEventListener("storage", (event) => {
+  if (![DUTY_KEY, DUTY_PROFILE_KEY].includes(event.key)) return;
+  records = readRecords();
+  restoreCurrentUserProfile();
+  renderCalendar();
+  renderPalette();
+  renderRecords();
+});
 
 onAuthStateChanged(auth, (user) => {
   if (hasAdminSession()) {
     currentUser = { uid: "admin", displayName: "Admin" };
     records = readRecords();
-    const previous = records.find((record) => record.uid === currentUser.uid);
-    if (previous) selectedColor = previous.colorId;
+    restoreCurrentUserProfile();
     renderPalette();
     renderCalendar();
     renderRecords();
@@ -334,8 +400,7 @@ onAuthStateChanged(auth, (user) => {
   if (!user) { window.location.href = "./index.html"; return; }
   currentUser = user;
   records = readRecords();
-  const previous = records.find((record) => record.uid === user.uid);
-  if (previous) selectedColor = previous.colorId;
+  restoreCurrentUserProfile(user);
   renderPalette();
   renderCalendar();
   renderRecords();

@@ -51,6 +51,7 @@ document.querySelectorAll("[data-password-toggle]").forEach((button) => {
         if (!input) return;
         const visible = input.type === "text";
         input.type = visible ? "password" : "text";
+        button.classList.toggle("is-visible", !visible);
         button.setAttribute("aria-pressed", String(!visible));
         button.setAttribute("aria-label", visible ? "แสดงรหัสผ่าน" : "ซ่อนรหัสผ่าน");
     });
@@ -68,6 +69,9 @@ const FIREBASE_CONFIG = {
 const firebaseApp = initializeApp(FIREBASE_CONFIG);
 const firebaseAuth = getAuth(firebaseApp);
 const googleProvider = new GoogleAuthProvider();
+// Always let the user choose the Google account instead of silently reusing
+// the account remembered by the browser.
+googleProvider.setCustomParameters({ prompt: "select_account" });
 
 let currentMode = "login";
 let currentLanguage = "en";
@@ -283,6 +287,8 @@ authForm.addEventListener("submit", (event) => {
         showSignedInMessage({ displayName: ADMIN_USERNAME, email: ADMIN_USERNAME });
         return;
     }
+    // A Firebase user must never inherit the local demo-admin session.
+    localStorage.removeItem(ADMIN_SESSION_KEY);
     const authTask = currentMode === "signup"
         ? createUserWithEmailAndPassword(firebaseAuth, email, password).then(async ({ user }) => {
             if (fullName) await updateProfile(user, { displayName: fullName });
@@ -298,6 +304,8 @@ authForm.addEventListener("submit", (event) => {
 googleButton.addEventListener("click", async () => {
     statusText.textContent = translations[currentLanguage].googleProgress;
     try {
+        // Google sign-in is a normal user session, not the local admin demo.
+        localStorage.removeItem(ADMIN_SESSION_KEY);
         const result = await signInWithPopup(firebaseAuth, googleProvider);
         window.FMSAdminAudit?.log("google-login", { email: result.user.email || "" });
         showSignedInMessage(result.user);

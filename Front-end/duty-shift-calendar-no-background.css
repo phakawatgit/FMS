@@ -1,7 +1,3 @@
-.calendar-cell:hover,
-.calendar-cell.is-today,
-.calendar-cell.is-today:hover,
-.calendar-cell.is-selected,
-.calendar-cell.is-selected:hover {
+.calendar-cell:hover, .calendar-cell.is-today, .calendar-cell.is-today:hover, .calendar-cell.is-selected, .calendar-cell.is-selected:hover {
   background: #fff !important;
 }

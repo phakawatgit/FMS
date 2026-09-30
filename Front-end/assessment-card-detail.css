@@ -1,1 +1,16 @@
-.assessment-card{padding-right:2.5rem;cursor:pointer}.assessment-card:after{content:"›";position:absolute;right:.8rem;top:50%;transform:translateY(-50%);color:#8792a9;font:400 2rem/1 Arial,sans-serif}.assessment-card:focus-within:after{color:#258af3}
+.assessment-card {
+  padding-right: 2.5rem;
+  cursor: pointer;
+}
+.assessment-card:after {
+  content: "›";
+  position: absolute;
+  right: .8rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #8792a9;
+  font: 400 2rem/1 Arial,sans-serif;
+}
+.assessment-card:focus-within:after {
+  color: #258af3;
+}

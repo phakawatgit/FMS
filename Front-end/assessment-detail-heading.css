@@ -5,13 +5,11 @@
   gap: 1rem;
   margin: 0 0 1.1rem;
 }
-
 .detail-page-heading h1 {
   min-width: 0;
   margin: 0 !important;
   line-height: 1.2;
 }
-
 .detail-page-heading .back {
   flex: none;
   align-self: center;
@@ -20,18 +18,15 @@
   gap: 0.35rem;
   white-space: nowrap;
 }
-
 @media (max-width: 560px) {
   .detail-page-heading {
     gap: 0.5rem;
-  }
-
+}
   .detail-page-heading h1 {
     font-size: clamp(1.05rem, 4.5vw, 1.35rem) !important;
-  }
-
+}
   .detail-page-heading .back {
     padding: 0.3rem 0.5rem;
     font-size: 0.68rem;
-  }
+}
 }

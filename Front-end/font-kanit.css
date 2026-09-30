@@ -1,6 +1,4 @@
 @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700&display=swap');
-
-html,body,button,input,select,textarea,optgroup,option,
-*,*::before,*::after{
-  font-family:Kanit,sans-serif!important;
+html,body,button,input,select,textarea,optgroup,option, *,*::before,*::after {
+  font-family: Kanit,sans-serif!important;
 }

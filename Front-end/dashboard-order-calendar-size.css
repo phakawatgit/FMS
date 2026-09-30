@@ -4,7 +4,6 @@
   width: 100%;
   min-width: 0;
 }
-
 .purchase-calendar {
   box-sizing: border-box;
   width: 100%;
@@ -12,53 +11,41 @@
   margin: 0 auto 20px;
   padding: 14px;
 }
-
 .purchase-calendar-toolbar {
   grid-template-columns: 36px minmax(0, 1fr) 36px;
   gap: 10px;
   margin-bottom: 10px;
 }
-
 .purchase-calendar-toolbar strong {
   font-size: 1.04rem;
 }
-
 .purchase-calendar-toolbar button {
   width: 34px;
   height: 34px;
 }
-
-.purchase-calendar-week,
-.purchase-calendar-grid {
+.purchase-calendar-week, .purchase-calendar-grid {
   gap: 5px;
 }
-
 .purchase-calendar-week span {
   padding: 6px 0;
   font-size: 0.82rem;
 }
-
-.purchase-day,
-.purchase-day-blank {
+.purchase-day, .purchase-day-blank {
   min-height: clamp(48px, 4vw, 58px);
 }
-
 .purchase-day {
   gap: 4px;
   border-radius: 8px;
   font-size: 0.84rem;
 }
-
 .purchase-day-dots {
   gap: 4px;
   min-height: 8px;
 }
-
 .purchase-dot {
   width: 7px;
   height: 7px;
 }
-
 .purchase-day-dots small {
   font-size: 0.7rem;
 }
@@ -69,24 +56,20 @@
   background: #f4f9fc;
   box-shadow: 0 8px 24px #123e5814;
 }
-
 .purchase-calendar-toolbar strong {
   color: #073b62;
   font-weight: 800;
 }
-
 .purchase-calendar-toolbar button {
   border-color: #b8d0dc;
   background: #fff;
   color: #087c83;
   box-shadow: 0 2px 5px #123e5810;
 }
-
 .purchase-calendar-toolbar button:not(:disabled):hover {
   border-color: #087c83;
   background: #e4f4f3;
 }
-
 .purchase-calendar-week span {
   border: 1px solid #0b4568;
   border-radius: 8px;
@@ -96,7 +79,6 @@
   line-height: 1.4;
   box-shadow: 0 2px 5px #0b456826;
 }
-
 .purchase-day {
   border-color: #d0e0e7;
   background: #fff;
@@ -104,20 +86,17 @@
   font-weight: 600;
   box-shadow: 0 1px 3px #123e5808;
 }
-
 .purchase-day.has-orders {
   border-color: #65b9b2;
   background: #fff;
   color: #075d68;
   font-weight: 800;
 }
-
 .purchase-day.has-orders:hover {
   border-color: #07898e;
   background: #fff;
   box-shadow: 0 4px 12px #087f8726;
 }
-
 .purchase-day.is-selected {
   outline: 2px solid #087f87;
   outline-offset: 1px;
@@ -125,45 +104,36 @@
   background: #fff;
   color: #075b79;
 }
-
 .purchase-day.is-selected .purchase-day-dots small {
   color: #fff;
 }
-
 .purchase-day.is-today:not(.is-selected) {
   border-color: #5686d8;
   background: #fff;
   color: #174b9a;
   font-weight: 800;
 }
-
 .purchase-day-dots small {
   color: #075d68;
   font-weight: 700;
 }
-
 .purchase-dot {
   background: #087f87;
   box-shadow: 0 0 0 2px #087f8728;
 }
-
 .purchase-dot.is-complete {
   background: #2865c7;
 }
-
 .purchase-dot.is-pending {
   background: #bd6500;
 }
-
 .purchase-dot.is-cancelled {
   background: #c43548;
 }
-
 .purchase-years-overview {
   grid-template-columns: minmax(0, 1fr);
   gap: 20px;
 }
-
 .purchase-annual-dialog {
   width: min(1280px, calc(100vw - 32px));
   max-width: none;
@@ -176,12 +146,10 @@
   color: #194c68;
   box-shadow: 0 20px 70px #092e4650;
 }
-
 .purchase-annual-dialog::backdrop {
   background: #102f47a6;
   backdrop-filter: blur(3px);
 }
-
 .purchase-annual-dialog > header {
   display: flex;
   align-items: flex-start;
@@ -191,37 +159,31 @@
   padding-bottom: 14px;
   border-bottom: 1px solid #d4e4e9;
 }
-
 .purchase-annual-dialog > header > div:first-child {
   flex: 1 1 auto;
   min-width: 0;
 }
-
 .purchase-annual-dialog > header p {
   margin: 0 0 4px;
   color: #087f87;
   font-size: 0.85rem;
 }
-
 .purchase-annual-dialog > header h2 {
   margin: 0;
   color: #073b62;
   font-size: 1.3rem;
 }
-
 .purchase-annual-dialog > header small {
   display: block;
   margin-top: 4px;
   color: #668092;
 }
-
 .purchase-annual-actions {
   display: flex;
   flex: 0 0 auto;
   align-items: center;
   gap: 10px;
 }
-
 .purchase-annual-actions label {
   display: grid;
   gap: 4px;
@@ -229,14 +191,12 @@
   font-size: 0.82rem;
   font-weight: 700;
 }
-
 .purchase-year-picker {
   position: relative;
   flex: 0 0 170px;
   width: 170px;
   min-width: 170px;
 }
-
 .purchase-year-picker-label {
   display: block;
   margin: 0 0 5px 2px;
@@ -244,7 +204,6 @@
   font-size: 0.76rem;
   font-weight: 700;
 }
-
 .purchase-year-picker-trigger {
   display: flex;
   width: 100%;
@@ -264,33 +223,26 @@
   box-shadow: 0 3px 10px #0b456814;
   transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
 }
-
-.purchase-year-picker-trigger:hover,
-.purchase-year-picker-trigger[aria-expanded="true"] {
+.purchase-year-picker-trigger:hover, .purchase-year-picker-trigger[aria-expanded="true"] {
   border-color: #07898e;
   box-shadow: 0 0 0 3px #07898e20, 0 5px 14px #0b45681c;
 }
-
 .purchase-year-picker-trigger:active {
   transform: translateY(1px);
 }
-
 .purchase-year-picker-trigger span {
   display: grid;
   min-width: 0;
   gap: 1px;
 }
-
 .purchase-year-picker-trigger small {
   color: #668092;
   font-size: 0.68rem;
 }
-
 .purchase-year-picker-trigger strong {
   color: #075b79;
   font-size: 1rem;
 }
-
 .purchase-year-picker-chevron {
   width: 18px;
   height: 18px;
@@ -303,11 +255,9 @@
   stroke-linejoin: round;
   transition: transform 150ms ease;
 }
-
 .purchase-year-picker-trigger[aria-expanded="true"] .purchase-year-picker-chevron {
   transform: rotate(180deg);
 }
-
 .purchase-year-picker-menu {
   position: absolute;
   z-index: 5;
@@ -324,11 +274,9 @@
   background: #fff;
   box-shadow: 0 14px 32px #103d5633;
 }
-
 .purchase-year-picker-menu[hidden] {
   display: none;
 }
-
 .purchase-year-option {
   display: flex;
   width: 100%;
@@ -344,40 +292,33 @@
   cursor: pointer;
   transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
 }
-
 .purchase-year-option > span {
   color: #7892a1;
   font-size: 0.72rem;
 }
-
 .purchase-year-option strong {
   flex: 1;
   font-size: 0.9rem;
 }
-
 .purchase-year-option > i {
   color: #fff;
   font-size: 0.8rem;
   font-style: normal;
 }
-
 .purchase-year-option:hover {
   border-color: #d5e9e9;
   background: #f0f9f8;
   color: #075b79;
 }
-
 .purchase-year-option.is-selected {
   border-color: #087f87;
   background: linear-gradient(135deg, #087f87, #075b79);
   color: #fff;
   box-shadow: 0 3px 8px #087f8733;
 }
-
 .purchase-year-option.is-selected > span {
   color: #d4f2ee;
 }
-
 .purchase-annual-dialog > header button[data-close-annual-dialog] {
   width: 38px;
   flex: 0 0 38px;
@@ -389,52 +330,42 @@
   font-size: 1.35rem;
   cursor: pointer;
 }
-
 .purchase-annual-dialog .purchase-year-overview {
   background: #fff;
 }
-
 .purchase-year-overview {
   border-color: #c4d9e2;
   background: #f8fbfd;
   box-shadow: 0 6px 20px #123e5812;
 }
-
 .purchase-year-overview > header h2 {
   color: #073b62;
   font-size: 1.35rem;
   font-weight: 800;
 }
-
 .purchase-month-overview {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
 }
-
 .purchase-mini-month {
   border-color: #d0e0e7;
   background: #fff;
 }
-
 .purchase-mini-month.is-current-month {
   border-color: #0b8b91;
   box-shadow: 0 0 0 2px #0b8b9122;
 }
-
 .purchase-year-overview {
   padding: 12px;
 }
-
 .purchase-month-overview {
   gap: 8px;
 }
-
 .purchase-mini-month h3 {
   color: #073b62;
   font-size: 0.95rem;
   font-weight: 800;
 }
-
 .purchase-mini-week span {
   padding: 3px 0;
   border-radius: 4px;
@@ -443,103 +374,81 @@
   font-size: 0.68rem;
   font-weight: 800;
 }
-
 .purchase-mini-day {
   color: #244a63;
   font-size: 0.72rem;
 }
-
 .purchase-mini-day.has-orders {
   border-color: #8acdc5;
   background: #e3f5f2;
   color: #075d68;
   font-weight: 800;
 }
-
 .purchase-mini-day.is-selected {
   border-color: #075b79;
   background: #075b79;
   color: #fff;
 }
-
 .purchase-mini-day.is-today:not(.is-selected) {
   border-color: #5686d8;
   background: #eaf0ff;
   color: #174b9a;
   font-weight: 800;
 }
-
 .purchase-mini-dots .purchase-status-dot {
   width: 5px;
   height: 5px;
   border-radius: 50%;
 }
-
 @media (max-width: 700px) {
   .purchase-month-overview {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
-  }
 }
-
+}
 @media (max-width: 420px) {
   .purchase-month-overview {
     grid-template-columns: 1fr;
-  }
 }
-
+}
 @media (max-width: 700px) {
   .purchase-calendar {
     padding: 14px;
-  }
-
+}
   .purchase-calendar-toolbar {
     grid-template-columns: 40px minmax(0, 1fr) 40px;
     gap: 8px;
-  }
-
+}
   .purchase-calendar-toolbar strong {
     font-size: 1.08rem;
-  }
-
+}
   .purchase-calendar-toolbar button {
     width: 34px;
     height: 34px;
-  }
-
-  .purchase-calendar-week,
-  .purchase-calendar-grid {
+}
+  .purchase-calendar-week,   .purchase-calendar-grid {
     gap: 5px;
-  }
-
-  .purchase-day,
-  .purchase-day-blank {
+}
+  .purchase-day,   .purchase-day-blank {
     min-height: clamp(48px, 9vw, 62px);
-  }
-
+}
   .purchase-day {
     gap: 4px;
     font-size: 0.86rem;
-  }
 }
-
+}
 @media (max-width: 420px) {
   .purchase-calendar {
     padding: 10px;
     max-width: 100%;
-  }
-
-  .purchase-calendar-week,
-  .purchase-calendar-grid {
+}
+  .purchase-calendar-week,   .purchase-calendar-grid {
     gap: 3px;
-  }
-
+}
   .purchase-calendar-week span {
     font-size: 0.78rem;
-  }
-
-  .purchase-day,
-  .purchase-day-blank {
+}
+  .purchase-day,   .purchase-day-blank {
     min-height: 48px;
-  }
+}
 }

@@ -1,9 +1,7 @@
 @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Itim&family=Kanit:wght@400;500;600;700&family=Nerko+One&display=swap");
-
 * {
   box-sizing: border-box;
 }
-
 :root {
   color-scheme: light;
   --blue: #4c95e8;
@@ -16,39 +14,27 @@
   --white: #ffffff;
   --line: #dce7f3;
 }
-
-html,
-body {
+html, body {
   width: 100%;
   height: 100%;
   min-height: 100%;
   overflow: hidden;
 }
-
 body {
   margin: 0;
   font-family: "IBM Plex Sans Thai", sans-serif;
   color: var(--ink);
   background: var(--blue-pale);
 }
-
-button,
-input {
+button, input {
   font: inherit;
 }
-
-h1,
-h2,
-button,
-.fms-brand,
-.brand-label {
+h1, h2, button, .fms-brand, .brand-label {
   font-family: "Kanit", "IBM Plex Sans Thai", sans-serif;
 }
-
 button {
   cursor: pointer;
 }
-
 .site-shell {
   width: 100%;
   height: 100vh;
@@ -60,49 +46,39 @@ button {
   background: var(--white);
   overflow: hidden;
 }
-
 .brand-panel {
-  position: relative;
   isolation: isolate;
   min-height: 100vh;
   min-height: 100svh;
   overflow: hidden;
   padding: clamp(2rem, 5vw, 5rem);
-  background:
-    radial-gradient(circle at 7% 8%, rgba(255, 255, 255, 0.27) 0 9%, transparent 9.2%),
-    linear-gradient(145deg, #62c8eb 0%, var(--blue) 68%, #3475d1 100%);
+  background: radial-gradient(circle at 7% 8%, rgba(255, 255, 255, 0.27) 0 9%, transparent 9.2%),     linear-gradient(145deg, #62c8eb 0%, var(--blue) 68%, #3475d1 100%);
 }
-
-.brand-panel::before,
-.brand-panel::after {
+.brand-panel::before, .brand-panel::after {
   content: "";
   position: absolute;
   z-index: -1;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.12);
 }
-
 .brand-panel::before {
   width: clamp(16rem, 34vw, 34rem);
   height: clamp(16rem, 34vw, 34rem);
   top: -14rem;
   right: -7rem;
 }
-
 .brand-panel::after {
   width: clamp(14rem, 28vw, 28rem);
   height: clamp(14rem, 28vw, 28rem);
   bottom: -13rem;
   left: -8rem;
 }
-
 .brand-topline {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
 }
-
 .fms-brand {
   display: inline-flex;
   align-items: center;
@@ -115,13 +91,11 @@ button {
   font-weight: 400;
   letter-spacing: 0.1em;
 }
-
 .fms-brand img {
   width: clamp(3.2rem, 6vw, 4.8rem);
   border-radius: 24%;
   box-shadow: 0 0.7rem 1.3rem rgba(18, 55, 110, 0.18);
 }
-
 .institution-lockup {
   position: absolute;
   z-index: 4;
@@ -132,7 +106,6 @@ button {
   align-items: flex-end;
   gap: clamp(0.25rem, 0.8vw, 0.55rem);
 }
-
 .brand-label {
   color: rgba(255, 255, 255, 0.8);
   font-size: clamp(0.65rem, 1.1vw, 0.85rem);
@@ -143,7 +116,6 @@ button {
   letter-spacing: 0.1em;
   text-align: right;
 }
-
 .brand-copy {
   position: relative;
   z-index: 2;
@@ -153,10 +125,7 @@ button {
   margin: 0;
   max-width: 34rem;
 }
-
-.kicker,
-.auth-overline,
-.auth-kicker {
+.kicker, .auth-overline, .auth-kicker {
   margin: 0 0 0.7rem;
   color: var(--orange);
   font-size: 0.75rem;
@@ -164,7 +133,6 @@ button {
   letter-spacing: 0.18em;
   text-transform: uppercase;
 }
-
 .brand-copy .kicker {
   color: var(--white);
   font-family: "Nerko One", "IBM Plex Sans Thai", sans-serif;
@@ -172,7 +140,6 @@ button {
   font-weight: 400;
   letter-spacing: 0.1em;
 }
-
 .brand-copy h1 {
   margin: 0;
   color: var(--white);
@@ -182,12 +149,10 @@ button {
   font-family: "Nerko One", "IBM Plex Sans Thai", sans-serif;
   font-weight: 400;
 }
-
 .brand-copy h1 em {
   color: #ffb180;
   font-style: normal;
 }
-
 .brand-description {
   max-width: 30rem;
   margin: 1.2rem 0 0;
@@ -195,7 +160,6 @@ button {
   font-size: clamp(0.9rem, 1.4vw, 1.1rem);
   line-height: 1.7;
 }
-
 .institution-logo {
   display: block;
   width: clamp(7.5rem, 16vw, 12rem);
@@ -204,7 +168,6 @@ button {
   object-position: center;
   filter: drop-shadow(0 1rem 1rem rgba(18, 55, 110, 0.18));
 }
-
 .auth-panel {
   display: flex;
   flex-direction: column;
@@ -221,7 +184,6 @@ button {
   padding: clamp(2rem, 8vh, 6rem) clamp(2rem, 6vw, 6rem);
   background: var(--white);
 }
-
 .language-switcher {
   align-self: flex-end;
   display: inline-flex;
@@ -243,12 +205,10 @@ button {
   box-shadow: none;
   transition: transform 160ms ease, box-shadow 160ms ease;
 }
-
 .language-switcher:hover {
   transform: none;
   box-shadow: none;
 }
-
 .language-switcher svg {
   width: 0.88rem;
   height: 0.88rem;
@@ -260,13 +220,10 @@ button {
 }
 
 /* Language controls intentionally show only the selected language label. */
-.language-switcher > svg,
-.language-switcher::before,
-.language-switcher::after {
+.language-switcher > svg, .language-switcher::before, .language-switcher::after {
   display: none !important;
   content: none !important;
 }
-
 .language-switcher label {
   display: inline-flex;
   align-items: center;
@@ -278,11 +235,9 @@ button {
   padding: 0.1rem 0.2rem;
   transition: color 160ms ease, background 160ms ease;
 }
-
 .language-switcher label:not(:has(input:checked)) {
   display: none;
 }
-
 .language-switcher input {
   position: static;
   width: 0.58rem;
@@ -292,55 +247,45 @@ button {
   pointer-events: auto;
   accent-color: #073dd1;
 }
-
 .language-switcher label:has(input:checked) {
   background: rgba(255, 255, 255, 0.72);
   color: #032db4;
   font-weight: 700;
 }
-
 .language-switcher:focus-visible {
   outline: 3px solid rgba(244, 119, 59, 0.35);
   outline-offset: 3px;
 }
-
 .auth-panel::-webkit-scrollbar {
   width: 0.55rem;
 }
-
 .auth-panel::-webkit-scrollbar-track {
   background: var(--blue-pale);
   border-radius: 999px;
 }
-
 .auth-panel::-webkit-scrollbar-thumb {
   border: 2px solid var(--blue-pale);
   border-radius: 999px;
   background: var(--blue-deep);
 }
-
 .auth-panel::-webkit-scrollbar-thumb:hover {
   background: var(--blue);
 }
-
 .auth-header {
   display: flex;
   align-items: center;
   gap: 0.85rem;
   margin-bottom: clamp(2rem, 5vh, 4rem);
 }
-
 .auth-mark {
   width: 3.4rem;
   border-radius: 24%;
   box-shadow: 0 0.5rem 1rem rgba(18, 55, 110, 0.12);
 }
-
 .auth-overline {
   margin-bottom: 0.15rem;
   font-size: 0.65rem;
 }
-
 .auth-system-name {
   max-width: 15rem;
   margin: 0;
@@ -348,7 +293,6 @@ button {
   font-size: 0.78rem;
   line-height: 1.4;
 }
-
 .auth-tabs {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -358,7 +302,6 @@ button {
   border-radius: 0.85rem;
   background: var(--blue-pale);
 }
-
 .tab-button {
   border: 0;
   border-radius: 0.65rem;
@@ -369,13 +312,11 @@ button {
   font-weight: 800;
   transition: color 160ms ease, background 160ms ease, box-shadow 160ms ease;
 }
-
 .tab-button.is-active {
   background: var(--white);
   color: var(--blue-deep);
   box-shadow: 0 0.25rem 0.7rem rgba(18, 55, 110, 0.1);
 }
-
 .auth-copy h2 {
   margin: 0;
   color: var(--ink);
@@ -383,22 +324,18 @@ button {
   line-height: 1;
   letter-spacing: -0.06em;
 }
-
 .auth-copy > p:last-child {
   margin: 0.85rem 0 0;
   color: var(--muted);
   font-size: 0.9rem;
   line-height: 1.6;
 }
-
 .auth-form {
   margin-top: 2rem;
 }
-
 .field + .field {
   margin-top: 1rem;
 }
-
 .field label {
   display: block;
   margin-bottom: 0.45rem;
@@ -406,7 +343,6 @@ button {
   font-size: 0.78rem;
   font-weight: 800;
 }
-
 .field input {
   width: 100%;
   min-height: 3.2rem;
@@ -419,18 +355,19 @@ button {
   font-size: 0.9rem;
   transition: border-color 160ms ease, box-shadow 160ms ease;
 }
-
 .field input::placeholder {
   color: #b0bbc9;
 }
-
 .field input:focus {
   border-color: var(--blue);
   box-shadow: 0 0 0 4px rgba(76, 149, 232, 0.13);
 }
-
-.password-field { position: relative; }
-.password-field input { padding-right: 3.2rem; }
+.password-field {
+  position: relative;
+}
+.password-field input {
+  padding-right: 3.2rem;
+}
 .password-toggle {
   position: absolute;
   top: 50%;
@@ -448,10 +385,32 @@ button {
   transform: translateY(-50%);
   transition: color 160ms ease, background 160ms ease;
 }
-.password-toggle:hover, .password-toggle:focus-visible { color: #07547d; background: rgba(27, 196, 204, 0.12); }
-.password-toggle:focus-visible { outline: 2px solid rgba(27, 196, 204, 0.45); outline-offset: 2px; }
-.password-toggle svg { width: 1.2rem; height: 1.2rem; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
-
+.password-toggle:hover, .password-toggle:focus-visible {
+  color: #07547d;
+  background: rgba(27, 196, 204, 0.12);
+}
+.password-toggle:focus-visible {
+  outline: 2px solid rgba(27, 196, 204, 0.45);
+  outline-offset: 2px;
+}
+.password-toggle svg {
+  width: 1.2rem;
+  height: 1.2rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+.password-toggle .eye-closed {
+  display: none;
+}
+.password-toggle.is-visible .eye-open {
+  display: none;
+}
+.password-toggle.is-visible .eye-closed {
+  display: block;
+}
 .form-meta {
   display: flex;
   justify-content: space-between;
@@ -459,7 +418,6 @@ button {
   gap: 1rem;
   margin-top: 1rem;
 }
-
 .remember-label {
   display: inline-flex;
   align-items: center;
@@ -467,11 +425,9 @@ button {
   color: var(--muted);
   font-size: 0.75rem;
 }
-
 .remember-label input {
   accent-color: var(--blue);
 }
-
 .forgot-button {
   border: 0;
   padding: 0;
@@ -480,16 +436,13 @@ button {
   font-size: 0.75rem;
   font-weight: 800;
 }
-
-.primary-button,
-.google-button {
+.primary-button, .google-button {
   width: 100%;
   min-height: 3.35rem;
   border-radius: 0.85rem;
   font-weight: 800;
   transition: transform 160ms ease, background 160ms ease, box-shadow 160ms ease;
 }
-
 .primary-button {
   margin-top: 1.4rem;
   border: 1px solid var(--blue-deep);
@@ -497,12 +450,10 @@ button {
   color: var(--white);
   box-shadow: 0 0.8rem 1.3rem rgba(18, 55, 110, 0.18);
 }
-
 .primary-button:hover {
   transform: translateY(-2px);
   background: #1b559b;
 }
-
 .divider {
   display: flex;
   align-items: center;
@@ -511,15 +462,12 @@ button {
   color: #a5b0bf;
   font-size: 0.72rem;
 }
-
-.divider::before,
-.divider::after {
+.divider::before, .divider::after {
   content: "";
   height: 1px;
   flex: 1;
   background: var(--line);
 }
-
 .google-button {
   display: inline-flex;
   align-items: center;
@@ -530,29 +478,23 @@ button {
   color: var(--ink);
   box-shadow: 0 0.4rem 0.8rem rgba(18, 55, 110, 0.08);
 }
-
 .google-button svg {
   width: 1.2rem;
   height: 1.2rem;
 }
-
 .google-button:hover {
   transform: translateY(-2px);
   border-color: var(--blue);
   box-shadow: 0 0.8rem 1.2rem rgba(18, 55, 110, 0.13);
 }
-
-.terms,
-.status {
+.terms, .status {
   text-align: center;
 }
-
 .terms {
   margin: 1.2rem 0 0;
   color: #a5b0bf;
   font-size: 0.68rem;
 }
-
 .status {
   min-height: 1.1rem;
   margin: 0.7rem 0 0;
@@ -560,36 +502,27 @@ button {
   font-size: 0.76rem;
   font-weight: 700;
 }
-
-.tab-button:focus-visible,
-.primary-button:focus-visible,
-.google-button:focus-visible,
-.forgot-button:focus-visible {
+.tab-button:focus-visible, .primary-button:focus-visible, .google-button:focus-visible, .forgot-button:focus-visible {
   outline: 3px solid rgba(244, 119, 59, 0.35);
   outline-offset: 3px;
 }
-
 @media (max-width: 900px) {
   .site-shell {
     height: 100svh;
     grid-template-columns: 1fr;
     grid-template-rows: 43svh 57svh;
-  }
-
+}
   .brand-panel {
     min-height: 0;
     padding: clamp(1.5rem, 6vw, 3rem);
-  }
-
+}
   .brand-copy {
     top: clamp(10rem, 22vh, 14rem);
     left: clamp(1.5rem, 6vw, 3rem);
-  }
-
+}
   .brand-copy h1 {
     font-size: clamp(2.6rem, 8vw, 4.5rem);
-  }
-
+}
   .auth-panel {
     width: min(100%, 42rem);
     min-height: 0;
@@ -597,314 +530,239 @@ button {
     overscroll-behavior: contain;
     scrollbar-width: thin;
     padding: clamp(1.5rem, 6vh, 3rem) clamp(2.2rem, 7vw, 4rem);
-  }
 }
-
+}
 @media (max-width: 520px) {
   .site-shell {
     grid-template-rows: 39svh 61svh;
-  }
-
+}
   .brand-panel {
     min-height: 0;
     padding: 1.25rem;
-  }
-
+}
   .brand-topline {
     align-items: flex-start;
-  }
-
+}
   .brand-label {
     display: block;
     max-width: 8rem;
     font-size: 0.58rem;
-  }
-
+}
   .fms-brand {
     font-size: 1.65rem;
-  }
-
+}
   .institution-logo {
     width: 7.2rem;
     height: 5.6rem;
-  }
-
+}
   .institution-lockup {
     top: 1.1rem;
     right: 1rem;
     gap: 0.2rem;
-  }
-
+}
   .brand-copy {
     top: 5.1rem;
     left: 1.25rem;
-  }
-
+}
   .brand-copy .kicker {
     margin-bottom: 0.35rem;
     font-size: 0.78rem;
-  }
-
+}
   .brand-copy h1 {
     max-width: 15rem;
     font-size: clamp(2rem, 10vw, 2.8rem);
     line-height: 0.9;
-  }
-
+}
   .brand-description {
     display: block;
     max-width: 20rem;
     margin-top: 0.45rem;
     font-size: 0.68rem;
     line-height: 1.4;
-  }
-
+}
   .auth-panel {
     overflow-y: auto;
     overscroll-behavior: contain;
     scrollbar-width: thin;
     padding: 1rem 1.2rem 1.2rem;
-  }
-
+}
   .auth-header {
     margin-bottom: 0.8rem;
-  }
-
+}
   .language-switcher {
     min-height: 1.8rem;
     margin-bottom: 0.8rem;
     font-size: 0.68rem;
-  }
-
+}
   .language-switcher svg {
     width: 0.9rem;
     height: 0.9rem;
-  }
-
+}
   .auth-mark {
     width: 2.7rem;
-  }
-
+}
   .auth-system-name {
     font-size: 0.66rem;
-  }
-
+}
   .auth-tabs {
     margin-bottom: 0.9rem;
-  }
-
+}
   .tab-button {
     padding-block: 0.5rem;
     font-size: 0.72rem;
-  }
-
+}
   .auth-copy h2 {
     font-size: 1.65rem;
-  }
-
+}
   .auth-copy > p:last-child {
     margin-top: 0.45rem;
     font-size: 0.75rem;
-  }
-
+}
   .auth-form {
     margin-top: 0.85rem;
-  }
-
+}
   .field + .field {
     margin-top: 0.55rem;
-  }
-
+}
   .field label {
     margin-bottom: 0.25rem;
     font-size: 0.7rem;
-  }
-
+}
   .field input {
     min-height: 2.45rem;
     padding-block: 0.5rem;
     font-size: 0.78rem;
-  }
-
+}
   .form-meta {
     flex-direction: row;
     align-items: center;
     margin-top: 0.55rem;
     gap: 0.5rem;
-  }
-
-  .primary-button,
-  .google-button {
+}
+  .primary-button,   .google-button {
     min-height: 2.65rem;
-  }
-
+}
   .primary-button {
     margin-top: 0.75rem;
-  }
-
+}
   .divider {
     margin: 0.75rem 0;
     font-size: 0.65rem;
-  }
-
+}
   .terms {
     margin-top: 0.5rem;
     font-size: 0.6rem;
-  }
-
+}
   .form-meta {
     align-items: center;
     flex-direction: row;
     gap: 0.5rem;
-  }
+}
 }
 
 /* Short landscape windows should keep the login form beside the brand panel.
    Stacking the panels here hides most of the form below the fold. */
 @media (min-width: 521px) and (max-height: 650px) {
-  html,
-  body {
+  html,   body {
     overflow: hidden;
-  }
-
+}
   .site-shell {
     grid-template-columns: minmax(0, 1.05fr) minmax(20rem, 0.95fr);
     grid-template-rows: 1fr;
-  }
-
+}
   .brand-panel {
     min-height: 100svh;
     padding: clamp(1rem, 3vw, 2rem);
-  }
-
+}
   .brand-copy {
     top: clamp(7rem, 24vh, 10rem);
     left: clamp(1rem, 3vw, 2rem);
-  }
-
+}
   .brand-copy h1 {
     font-size: clamp(2.5rem, 6vw, 4.2rem);
-  }
-
+}
   .brand-description {
     display: none;
-  }
-
+}
   .auth-panel {
     width: 100%;
     padding: 0.75rem clamp(1rem, 3vw, 1.8rem) 1rem;
-  }
-
+}
   .language-switcher {
     margin-bottom: 0.5rem;
-  }
-
+}
   .auth-header {
     margin-bottom: 0.6rem;
-  }
-
+}
   .auth-tabs {
     margin-bottom: 0.65rem;
-  }
-
+}
   .auth-copy h2 {
     font-size: 1.45rem;
-  }
-
+}
   .auth-copy > p:last-child {
     margin-top: 0.3rem;
     font-size: 0.7rem;
-  }
-
+}
   .auth-form {
     margin-top: 0.65rem;
-  }
-
+}
   .field + .field {
     margin-top: 0.4rem;
-  }
-
+}
   .field input {
     min-height: 2.25rem;
-  }
-
+}
   .divider {
     margin: 0.55rem 0;
-  }
-
+}
   .terms {
     margin-top: 0.55rem;
-  }
 }
-
+}
 @media (prefers-reduced-motion: reduce) {
-  .tab-button,
-  .primary-button,
-  .google-button {
+  .tab-button,   .primary-button,   .google-button {
     transition: none;
-  }
 }
-
-body.is-thai,
-body.is-thai button,
-body.is-thai input,
-body.is-thai h1,
-body.is-thai h2,
-body.is-thai .fms-brand,
-body.is-thai .brand-label,
-body.is-thai .kicker,
-body.is-thai .auth-kicker,
-body.is-thai .auth-overline {
+}
+body.is-thai, body.is-thai button, body.is-thai input, body.is-thai h1, body.is-thai h2, body.is-thai .fms-brand, body.is-thai .brand-label, body.is-thai .kicker, body.is-thai .auth-kicker, body.is-thai .auth-overline {
   font-family: "Itim", "IBM Plex Sans Thai", sans-serif;
 }
-
 body.is-thai .institution-lockup .brand-label {
   font-size: clamp(0.8rem, 1.3vw, 1rem);
   letter-spacing: 0.04em;
   text-transform: none;
 }
-
-body.is-thai .language-switcher,
-body.is-thai .language-switcher label,
-.language-switcher label {
+body.is-thai .language-switcher, body.is-thai .language-switcher label, .language-switcher label {
   font-family: "Itim", "IBM Plex Sans Thai", sans-serif;
 }
 
 /* Keep the main brand lockup in Kanit in both language modes. */
-.fms-brand,
-.brand-label,
-.brand-copy .kicker,
-.brand-copy h1 {
+.fms-brand, .brand-label, .brand-copy .kicker, .brand-copy h1 {
   font-family: "Kanit", "IBM Plex Sans Thai", sans-serif;
   font-weight: 700;
 }
-
 .auth-panel .language-switcher {
   gap: 0.1rem;
   min-height: 1.7rem;
   padding: 0.1rem 0.3rem;
   font-size: 0.62rem;
 }
-
 .auth-panel .language-switcher svg {
   width: 0.76rem;
   height: 0.76rem;
 }
-
 .auth-panel .language-switcher label {
   gap: 0.04rem;
   padding: 0.06rem 0.12rem;
 }
-
 .auth-panel .language-switcher input {
   width: 0.5rem;
   height: 0.5rem;
 }
-
 .reset-flow {
   margin-top: 1rem;
 }
-
 .reset-back {
   display: inline-flex;
   align-items: center;
@@ -922,7 +780,6 @@ body.is-thai .language-switcher label,
   cursor: pointer;
   transition: transform 160ms ease, border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
 }
-
 .reset-back-icon {
   width: 1.45rem;
   height: 1.45rem;
@@ -933,25 +790,21 @@ body.is-thai .language-switcher label,
   stroke-linejoin: round;
   stroke-width: 1.7;
 }
-
 .reset-back:hover {
   border-color: rgba(22, 71, 131, 0.34);
   background: #ffffff;
   box-shadow: 0 8px 22px rgba(22, 71, 131, 0.14);
   transform: translateX(-2px);
 }
-
 .reset-back:focus-visible {
   outline: 3px solid rgba(29, 196, 204, 0.3);
   outline-offset: 3px;
 }
-
 .reset-description {
   margin: 0.35rem 0 1rem;
   color: #65738a;
   font-size: 0.8rem;
 }
-
 .demo-otp {
   margin: 0.25rem 0 0.85rem;
   padding: 0.7rem 0.8rem;
@@ -961,7 +814,6 @@ body.is-thai .language-switcher label,
   background: #fff7ed;
   font-size: 0.8rem;
 }
-
 .demo-otp strong {
   letter-spacing: 0.16em;
 }
@@ -971,7 +823,6 @@ body.is-thai .language-switcher label,
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
-
 .auth-panel::-webkit-scrollbar {
   display: none;
   width: 0;

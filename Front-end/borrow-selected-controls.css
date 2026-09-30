@@ -2,20 +2,15 @@
   -moz-appearance: textfield !important;
   appearance: textfield !important;
 }
-
-.selected-quantity input[type="number"]::-webkit-inner-spin-button,
-.selected-quantity input[type="number"]::-webkit-outer-spin-button {
+.selected-quantity input[type="number"]::-webkit-inner-spin-button, .selected-quantity input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none !important;
   margin: 0 !important;
 }
 
 /* This page intentionally has no topbar menu shortcut. */
-body .topbar .menu-button,
-body .topbar .menu-link {
+body .topbar .menu-button, body .topbar .menu-link {
   display: none !important;
 }
-
-body .topbar.dashboard-topbar .menu-button,
-body .topbar.dashboard-topbar .menu-link {
+body .topbar.dashboard-topbar .menu-button, body .topbar.dashboard-topbar .menu-link {
   display: none !important;
 }

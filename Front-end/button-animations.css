@@ -1,129 +1,106 @@
-button,
-.menu-button,
-.menu-link,
-.back,
-.back-link,
-.back-stock,
-.upload-button,
-.cart-button {
+button, .menu-button, .menu-link, .back, .back-link, .back-stock, .upload-button, .cart-button {
   transition: transform .16s ease, box-shadow .16s ease, filter .16s ease, background-color .16s ease;
 }
-
-button:hover,
-.menu-button:hover,
-.menu-link:hover,
-.back:hover,
-.back-link:hover,
-.back-stock:hover,
-.upload-button:hover,
-.cart-button:hover {
+button: hover, .menu-button:hover, .menu-link:hover, .back:hover, .back-link:hover, .back-stock:hover, .upload-button:hover, .cart-button:hover {
   transform: translateY(-2px);
   filter: brightness(1.03);
   box-shadow: 0 .25rem .55rem rgba(20, 44, 100, .2);
 }
-
-button:active,
-.menu-button:active,
-.menu-link:active,
-.back:active,
-.back-link:active,
-.back-stock:active,
-.upload-button:active,
-.cart-button:active {
+button: active, .menu-button:active, .menu-link:active, .back:active, .back-link:active, .back-stock:active, .upload-button:active, .cart-button:active {
   transform: translateY(1px) scale(.97);
   filter: brightness(.96);
   box-shadow: 0 .1rem .2rem rgba(20, 44, 100, .16);
 }
-
-button:focus-visible,
-.menu-button:focus-visible,
-.menu-link:focus-visible,
-.back:focus-visible,
-.back-link:focus-visible,
-.back-stock:focus-visible,
-.upload-button:focus-visible,
-.cart-button:focus-visible {
+button: focus-visible, .menu-button:focus-visible, .menu-link:focus-visible, .back:focus-visible, .back-link:focus-visible, .back-stock:focus-visible, .upload-button:focus-visible, .cart-button:focus-visible {
   outline: 2px solid #3561d0;
   outline-offset: 3px;
 }
-
 @media (prefers-reduced-motion: reduce) {
-  button,
-  .menu-button,
-  .menu-link,
-  .back,
-  .back-link,
-  .back-stock,
-  .upload-button,
-  .cart-button {
+  button,   .menu-button,   .menu-link,   .back,   .back-link,   .back-stock,   .upload-button,   .cart-button {
     transition: none;
-  }
+}
 }
 
 /* Product cards and quantity controls */
-.catalog-card,
-.medicine-card {
+.catalog-card, .medicine-card {
   transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
 }
-
-.catalog-card:hover,
-.medicine-card:hover {
+.catalog-card:hover, .medicine-card:hover {
   transform: translateY(-6px) !important;
   border-color: #6f96e8;
   box-shadow: 0 .7rem 1.3rem rgba(35, 66, 130, .24) !important;
 }
-
-.catalog-card .catalog-image i,
-.medicine-card::after {
+.catalog-card .catalog-image i, .medicine-card::after {
   transition: transform .2s ease, color .2s ease;
 }
-
-.catalog-card:hover .catalog-image i,
-.medicine-card:hover::after {
+.catalog-card:hover .catalog-image i, .medicine-card:hover::after {
   transform: translateX(4px) scale(1.2);
   color: #2451c8;
 }
-
-.catalog-card .order-row button,
-.catalog-card .cart-add,
-.medicine-card .stock-values button,
-.medicine-card .quantity,
-.stock-values button {
+.catalog-card .order-row button, .catalog-card .cart-add, .medicine-card .stock-values button, .medicine-card .quantity, .stock-values button {
   transition: transform .16s ease, box-shadow .16s ease, filter .16s ease !important;
 }
-
-.catalog-card .order-row button:hover,
-.catalog-card .cart-add:hover,
-.medicine-card .stock-values button:hover,
-.medicine-card .quantity:hover,
-.stock-values button:hover {
+.catalog-card .order-row button:hover, .catalog-card .cart-add:hover, .medicine-card .stock-values button:hover, .medicine-card .quantity:hover, .stock-values button:hover {
   transform: scale(1.2) !important;
   filter: brightness(1.06);
   box-shadow: 0 .2rem .4rem rgba(35, 66, 130, .22);
 }
-
-.catalog-card .order-row button:active,
-.catalog-card .cart-add:active,
-.medicine-card .stock-values button:active,
-.medicine-card .quantity:active,
-.stock-values button:active {
+.catalog-card .order-row button:active, .catalog-card .cart-add:active, .medicine-card .stock-values button:active, .medicine-card .quantity:active, .stock-values button:active {
   transform: scale(.88) !important;
 }
-.topbar button:not(.bell):not(.icon-button):not(.language):not(.language-tool):not(.language-switcher):hover,.page button:hover,.catalog-card button:hover,.medicine-card button:hover,.filter-menu button:hover,.filter:hover,.catalog-filter:hover{background:#fff!important;border-color:#3561d0!important;color:#3561d0!important;transform:translateY(-2px)!important;box-shadow:0 .35rem .65rem rgba(53,97,208,.28)!important}.topbar button:not(.bell):not(.icon-button):not(.language):not(.language-tool):not(.language-switcher):active,.page button:active,.catalog-card button:active,.medicine-card button:active,.filter:active,.catalog-filter:active{transform:translateY(1px) scale(.97)!important;box-shadow:0 .12rem .25rem rgba(53,97,208,.2)!important}
-.info-button{display:inline-block;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease,color .18s ease,background-color .18s ease}.info-button:hover{background:#fff!important;border:1px solid #3561d0!important;color:#3561d0!important;transform:translateY(-2px)!important;box-shadow:0 .35rem .65rem rgba(53,97,208,.28)!important}.info-button:active{transform:translateY(1px) scale(.97)!important;box-shadow:0 .12rem .25rem rgba(53,97,208,.2)!important}
+.topbar button:not(.bell):not(.icon-button):not(.language):not(.language-tool):not(.language-switcher):hover,.page button:hover,.catalog-card button:hover,.medicine-card button:hover,.filter-menu button:hover,.filter:hover,.catalog-filter:hover {
+  background: #fff!important;
+  border-color: #3561d0!important;
+  color: #3561d0!important;
+  transform: translateY(-2px)!important;
+  box-shadow: 0 .35rem .65rem rgba(53,97,208,.28)!important;
+}
+.topbar button:not(.bell):not(.icon-button):not(.language):not(.language-tool):not(.language-switcher):active,.page button:active,.catalog-card button:active,.medicine-card button:active,.filter:active,.catalog-filter:active {
+  transform: translateY(1px) scale(.97)!important;
+  box-shadow: 0 .12rem .25rem rgba(53,97,208,.2)!important;
+}
+.info-button {
+  display: inline-block;
+  transition: transform .18s ease,box-shadow .18s ease,border-color .18s ease,color .18s ease,background-color .18s ease;
+}
+.info-button:hover {
+  background: #fff!important;
+  border: 1px solid #3561d0!important;
+  color: #3561d0!important;
+  transform: translateY(-2px)!important;
+  box-shadow: 0 .35rem .65rem rgba(53,97,208,.28)!important;
+}
+.info-button:active {
+  transform: translateY(1px) scale(.97)!important;
+  box-shadow: 0 .12rem .25rem rgba(53,97,208,.2)!important;
+}
 
 /* Animate the text-only language control. */
-.topbar .language,.topbar .language-tool,.topbar .language-switcher{transition:transform .16s ease,box-shadow .16s ease,background-color .16s ease,color .16s ease!important}
-.topbar .language:hover,.topbar .language-tool:hover,.topbar .language-switcher:hover{background:#fff!important;border-color:#3561d0!important;color:#3561d0!important;transform:translateY(-2px)!important;box-shadow:0 .35rem .65rem rgba(53,97,208,.28)!important}
-.topbar .language:active,.topbar .language-tool:active,.topbar .language-switcher:active{transform:translateY(1px) scale(.97)!important;box-shadow:0 .12rem .25rem rgba(53,97,208,.2)!important}
-
-@keyframes languageControlPop {
-  0% { transform: scale(1); }
-  45% { transform: scale(1.12); }
-  100% { transform: scale(1); }
+.topbar .language,.topbar .language-tool,.topbar .language-switcher {
+  transition: transform .16s ease,box-shadow .16s ease,background-color .16s ease,color .16s ease!important;
 }
-.topbar .language.language-pop,
-.topbar .language-tool.language-pop,
-.topbar .language-switcher.language-pop {
+.topbar .language:hover,.topbar .language-tool:hover,.topbar .language-switcher:hover {
+  background: #fff!important;
+  border-color: #3561d0!important;
+  color: #3561d0!important;
+  transform: translateY(-2px)!important;
+  box-shadow: 0 .35rem .65rem rgba(53,97,208,.28)!important;
+}
+.topbar .language:active,.topbar .language-tool:active,.topbar .language-switcher:active {
+  transform: translateY(1px) scale(.97)!important;
+  box-shadow: 0 .12rem .25rem rgba(53,97,208,.2)!important;
+}
+@keyframes languageControlPop {
+  0% {
+    transform: scale(1);
+}
+  45% {
+    transform: scale(1.12);
+}
+  100% {
+    transform: scale(1);
+}
+}
+.topbar .language.language-pop, .topbar .language-tool.language-pop, .topbar .language-switcher.language-pop {
   animation: languageControlPop .32s ease-out !important;
 }
