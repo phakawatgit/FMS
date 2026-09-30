@@ -279,6 +279,48 @@ function saveLocalRecord(record) {
   localStorage.setItem(DUTY_KEY, JSON.stringify(records));
 }
 
+async function loadDutyRecordsFromDatabase(user) {
+  const token = await user.getIdToken();
+  const headers = { Authorization: `Bearer ${token}` };
+  const readDuties = async () => {
+    const response = await fetch(`${API_BASE}/api/duties`, { headers });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.message || "Duty records could not be loaded");
+    return result.data;
+  };
+
+  let databaseRecords = await readDuties();
+  const legacyRecords = records.filter((record) => belongsToUser(record, user));
+  let importedLegacyRecord = false;
+  for (const record of legacyRecords) {
+    const exists = databaseRecords.some((item) => item.date === record.date && item.colorId === record.colorId && item.email?.toLowerCase() === user.email?.toLowerCase());
+    if (exists) continue;
+    const response = await fetch(`${API_BASE}/api/duties`, {
+      method: "POST",
+      headers: { ...headers, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        date: record.date,
+        color: record.colorId,
+        firstName: record.firstName,
+        lastName: record.lastName,
+        nickname: record.nickname,
+        affiliation: record.affiliation,
+      }),
+    });
+    if (response.status === 409) continue;
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.message || "Legacy duty record could not be imported");
+    importedLegacyRecord = true;
+  }
+
+  if (importedLegacyRecord) databaseRecords = await readDuties();
+  records = databaseRecords.map((record) => ({
+    ...record,
+    colorValue: colors.find((color) => color.id === record.colorId)?.value,
+  }));
+  localStorage.setItem(DUTY_KEY, JSON.stringify(records));
+}
+
 async function saveDuty(event) {
   event.preventDefault();
   if (!currentUser) return;
@@ -315,8 +357,25 @@ async function saveDuty(event) {
         }),
       });
       if (!response.ok) throw new Error("Nurse data could not be saved");
+      const dutyResponse = await fetch(`${API_BASE}/api/duties`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          date: record.date,
+          color: record.colorId,
+          firstName: record.firstName,
+          lastName: record.lastName,
+          nickname: record.nickname,
+          affiliation: record.affiliation,
+        }),
+      });
+      const dutyResult = await dutyResponse.json();
+      if (!dutyResponse.ok) throw new Error(dutyResult.message || "Duty shift could not be saved");
+      record.id = dutyResult.data.id;
     } else if (!hasAdminSession()) {
       throw new Error("Authentication is required");
+    } else {
+      throw new Error("A Firebase sign-in is required to save duty records to the database");
     }
     savedToDatabase = true;
   } catch (error) {
@@ -388,6 +447,11 @@ onAuthStateChanged(auth, async (user) => {
     await restoreCurrentUserProfile(user);
   } catch (error) {
     dutyStatus.textContent = `${language === "th" ? "โหลดข้อมูลโปรไฟล์ไม่สำเร็จ" : "Could not load profile"} · ${error.message}`;
+  }
+  try {
+    await loadDutyRecordsFromDatabase(user);
+  } catch (error) {
+    dutyStatus.textContent = `${language === "th" ? "โหลดข้อมูลการเข้าเวรไม่สำเร็จ" : "Could not load duty records"} · ${error.message}`;
   }
   renderPalette();
   renderCalendar();

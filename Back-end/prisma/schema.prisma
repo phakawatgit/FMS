@@ -33,6 +33,17 @@ model Nurse {
   updatedAt   DateTime @updatedAt
 }
 
+model LegacyNurseProfile {
+  id          String   @id @default(cuid())
+  fullName    String   @db.VarChar(255)
+  nickname    String?  @db.VarChar(120)
+  affiliation String?  @db.VarChar(255)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("NurseLegacy")
+}
+
 model DutyShift {
   id          String   @id @default(cuid())
   date        DateTime
@@ -71,4 +82,35 @@ model PasswordResetOtp {
 
   @@index([email, createdAt])
   @@index([resetTokenHash])
+}
+
+model InfirmaryVisit {
+  id            String   @id @default(cuid())
+  visitorType   String   @db.VarChar(16)
+  visitorDetail String?  @db.VarChar(160)
+  firstName     String   @db.VarChar(120)
+  lastName      String   @db.VarChar(120)
+  nickname      String?  @db.VarChar(120)
+  age           Int?
+  studentId     String?  @db.VarChar(40)
+  faculty       String?  @db.VarChar(32)
+  branch        String?  @db.VarChar(255)
+  gender        String?  @db.VarChar(16)
+  blood         String?  @db.VarChar(3)
+  weight        Float?
+  height        Int?
+  symptom       String   @db.Text
+  sys           Int?
+  dia           Int?
+  pr            Int?
+  medicine      String?  @db.VarChar(160)
+  quantity      Int?
+  status        String   @db.VarChar(16)
+  hospitalName  String?  @db.VarChar(200)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([createdAt])
+  @@index([studentId])
+  @@index([status, createdAt])
 }

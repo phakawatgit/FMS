@@ -1,5 +1,6 @@
 const express = require("express");
 const databaseRouter = require("./database");
+const infirmaryVisitsRouter = require("./infirmary-visits");
 const prisma = require("../lib/prisma");
 const authRouter = require("./auth");
 const { getFirebaseAuth } = require("../lib/firebase-admin");
@@ -7,6 +8,7 @@ const { getFirebaseAuth } = require("../lib/firebase-admin");
 const router = express.Router();
 
 router.use("/database", databaseRouter);
+router.use("/infirmary-visits", infirmaryVisitsRouter);
 router.use("/auth", authRouter);
 
 router.get("/overview", async (_req, res) => {
@@ -106,6 +108,80 @@ router.post("/nurses/me", async (req, res) => {
   } catch (error) {
     console.error("Nurse upsert failed:", error.message);
     return res.status(503).json({ success: false, message: "บันทึกข้อมูลพยาบาลไม่สำเร็จ" });
+  }
+});
+
+router.get("/duties", async (req, res) => {
+  const email = await getAuthenticatedEmail(req, res);
+  if (!email) return;
+
+  try {
+    const duties = await prisma.dutyShift.findMany({
+      include: { user: { select: { email: true } } },
+      orderBy: [{ date: "desc" }, { createdAt: "desc" }],
+    });
+    return res.json({
+      success: true,
+      data: duties.map((duty) => ({
+        id: duty.id,
+        date: duty.date.toISOString().slice(0, 10),
+        colorId: duty.color,
+        firstName: duty.firstName,
+        lastName: duty.lastName,
+        nurseName: `${duty.firstName} ${duty.lastName}`.trim(),
+        nickname: duty.nickname,
+        affiliation: duty.affiliation,
+        email: duty.user.email,
+        updatedAt: duty.createdAt.toISOString(),
+      })),
+    });
+  } catch (error) {
+    console.error("Duty shift read failed:", error.message);
+    return res.status(503).json({ success: false, message: "อ่านข้อมูลการเข้าเวรไม่สำเร็จ" });
+  }
+});
+
+router.post("/duties", async (req, res) => {
+  const email = await getAuthenticatedEmail(req, res);
+  if (!email) return;
+
+  const dateKey = String(req.body?.date || "").trim();
+  const date = /^\d{4}-\d{2}-\d{2}$/.test(dateKey) ? new Date(`${dateKey}T00:00:00.000Z`) : null;
+  const color = String(req.body?.color || "").trim();
+  const firstName = String(req.body?.firstName || "").trim();
+  const lastName = String(req.body?.lastName || "").trim();
+  const nickname = String(req.body?.nickname || "").trim();
+  const affiliation = String(req.body?.affiliation || "").trim();
+  if (
+    !date || Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== dateKey ||
+    !/^color-(?:[1-9]|[1-4]\d|50)$/.test(color) ||
+    !firstName || !lastName || firstName.length > 120 || lastName.length > 120 ||
+    nickname.length > 120 || affiliation.length > 255
+  ) {
+    return res.status(400).json({ success: false, message: "ข้อมูลการเข้าเวรไม่ถูกต้อง" });
+  }
+
+  try {
+    const user = await prisma.user.upsert({
+      where: { email },
+      create: { email, name: `${firstName} ${lastName}` },
+      update: { name: `${firstName} ${lastName}` },
+    });
+    const uniqueKey = { date_color: { date, color } };
+    const existing = await prisma.dutyShift.findUnique({ where: uniqueKey });
+    if (existing && existing.userId !== user.id) {
+      return res.status(409).json({ success: false, message: "สีนี้ถูกใช้ในวันที่เลือกแล้ว" });
+    }
+
+    const duty = await prisma.dutyShift.upsert({
+      where: uniqueKey,
+      create: { date, color, firstName, lastName, nickname: nickname || null, affiliation: affiliation || null, userId: user.id },
+      update: { firstName, lastName, nickname: nickname || null, affiliation: affiliation || null },
+    });
+    return res.status(201).json({ success: true, data: { id: duty.id } });
+  } catch (error) {
+    console.error("Duty shift save failed:", error.message);
+    return res.status(503).json({ success: false, message: "บันทึกข้อมูลการเข้าเวรไม่สำเร็จ" });
   }
 });
 

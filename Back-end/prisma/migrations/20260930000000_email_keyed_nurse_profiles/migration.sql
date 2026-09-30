@@ -1,11 +1,24 @@
 DO $$
 BEGIN
-  IF to_regclass('"LegacyStorage"') IS NOT NULL THEN
-    DELETE FROM "LegacyStorage" WHERE "key" = 'fms-duty-profiles';
+  IF to_regclass('"Nurse"') IS NOT NULL THEN
+    ALTER TABLE "Nurse" RENAME TO "NurseLegacy";
+    ALTER TABLE "NurseLegacy" ADD COLUMN "id" TEXT;
+    UPDATE "NurseLegacy" SET "id" = gen_random_uuid()::text WHERE "id" IS NULL;
+    ALTER TABLE "NurseLegacy" ALTER COLUMN "id" SET NOT NULL;
+    ALTER TABLE "NurseLegacy" DROP CONSTRAINT "Nurse_pkey";
+    ALTER TABLE "NurseLegacy" ADD CONSTRAINT "NurseLegacy_pkey" PRIMARY KEY ("id");
+  ELSE
+    CREATE TABLE "NurseLegacy" (
+      "id" TEXT NOT NULL,
+      "fullName" VARCHAR(255) NOT NULL,
+      "nickname" VARCHAR(120),
+      "affiliation" VARCHAR(255),
+      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      "updatedAt" TIMESTAMP(3) NOT NULL,
+      CONSTRAINT "NurseLegacy_pkey" PRIMARY KEY ("id")
+    );
   END IF;
 END $$;
-
-DROP TABLE IF EXISTS "Nurse";
 
 CREATE TABLE "Nurse" (
   "email" VARCHAR(254) NOT NULL,

@@ -43,6 +43,8 @@ FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY----
 - `GET /api/overview` ดูโมดูลที่เตรียมไว้
 - `GET /api/database/health` ตรวจสอบการเชื่อมต่อ PostgreSQL
 - `GET /api/overview` ดึงข้อมูลสรุปจาก PostgreSQL ผ่าน Prisma
+- `POST /api/infirmary-visits` บันทึกข้อมูลผู้เข้าใช้ห้องพยาบาลและผลตรวจลง PostgreSQL
+- `PATCH /api/infirmary-visits/:id` อัปเดตสถานะและโรงพยาบาลที่ส่งต่อจากหน้ารอประเมิน
 
 หน้า HTML เดิมใน `Front-end/` จะถูก mount เป็น `/legacy/` ใน Docker ชั่วคราว เพื่อให้ทุกหน้าทดลองยังเปิดใช้งานได้ระหว่างทยอยแปลงเป็น React/Next.js
 
@@ -57,6 +59,8 @@ npm run prisma:studio
 ```
 
 ไฟล์ Prisma schema อยู่ที่ `Back-end/prisma/schema.prisma`
+
+ข้อมูลการเข้าใช้ห้องพยาบาลเก็บในตาราง `InfirmaryVisit` โดยมีข้อมูลผู้เข้าใช้, หลักสูตร/สาขา, อาการ, สัญญาณชีพ, ยาที่ได้รับ, สถานะ และโรงพยาบาลที่ส่งต่อ Migration ใหม่จะถูกรันด้วย `prisma migrate deploy` ตอนเริ่ม API ใน Docker
 
 ## Python service
 
