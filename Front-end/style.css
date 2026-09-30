@@ -114,7 +114,7 @@ button {
   align-items: flex-start;
 }
 .brand-panel .institution-lockup {
-  top: clamp(1.2rem, 3vw, 3rem);
+  top: clamp(1.25rem, 3vw, 3rem);
   right: clamp(2rem, 6vw, 5.5rem);
   left: auto;
   align-items: flex-end;
@@ -184,6 +184,10 @@ button {
 .auth-panel .institution-logo {
   width: clamp(6rem, 10vw, 8.5rem);
   height: clamp(5rem, 8vw, 6.5rem);
+}
+.brand-panel .institution-logo {
+  width: clamp(6.5rem, 9vw, 9rem);
+  height: clamp(5.5rem, 7.5vw, 7rem);
 }
 .auth-panel {
   position: relative;
