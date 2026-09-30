@@ -16,6 +16,8 @@ const firebaseConfig = {
 const USE_FIRESTORE = false;
 const LOCAL_DUTY_STORAGE_KEY = "fms-local-duty-records";
 const DUTY_PROFILE_KEY = "fms-duty-profiles";
+const API_BASE = window.FMS_API_URL || `${location.protocol}//${location.hostname}:4000`;
+localStorage.removeItem(DUTY_PROFILE_KEY);
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -97,15 +99,6 @@ function loadLocalDutyRecords() {
   }
 }
 
-function readDutyProfiles() {
-  try {
-    const profiles = JSON.parse(localStorage.getItem(DUTY_PROFILE_KEY) || "{}");
-    return profiles && typeof profiles === "object" && !Array.isArray(profiles) ? profiles : {};
-  } catch {
-    return {};
-  }
-}
-
 function getCurrentUser() {
   return auth.currentUser || (isAdminSession() ? { uid: "admin", email: "" } : null);
 }
@@ -119,22 +112,24 @@ function recordBelongsToUser(record, user = getCurrentUser()) {
   return recordUid === uid || (email && (recordEmail === email || recordUid.toLowerCase() === email));
 }
 
-function restoreDutyProfile(user = getCurrentUser()) {
-  if (!user) return;
-  const email = String(user.email || "").trim().toLowerCase();
-  const profiles = readDutyProfiles();
-  const savedProfile = profiles[email] || profiles[String(user.uid || "")] || null;
-  const savedRecord = Array.from(dutyRecords.values())
-    .flat()
-    .filter((record) => recordBelongsToUser(record, user))
-    .sort((a, b) => String(b.updatedAt || "").localeCompare(String(a.updatedAt || "")))[0];
-  const profile = savedProfile || savedRecord;
-  if (!profile) return;
-  selectedColor = profile.colorId || selectedColor;
-  document.getElementById("nurseFirstName").value = profile.firstName || savedRecord?.firstName || "";
-  document.getElementById("nurseLastName").value = profile.lastName || savedRecord?.lastName || "";
-  document.getElementById("nurseNickname").value = profile.nickname || savedRecord?.nickname || "";
-  document.getElementById("nurseAffiliation").value = profile.affiliation || savedRecord?.affiliation || "";
+async function restoreDutyProfile(user = getCurrentUser()) {
+  if (!user?.getIdToken) return false;
+  const token = await user.getIdToken();
+  const response = await fetch(`${API_BASE}/api/nurses/me`, { headers: { Authorization: `Bearer ${token}` } });
+  if (response.status === 404) {
+    selectedColor = null;
+    ["nurseFirstName", "nurseLastName", "nurseNickname", "nurseAffiliation"].forEach((id) => { document.getElementById(id).value = ""; });
+    return false;
+  }
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.message || "Profile could not be loaded");
+  const profile = result.data;
+  selectedColor = profile.colorId || null;
+  document.getElementById("nurseFirstName").value = profile.firstName || "";
+  document.getElementById("nurseLastName").value = profile.lastName || "";
+  document.getElementById("nurseNickname").value = profile.nickname || "";
+  document.getElementById("nurseAffiliation").value = profile.affiliation || "";
+  return true;
 }
 
 // A successful sign-in represents today's attendance when the account already
@@ -165,7 +160,6 @@ function ensureTodayDutyRecord(user = getCurrentUser()) {
   };
   dutyRecords.set(date, [...recordsForToday, dutyRecord]);
   saveLocalDutyRecords();
-  saveDutyProfile(dutyRecord, user);
   return true;
 }
 
@@ -387,12 +381,40 @@ async function saveDutyRecord(event) {
     updatedAt: new Date().toISOString()
   };
   dutyStatus.textContent = "...";
+  try {
+    if (!user.getIdToken && isAdminSession()) {
+      if (!USE_FIRESTORE) {
+        const recordsForToday = dutyRecords.get(date) || [];
+        dutyRecords.set(date, [...recordsForToday.filter((record) => record.uid !== user.uid), dutyRecord]);
+        saveLocalDutyRecords();
+        renderCalendar();
+        dutyStatus.textContent = t.saved;
+        return;
+      }
+    }
+    const token = await user.getIdToken();
+    const response = await fetch(`${API_BASE}/api/nurses/me`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({
+        firstName: dutyRecord.firstName,
+        lastName: dutyRecord.lastName,
+        nickname: dutyRecord.nickname,
+        affiliation: dutyRecord.affiliation,
+        colorId: dutyRecord.colorId,
+      }),
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.message || t.saveError);
+  } catch (error) {
+    dutyStatus.textContent = `${t.saveError} · ${error.message}`;
+    return;
+  }
   if (!USE_FIRESTORE) {
     const recordsForToday = dutyRecords.get(date) || [];
     const otherRecords = recordsForToday.filter((record) => record.uid !== user.uid);
     dutyRecords.set(date, [...otherRecords, dutyRecord]);
     saveLocalDutyRecords();
-    saveDutyProfile(dutyRecord, user);
     renderCalendar();
     dutyStatus.textContent = t.saved;
     return;
@@ -419,29 +441,10 @@ async function saveDutyRecord(event) {
   }
 }
 
-function saveDutyProfile(record, user = getCurrentUser()) {
-  const profileKey = String(user?.email || user?.uid || "").trim().toLowerCase();
-  if (!profileKey) return;
-  const profiles = readDutyProfiles();
-  profiles[profileKey] = {
-    uid: record.uid,
-    email: record.email,
-    colorId: record.colorId,
-    colorValue: record.colorValue,
-    firstName: record.firstName,
-    lastName: record.lastName,
-    nickname: record.nickname,
-    affiliation: record.affiliation,
-    updatedAt: record.updatedAt,
-  };
-  localStorage.setItem(DUTY_PROFILE_KEY, JSON.stringify(profiles));
-}
-
 languageInputs.forEach((input) => input.addEventListener("change", () => { language = input.value; renderLanguage(); }));
 window.addEventListener("storage", (event) => {
-  if (![LOCAL_DUTY_STORAGE_KEY, DUTY_PROFILE_KEY].includes(event.key)) return;
+  if (event.key !== LOCAL_DUTY_STORAGE_KEY) return;
   loadLocalDutyRecords();
-  restoreDutyProfile();
   renderCalendar();
   if (!yearCalendarModal.hidden) renderYearCalendar();
 });
@@ -475,11 +478,9 @@ signOutButton.addEventListener("click", () => {
   signOut(auth).finally(() => { window.location.href = "./index.html"; });
 });
 
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
   if (isAdminSession()) {
     loadLocalDutyRecords();
-    restoreDutyProfile();
-    ensureTodayDutyRecord();
     renderPalette();
     renderCalendar();
     return;
@@ -487,11 +488,23 @@ onAuthStateChanged(auth, (user) => {
   if (!user) { window.location.href = "./index.html"; return; }
   if (!USE_FIRESTORE) {
     loadLocalDutyRecords();
-    restoreDutyProfile(user);
+    try {
+      await restoreDutyProfile(user);
+    } catch (error) {
+      dutyStatus.textContent = `${language === "th" ? "โหลดข้อมูลโปรไฟล์ไม่สำเร็จ" : "Could not load profile"} · ${error.message}`;
+      renderPalette();
+      renderCalendar();
+      return;
+    }
     ensureTodayDutyRecord(user);
     renderPalette();
     renderCalendar();
     return;
+  }
+  try {
+    await restoreDutyProfile(user);
+  } catch (error) {
+    dutyStatus.textContent = `${language === "th" ? "โหลดข้อมูลโปรไฟล์ไม่สำเร็จ" : "Could not load profile"} · ${error.message}`;
   }
   onSnapshot(collection(db, "nurseColorLocks"), (snapshot) => { colorLocks = new Map(snapshot.docs.map((item) => [item.id, item.data()])); renderPalette(); }, (error) => { if (error.code === "permission-denied") dutyStatus.textContent = language === "th" ? "Firestore Rules ยังไม่อนุญาต กรุณา Publish Rules ก่อน" : "Firestore Rules denied access. Publish the Firestore Rules first."; });
   onSnapshot(collection(db, "dutyRecords"), (snapshot) => { dutyRecords = new Map(); snapshot.docs.forEach((item) => { const record = item.data(); if (!dutyRecords.has(record.date)) dutyRecords.set(record.date, []); dutyRecords.get(record.date).push(record); }); renderCalendar(); }, (error) => { if (error.code === "permission-denied") dutyStatus.textContent = language === "th" ? "Firestore Rules ยังไม่อนุญาต กรุณา Publish Rules ก่อน" : "Firestore Rules denied access. Publish the Firestore Rules first."; });

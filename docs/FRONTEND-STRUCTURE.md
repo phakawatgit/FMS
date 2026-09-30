@@ -39,7 +39,9 @@ app/globals.css         Global Tailwind/CSS
 |---|---|
 | UI state เช่น ภาษา ตัวกรอง และข้อมูล offline | Browser `localStorage` |
 | ข้อมูล legacy ที่ sync ได้ | `/api/legacy-storage` |
-| Duty Shift รุ่น API ใหม่ | Express + Prisma + PostgreSQL |
+| Duty Shift profile | PostgreSQL `Nurse` keyed by Firebase email via `Back-end` `/api/nurses/me` |
+| Duty Shift attendance | Browser `localStorage`, synced through `/api/legacy-storage` while the legacy page is in use |
+| New typed API duty records | Express + Prisma + PostgreSQL in `apps/api` (not yet used by the legacy duty-shift page) |
 | Authentication บางหน้า | Firebase Auth |
 
 ## หลักการแก้ไข

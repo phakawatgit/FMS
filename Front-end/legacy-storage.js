@@ -8,6 +8,7 @@
   const nativeStorage = window.localStorage;
   const nativeSetItem = nativeStorage.setItem.bind(nativeStorage);
   const nativeRemoveItem = nativeStorage.removeItem.bind(nativeStorage);
+  nativeRemoveItem("fms-duty-profiles");
   const pending = new Set();
   let hydrated = false;
 

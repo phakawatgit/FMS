@@ -23,9 +23,12 @@ model User {
 }
 
 model Nurse {
-  fullName    String   @id @db.VarChar(255)
+  email       String   @id @db.VarChar(254)
+  firstName   String   @db.VarChar(120)
+  lastName    String   @db.VarChar(120)
   nickname    String?  @db.VarChar(120)
   affiliation String?  @db.VarChar(255)
+  colorId     String?  @db.VarChar(32)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }

@@ -13,6 +13,7 @@ const firebaseConfig = {
 const DUTY_KEY = "fms-local-duty-records";
 const API_BASE = window.FMS_API_URL || `${location.protocol}//${location.hostname}:4000`;
 const DUTY_PROFILE_KEY = "fms-duty-profiles";
+localStorage.removeItem(DUTY_PROFILE_KEY);
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const monthSelect = document.getElementById("calendarMonth");
@@ -60,13 +61,6 @@ function readRecords() {
   } catch { return []; }
 }
 
-function readProfiles() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(DUTY_PROFILE_KEY) || "{}");
-    return saved && typeof saved === "object" && !Array.isArray(saved) ? saved : {};
-  } catch { return {}; }
-}
-
 // Use the Firebase uid as the primary identity and email as a fallback. The
 // fallback is useful for older records created before email was stored.
 function getUserKey(user = currentUser) {
@@ -82,23 +76,24 @@ function belongsToUser(record, user = currentUser) {
   return recordUid === userKey || (email && (recordEmail === email || recordUid.toLowerCase() === email));
 }
 
-function restoreCurrentUserProfile(user = currentUser) {
-  const email = String(user?.email || "").trim().toLowerCase();
-  const profiles = readProfiles();
-  const savedProfile = profiles[email] || profiles[getUserKey(user)] || null;
-  const previous = records
-    .filter((record) => belongsToUser(record, user))
-    .sort((a, b) => String(b.updatedAt || "").localeCompare(String(a.updatedAt || "")))[0];
-  if (!previous && !savedProfile) {
+async function restoreCurrentUserProfile(user = currentUser) {
+  if (!user?.getIdToken) return false;
+  const token = await user.getIdToken();
+  const response = await fetch(`${API_BASE}/api/nurses/me`, { headers: { Authorization: `Bearer ${token}` } });
+  if (response.status === 404) {
     selectedColor = null;
-    return;
+    ["nurseFirstName", "nurseLastName", "nurseNickname", "nurseAffiliation"].forEach((id) => { document.getElementById(id).value = ""; });
+    return false;
   }
-  const profile = savedProfile || previous;
-  selectedColor = profile.colorId || previous?.colorId || null;
-  document.getElementById("nurseFirstName").value = profile.firstName || previous?.firstName || "";
-  document.getElementById("nurseLastName").value = profile.lastName || previous?.lastName || "";
-  document.getElementById("nurseNickname").value = profile.nickname || previous?.nickname || "";
-  document.getElementById("nurseAffiliation").value = profile.affiliation || previous?.affiliation || "";
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.message || "Profile could not be loaded");
+  const profile = result.data;
+  selectedColor = profile.colorId || null;
+  document.getElementById("nurseFirstName").value = profile.firstName || "";
+  document.getElementById("nurseLastName").value = profile.lastName || "";
+  document.getElementById("nurseNickname").value = profile.nickname || "";
+  document.getElementById("nurseAffiliation").value = profile.affiliation || "";
+  return true;
 }
 
 function getDateKey(date) {
@@ -282,23 +277,6 @@ function saveLocalRecord(record) {
   records = records.filter((item) => !(belongsToUser(item, currentUser) && item.date === record.date));
   records.push(record);
   localStorage.setItem(DUTY_KEY, JSON.stringify(records));
-
-  const profileKey = String(currentUser?.email || getUserKey(currentUser) || "").trim().toLowerCase();
-  if (profileKey) {
-    const profiles = readProfiles();
-    profiles[profileKey] = {
-      uid: record.uid,
-      email: record.email,
-      colorId: record.colorId,
-      colorValue: record.colorValue,
-      firstName: record.firstName,
-      lastName: record.lastName,
-      nickname: record.nickname,
-      affiliation: record.affiliation,
-      updatedAt: record.updatedAt,
-    };
-    localStorage.setItem(DUTY_PROFILE_KEY, JSON.stringify(profiles));
-  }
 }
 
 async function saveDuty(event) {
@@ -323,25 +301,33 @@ async function saveDuty(event) {
   };
   let savedToDatabase = false;
   try {
-    const response = await fetch(`${API_BASE}/api/nurses`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        firstName: record.firstName,
-        lastName: record.lastName,
-        nickname: record.nickname,
-        affiliation: record.affiliation,
-      }),
-    });
-    if (!response.ok) throw new Error("Nurse data could not be saved");
+    if (currentUser.getIdToken) {
+      const token = await currentUser.getIdToken();
+      const response = await fetch(`${API_BASE}/api/nurses/me`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          firstName: record.firstName,
+          lastName: record.lastName,
+          nickname: record.nickname,
+          affiliation: record.affiliation,
+          colorId: record.colorId,
+        }),
+      });
+      if (!response.ok) throw new Error("Nurse data could not be saved");
+    } else if (!hasAdminSession()) {
+      throw new Error("Authentication is required");
+    }
     savedToDatabase = true;
   } catch (error) {
     console.error("Nurse data sync failed:", error);
   }
+  if (!savedToDatabase) {
+    dutyStatus.textContent = `${copy[language].saved} · ${language === "th" ? "บันทึกข้อมูลในฐานข้อมูลไม่สำเร็จ" : "Database sync failed"}`;
+    return;
+  }
   saveLocalRecord(record);
-  dutyStatus.textContent = savedToDatabase
-    ? `${copy[language].saved} · ${formatDate(record.date)}`
-    : `${copy[language].saved} · ${language === "th" ? "บันทึกข้อมูลในฐานข้อมูลไม่สำเร็จ" : "Database sync failed"}`;
+  dutyStatus.textContent = `${copy[language].saved} · ${formatDate(record.date)}`;
   renderCalendar();
   renderPalette();
   renderRecords();
@@ -379,19 +365,17 @@ document.getElementById("closeNotification").addEventListener("click", () => { n
 document.addEventListener("click", (event) => { if (!notificationPanel.hidden && !notificationPanel.contains(event.target) && !document.getElementById("notificationButton").contains(event.target)) notificationPanel.hidden = true; });
 document.getElementById("calendarGrid").addEventListener("keydown", (event) => { if (event.key === "Escape") document.activeElement.blur(); });
 window.addEventListener("storage", (event) => {
-  if (![DUTY_KEY, DUTY_PROFILE_KEY].includes(event.key)) return;
+  if (event.key !== DUTY_KEY) return;
   records = readRecords();
-  restoreCurrentUserProfile();
   renderCalendar();
   renderPalette();
   renderRecords();
 });
 
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
   if (hasAdminSession()) {
     currentUser = { uid: "admin", displayName: "Admin" };
     records = readRecords();
-    restoreCurrentUserProfile();
     renderPalette();
     renderCalendar();
     renderRecords();
@@ -400,7 +384,11 @@ onAuthStateChanged(auth, (user) => {
   if (!user) { window.location.href = "./index.html"; return; }
   currentUser = user;
   records = readRecords();
-  restoreCurrentUserProfile(user);
+  try {
+    await restoreCurrentUserProfile(user);
+  } catch (error) {
+    dutyStatus.textContent = `${language === "th" ? "โหลดข้อมูลโปรไฟล์ไม่สำเร็จ" : "Could not load profile"} · ${error.message}`;
+  }
   renderPalette();
   renderCalendar();
   renderRecords();

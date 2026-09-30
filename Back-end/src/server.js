@@ -4,24 +4,11 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
-const prisma = require("./lib/prisma");
 const healthRouter = require("./routes/health");
 const apiRouter = require("./routes/index");
 
 const app = express();
 const port = Number(process.env.PORT || 4000);
-const initialNurseNames = [
-  "นางศิริวรรณ คงบุญแก้ว",
-  "นางสุกัญญา มนธรรมสกุล",
-  "นายณัฐพล นาคบุตร",
-  "น.ส.นารีนุช เพ็ชรเวช",
-  "น.ส.เจนจิรา เกิดกอบ",
-  "น.ส.มนธยา จูบุญส่ง",
-  "น.ส.ปัญญาพร ปิยะวัฒน์",
-  "น.ส.ฤทัยรัตน์ อุ่นนอง",
-  "น.ส.พรพิมล วิเชียรรัตน์",
-  "น.ส.ปริมมา เสาวรส",
-];
 
 app.disable("x-powered-by");
 app.use(helmet());
@@ -61,12 +48,4 @@ app.use((error, _req, res, _next) => {
   res.status(500).json({ success: false, message: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" });
 });
 
-prisma.nurse.createMany({
-  data: initialNurseNames.map((fullName) => ({ fullName })),
-  skipDuplicates: true,
-}).then(() => {
-  app.listen(port, () => console.log(`FMS API listening on http://localhost:${port}`));
-}).catch((error) => {
-  console.error("Nurse seed failed:", error);
-  process.exit(1);
-});
+app.listen(port, () => console.log(`FMS API listening on http://localhost:${port}`));

@@ -2,6 +2,7 @@ const express = require("express");
 const databaseRouter = require("./database");
 const prisma = require("../lib/prisma");
 const authRouter = require("./auth");
+const { getFirebaseAuth } = require("../lib/firebase-admin");
 
 const router = express.Router();
 
@@ -34,43 +35,71 @@ router.get("/overview", async (_req, res) => {
   }
 });
 
-router.get("/nurses", async (_req, res) => {
+function normalizeEmail(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+async function getAuthenticatedEmail(req, res) {
+  const token = req.get("authorization")?.match(/^Bearer\s+(.+)$/i)?.[1];
+  if (!token) {
+    res.status(401).json({ success: false, message: "กรุณาเข้าสู่ระบบใหม่" });
+    return null;
+  }
+
   try {
-    const nurses = await prisma.nurse.findMany({ orderBy: { fullName: "asc" } });
-    return res.json({ success: true, data: nurses });
+    const decodedToken = await getFirebaseAuth().verifyIdToken(token);
+    const email = normalizeEmail(decodedToken.email);
+    if (!email) {
+      res.status(401).json({ success: false, message: "บัญชีนี้ไม่มีอีเมล" });
+      return null;
+    }
+    return email;
   } catch (error) {
-    console.error("Nurse list read failed:", error.message);
-    return res.status(503).json({ success: false, message: "อ่านรายชื่อพยาบาลไม่สำเร็จ" });
+    const notConfigured = error.message === "Firebase Admin credentials are not configured";
+    res.status(notConfigured ? 503 : 401).json({
+      success: false,
+      message: notConfigured ? "ระบบยืนยันตัวตนยังไม่พร้อมใช้งาน" : "เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่",
+    });
+    return null;
+  }
+}
+
+router.get("/nurses/me", async (req, res) => {
+  const email = await getAuthenticatedEmail(req, res);
+  if (!email) return;
+
+  try {
+    const nurse = await prisma.nurse.findUnique({ where: { email } });
+    if (!nurse) return res.status(404).json({ success: false, message: "ยังไม่มีข้อมูลโปรไฟล์" });
+    return res.json({ success: true, data: nurse });
+  } catch (error) {
+    console.error("Nurse profile read failed:", error.message);
+    return res.status(503).json({ success: false, message: "อ่านข้อมูลโปรไฟล์ไม่สำเร็จ" });
   }
 });
 
-function normalizeNurseName(value) {
-  return String(value || "")
-    .trim()
-    .replace(/^(?:นางสาว|น\.ส\.|นาง|นาย)\s*/, "")
-    .replace(/\s+/g, " ");
-}
-
-router.post("/nurses", async (req, res) => {
+router.post("/nurses/me", async (req, res) => {
+  const email = await getAuthenticatedEmail(req, res);
+  if (!email) return;
   const firstName = String(req.body?.firstName || "").trim();
   const lastName = String(req.body?.lastName || "").trim();
   const nickname = String(req.body?.nickname || "").trim();
   const affiliation = String(req.body?.affiliation || "").trim();
-  if (!firstName || !lastName || firstName.length > 120 || lastName.length > 120 || nickname.length > 120 || affiliation.length > 255) {
+  const colorId = String(req.body?.colorId || "").trim();
+  if (!firstName || !lastName || firstName.length > 120 || lastName.length > 120 || nickname.length > 120 || affiliation.length > 255 || (colorId && !/^color-(?:[1-9]|[1-4]\d|50)$/.test(colorId))) {
     return res.status(400).json({ success: false, message: "ข้อมูลพยาบาลไม่ถูกต้อง" });
   }
 
-  const fullName = `${firstName} ${lastName}`;
   try {
-    const knownNurses = await prisma.nurse.findMany({ select: { fullName: true } });
-    const canonicalNurse = knownNurses.find((nurse) => normalizeNurseName(nurse.fullName) === normalizeNurseName(fullName));
-    const canonicalFullName = canonicalNurse?.fullName ?? fullName;
     const nurse = await prisma.nurse.upsert({
-      where: { fullName: canonicalFullName },
-      create: { fullName: canonicalFullName, nickname: nickname || null, affiliation: affiliation || null },
+      where: { email },
+      create: { email, firstName, lastName, nickname: nickname || null, affiliation: affiliation || null, colorId: colorId || null },
       update: {
-        ...(nickname ? { nickname } : {}),
-        ...(affiliation ? { affiliation } : {}),
+        firstName,
+        lastName,
+        nickname: nickname || null,
+        affiliation: affiliation || null,
+        colorId: colorId || null,
       },
     });
     return res.json({ success: true, data: nurse });
