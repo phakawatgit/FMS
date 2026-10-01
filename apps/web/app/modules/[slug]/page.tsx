@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
-import { ModulePage } from "../../../components/layout/ModulePage";
+import Workspace from "../../../components/modules/Workspace";
 
 const modules: Record<string, { title: string; description: string }> = {
+  settings: { title: "Settings", description: "???????????????" },
   dashboard: { title: "Dashboard and Report", description: "แดชบอร์ดและรายงานของระบบ" },
   "infirmary-visit": { title: "Infirmary Visit", description: "บันทึกการเข้าห้องพยาบาล" },
   stock: { title: "Stock", description: "คลังยาและเวชภัณฑ์" },
@@ -15,5 +16,5 @@ export default async function ModuleRoute({ params }: { params: Promise<{ slug: 
   const { slug } = await params;
   const module = modules[slug];
   if (!module) notFound();
-  return <ModulePage title={module.title} description={module.description} />;
+  return <Workspace slug={slug} />;
 }

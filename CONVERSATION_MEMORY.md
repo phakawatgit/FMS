@@ -1,5 +1,20 @@
 # บันทึกบทสนทนาและงาน FMS
 
+### 2026-10-01 — ตรวจทั้งระบบและเริ่ม implement แผนใหญ่ (กำลังทำ)
+
+- ผู้ใช้สั่งตรวจ/แก้ frontend/backend/database ทั้งหมดและทดสอบ ใช้ mockup ได้ พร้อม progress สำหรับส่งต่อ; เลือกทำทั้ง Legacy และ Next.js, Firebase จริงพร้อมบัญชีทดสอบ, Nurse ทำงานประจำครบ Admin จัดการสิทธิ์/ตั้งค่า/audit
+- เรื่อง Infirmary: ตรวจพบรายการจ่ายยังอยู่ครบใน Dispensation ผู้ใช้เลือกคงแบบสัมพันธ์ ไม่เพิ่มช่อง medicine/quantity ซ้ำ
+- ผู้ใช้เลือกเก็บ Medicine.imageUrl เป็น URL รูปอัปโหลด เปิดดูตรงได้ ไม่รับ URL ภายนอก
+- อนุมัติแผนและสั่ง Implement แล้ว; progress ละเอียดที่ docs/IMPLEMENTATION-PROGRESS.md และตารางตรวจที่ docs/SYSTEM-AUDIT.md
+- สำรองฐานก่อนทำ; เพิ่ม/apply imageUrl และตาราง orders/reference/audit/user fields แล้ว รูปเดิมเติม URL แล้ว; tests รูป/typed orders/restart ผ่านก่อนเปิด auth gateway และ inventory regression ผ่าน ณ ช่วงนั้น
+- พบ fresh database migration ขาด baseline ตารางบัญชี/เวร เพิ่ม migration แก้แล้ว กำลังตรวจฐานแยก fms_system_test และ Firebase Auth Emulator
+- Legacy async/auth และ Next workspace กำลังพัฒนา ยังไม่เสร็จ/ยังไม่ผ่าน E2E ทั้งระบบ ไม่ถือว่าผลก่อนเปลี่ยน auth ยืนยันโค้ดล่าสุด
+- เทสต่อ 2026-10-01: `node Back-end/tests/run-system.cjs` ผ่านครบหก suite ที่มีจริงบน logical database `fms_system_test` + Auth Emulator; มีการแก้ readiness/retry expectations ใน test files และเอา suite `system-browser` ที่ไม่มีไฟล์ออกจาก default runner
+- TypeScript check และ production build ของ Next.js ผ่าน; ข้าม ReIcon CDN ที่ไม่มีการใช้งาน เพราะการโหลดไม่สำเร็จเคยหยุด Legacy bootstrap ก่อนโหลดหน้า catalog detail
+- ตรวจ backup `.local-backups/fms-before-system-completion-20261001.dump`, apply `20261001145000_complete_baseline` กับ database `fms` บน master; migrate status up-to-date, Prisma schema valid, API health 200
+- `fms_system_test` แยกจาก database `fms` แต่ใช้ PostgreSQL master host/volume เดียวกัน; test fixtures ถูก cleanup. เว็บ/API/master/Auth Emulator กำลังรันที่ 3000/4000/5434/9099
+- งานค้าง: Next.js full E2E/system-browser, ตรวจ Legacy ทุกหน้า, OTP/SMTP จริงและ concurrency, reports จริง, dependency audit 15 vulnerabilities
+
 อัปเดตล่าสุด: 2026-10-01 (Asia/Bangkok)
 
 บันทึกนี้สรุปเฉพาะบทสนทนาที่เข้าถึงได้ตอนสร้างไฟล์ ไม่ใช่ประวัติทุกแชตหรือข้อความแบบคำต่อคำ
@@ -175,3 +190,19 @@
 - ตรวจหลังหยุดไม่พบ LISTENING ที่พอร์ต 3000/4000/5555/5434 และไม่มีคอนเทนเนอร์ FMS ที่กำลังรัน; ไม่ปิดบริการ PostgreSQL อื่นหรือ Docker Desktop ทั้งเครื่อง
 - ไฟล์งานและบันทึกอยู่บนดิสก์แล้ว ยังไม่ได้ git commit/push; เก็บข้อมูลฐานข้อมูลและ Docker volume ไว้ ไม่ล้างข้อมูลเพิ่มตอนหยุด
 - แก้สถานะก่อนหน้าที่ระบุเซิร์ฟเวอร์เปิดอยู่: ตอนจบครั้งนี้หยุดแล้ว การเริ่มต่อให้เปิด Docker Desktop/คอนเทนเนอร์ fms-master-postgres-1 แล้วรัน dev:api, dev:web และ db:studio ตามต้องการ หลีกเลี่ยง docker compose up จากชื่อโฟลเดอร์ FMS ที่จะเลือกฐานว่างอีกชุด
+
+### 2026-10-01 — แก้ Docker เว็บเปิดพอร์ต 3000 ไม่ได้
+
+- ผู้ใช้รัน docker compose up แล้วเปิด localhost:3000 ไม่ได้; ตรวจพบ services รันปกติ แต่ docker-compose.yml map เว็บเป็น 3001:3000 ทำให้พอร์ต host 3000 ปิดและ localhost:3001 ตอบ HTTP 200
+- เปลี่ยน mapping เป็น 3000:3000 และ FRONTEND_URL เป็น http://localhost:3000 จากนั้น recreate เฉพาะ web/api
+- ยืนยัน localhost:3000 ตอบ HTTP 200, /api/database/health ตอบ HTTP 200 connected และ services ทั้งหมด Up
+- compose กำลังใช้ fms-postgres-1/volume postgres_data ซึ่งแยกจาก fms-master-postgres-1 ฐานเดิม; health-check ยืนยันแค่เชื่อมต่อได้ ไม่ยืนยันว่าเป็นฐานข้อมูลชุดเดิม
+
+### 2026-10-01 — เปิดหน้าเว็บแบบ Legacy
+
+- ผู้ใช้ขอรันเว็บแบบ legacy; ตรวจ Front-end/README.md พบว่า static HTML เดิมเสิร์ฟผ่าน `/legacy/*.html` จากเว็บ Next.js ที่กำลังรันอยู่ ไม่ต้องเปิด server เพิ่ม
+- ยืนยัน HTTP 200 สำหรับ `/legacy/index.html`, `/legacy/menu.html`, `/legacy/dashboard.html` และ `/legacy/infirmary-visit.html` ที่พอร์ต 3000; ใช้ `http://localhost:3000/legacy/index.html` เป็นหน้าเริ่มต้นแบบ legacy
+- ผู้ใช้ขอหยุด process เว็บเพื่อรันเอง; สั่ง `docker compose stop web` และยืนยันพอร์ต 3000 ปิดแล้ว ขณะที่ API, reports และ PostgreSQL ยังทำงาน
+- ผู้ใช้ขอหยุด FMS compose และรัน master แทน; หยุด `fms-web`, `fms-api`, `fms-reports`, `fms-postgres` แล้ว start `fms-master-postgres-1` โดยไม่ลบ container/volume; ตรวจสถานะ running, pg_isready รับ connection และ host port 5434 เปิด
+- ผู้ใช้ขอให้รันระบบ; ตรวจ `Back-end/.env` แบบไม่แสดง credential พบ DATABASE_URL ใช้ localhost:5434 และเริ่ม `npm.cmd run dev:api` กับ `npm.cmd run dev:web` แบบ local โดยไม่เปิด FMS compose
+- ยืนยัน `http://localhost:3000/legacy/index.html` ตอบ HTTP 200 และ `/api/database/health` ตอบ HTTP 200 connected; เว็บและ API ยังรันอยู่ใน terminal sessions

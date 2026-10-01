@@ -1,8 +1,7 @@
-/* Transitional read adapter for legacy screens. Operational data lives in the API,
- * never in browser storage. Synchronous reads preserve existing script ordering. */
+/* Page scripts read an asynchronously hydrated snapshot; writes await the API. */
 (() => {
   const base = window.FMS_API_URL || `${location.protocol}//${location.hostname}:4000`;
-  const routes = { 'fms-history-catalog-orders': 'catalog-orders', 'fms-stock-records': 'medicines', 'fms-infirmary-visits': 'infirmary-visits', 'fms-infirmary-history': 'infirmary-visits', 'fms-borrow-return-records': 'loans' };
+  const routes = { 'fms-history-catalog-orders': 'catalog-orders', 'fms-stock-records': 'medicines', 'fms-infirmary-visits': 'infirmary-visits', 'fms-infirmary-history': 'infirmary-visits', 'fms-borrow-return-records': 'loans', 'fms-history-borrow-return': 'loans', 'fms-local-duty-records': 'duties' };
   const cache = new Map();
   const pending = new Map();
   function requestId() {
@@ -22,7 +21,20 @@
     };
     if (document.body) show(); else document.addEventListener('DOMContentLoaded', show, { once: true });
   }
+  async function hydrate() {
+    const routesToLoad = [...new Set(Object.values(routes))];
+    const loaded = await Promise.all(routesToLoad.map(async route => {
+      let rows = await window.FMSAuth.request(route);
+      if (route === 'medicines') rows = rows.map(r => ({ ...r, image: r.image ? new URL(r.image, base).href : '' }));
+      return [route, rows];
+    }));
+    const settings = await window.FMSAuth.request('settings');
+    for (const [route, rows] of loaded) cache.set(route, rows);
+    window.FMSReferenceData = settings;
+  }
   function read(key) {
+    if (key === 'fms-admin-session') return window.FMSAuth?.user?.role === 'ADMIN' ? JSON.stringify({ role: 'admin' }) : null;
+
     if (['fms-catalog-cart', 'fms-borrow-products', 'fms-borrow-form'].includes(key)) {
       // Only prune after a successful inventory read. Network errors preserve drafts.
       const records = JSON.parse(read('fms-stock-records'));
@@ -39,16 +51,7 @@
     }
     const route = routes[key];
     if (!route) return localStorage.getItem(key);
-    if (!cache.has(route)) {
-      try {
-        const xhr = new XMLHttpRequest(); xhr.open('GET', `${base}/api/${route}`, false); xhr.send();
-        const result = JSON.parse(xhr.responseText);
-        if (xhr.status !== 200 || !result.success) throw Error(result.message || 'โหลดข้อมูลจริงไม่สำเร็จ');
-        let data = result.data;
-        if (route === 'medicines') data = data.map(r => ({ ...r, image: r.image ? new URL(r.image, base).href : '' }));
-        cache.set(route, data);
-      } catch (e) { error(e); throw e; }
-    }
+    if (!cache.has(route)) throw Error('?????????????????????? ????????????');
     let data = cache.get(route);
     if (route === 'infirmary-visits') data = data.map(display);
     if (key === 'fms-infirmary-history') data = data.filter(r => r.status !== 'observe');
@@ -67,21 +70,20 @@
       options = { ...options, body: JSON.stringify(body) };
     }
     let response;
-    try { response = await fetch(`${base}/api/${route}${path}`, { ...options, headers, cache: 'no-store' }); }
+    try { if (window.FMSAuth?.auth.currentUser) headers.Authorization = `Bearer ${await window.FMSAuth.auth.currentUser.getIdToken()}`; response = await fetch(`${base}/api/${route}${path}`, { ...options, headers, cache: 'no-store' }); }
     catch { throw Error('เชื่อมต่อ API ไม่ได้ กรุณาลองอีกครั้ง ข้อมูลในฟอร์มยังอยู่'); }
     const result = await response.json();
     if (!response.ok || !result.success) {
       if (response.status < 500) pending.delete(signature);
       throw Error(result.message || 'บันทึกไม่สำเร็จ');
     }
-    if (signature) { pending.delete(signature); cache.clear(); }
+    if (signature) { pending.delete(signature); await hydrate(); }
     return result.data;
   }
-  window.FMSData = { getItem: read, request, display, error, clear: () => cache.clear() };
+  window.FMSData = { getItem: read, request, display, error, hydrate, clear: () => {} };
   window.FMSBorrowHistoryStore = { read: () => JSON.parse(read('fms-borrow-return-records')), save: () => { throw Error('ประวัติยืม–คืนต้องบันทึกผ่าน API'); } };
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState !== 'visible') return;
-    cache.clear();
     const editing = document.activeElement?.isContentEditable || [...document.querySelectorAll('dialog[open], [role="dialog"], #extendBorrowModal, .hospital-entry.is-open')].some(el => !el.closest('[hidden]') && el.getClientRects().length > 0);
     if (/\/(stock(?:-(?:oral|topical|equipment))?|catalog|history(?:-(?:stock|catalog))?|infirmary-visit-history|pending-assessment|borrow-return(?:-history)?)\.html$/.test(location.pathname) && !editing) location.reload();
   });

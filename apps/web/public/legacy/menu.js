@@ -19,7 +19,7 @@ const DUTY_PROFILE_KEY = "fms-duty-profiles";
 const API_BASE = window.FMS_API_URL || `${location.protocol}//${location.hostname}:4000`;
 localStorage.removeItem(DUTY_PROFILE_KEY);
 
-const app = initializeApp(firebaseConfig);
+const app = window.FMSAuth.app;
 const auth = getAuth(app);
 const db = getFirestore(app);
 const menuGrid = document.getElementById("menuGrid");
@@ -100,7 +100,7 @@ function loadLocalDutyRecords() {
 }
 
 function getCurrentUser() {
-  return auth.currentUser || (isAdminSession() ? { uid: "admin", email: "" } : null);
+  return auth.currentUser;
 }
 
 function recordBelongsToUser(record, user = getCurrentUser()) {
@@ -406,6 +406,9 @@ async function saveDutyRecord(event) {
     });
     const result = await response.json();
     if (!response.ok) throw new Error(result.message || t.saveError);
+    await window.FMSAuth.request('duties', { method: 'POST', body: JSON.stringify({ date, color: dutyRecord.colorId, firstName: dutyRecord.firstName, lastName: dutyRecord.lastName, nickname: dutyRecord.nickname, affiliation: dutyRecord.affiliation }) });
+    await window.FMSData.hydrate();
+
   } catch (error) {
     dutyStatus.textContent = `${t.saveError} · ${error.message}`;
     return;
@@ -479,12 +482,6 @@ signOutButton.addEventListener("click", () => {
 });
 
 onAuthStateChanged(auth, async (user) => {
-  if (isAdminSession()) {
-    loadLocalDutyRecords();
-    renderPalette();
-    renderCalendar();
-    return;
-  }
   if (!user) { window.location.href = "./index.html"; return; }
   if (!USE_FIRESTORE) {
     loadLocalDutyRecords();

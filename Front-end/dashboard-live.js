@@ -35,7 +35,7 @@
     message.textContent = language==='th'?'กำลังโหลดข้อมูล…':'Loading…';
     try {
       const query = new URLSearchParams({start:startDate.value,end:endDate.value,faculty:facultySelect.value,branch:branchInput.value});
-      const response = await fetch(`${base}/api/dashboard?${query}`,{cache:'no-store',signal:AbortSignal.timeout(15000)});
+      const response = await fetch(`${base}/api/dashboard?${query}`,{cache:'no-store',signal:AbortSignal.timeout(15000),headers:{Authorization:`Bearer ${await window.FMSAuth.auth.currentUser.getIdToken()}`}});
       const result = await response.json(); if(!response.ok || !result.success) throw Error(result.message || 'API error');
       if(current!==requestNumber)return;
       snapshot=result.data; stale=false; exportExcel.disabled=false; exportPdf.disabled=false; startDate.value=snapshot.filters.start; endDate.value=snapshot.filters.end;

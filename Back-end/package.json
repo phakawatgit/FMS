@@ -5,6 +5,7 @@
   "description": "Backend services for the First Aid & Medicine Management System",
   "main": "src/server.js",
   "scripts": {
+    "images:backfill": "node scripts/backfill-image-urls.cjs",
     "test:inventory": "node tests/inventory-relations.cjs",
     "test:inventory:browser": "node tests/inventory-browser.cjs",
     "verify:inventory": "node tests/verify-inventory.cjs",
@@ -29,6 +30,7 @@
     "sharp": "^0.35.5"
   },
   "devDependencies": {
+    "firebase-tools": "^15.32.1",
     "playwright": "^1.63.0"
   }
 }

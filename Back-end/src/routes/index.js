@@ -6,6 +6,26 @@ const authRouter = require("./auth");
 const { getFirebaseAuth } = require("../lib/firebase-admin");
 
 const router = express.Router();
+router.get('/auth/config', (_req, res) => {
+  res.json({ success: true, data: { firebase: {
+    apiKey: process.env.FIREBASE_API_KEY || 'AIzaSyD6eLRN8rU-e7KJMb1Diw_mFNH81pWpzIg',
+    authDomain: process.env.FIREBASE_AUTH_DOMAIN || 'fams-7fdff.firebaseapp.com',
+    projectId: process.env.FIREBASE_PROJECT_ID || 'fams-7fdff',
+    appId: process.env.FIREBASE_APP_ID || '1:636847349725:web:01eaad241d971a2437a034'
+  }, emulator: process.env.NODE_ENV !== 'production' && process.env.FIREBASE_AUTH_EMULATOR_HOST ? `http://${process.env.FIREBASE_AUTH_EMULATOR_HOST}` : null } });
+});
+const { authenticate } = require('../lib/auth');
+router.use('/auth', authRouter);
+router.use((req, res, next) => {
+  if (req.method === 'GET' && (req.path === '/database/health' || /^\/medicines\/[^/]+\/image$/.test(req.path))) return next();
+  return authenticate(req, res, next);
+});
+router.use('/settings', require('./settings'));
+router.use('/admin', require('./admin'));
+router.get('/auth/me', (req, res) => {
+  const { id, email, name, role, active } = req.user;
+  res.json({ success: true, data: { id, email, name, role, active } });
+});
 router.use('/dashboard', require('./dashboard'));
 router.use('/catalog-orders', require('./catalog-orders'));
 router.use("/medicines", require("./medicines"));
@@ -13,7 +33,7 @@ router.use("/loans", require("./loans"));
 
 router.use("/database", databaseRouter);
 router.use("/infirmary-visits", infirmaryVisitsRouter);
-router.use("/auth", authRouter);
+
 
 router.get("/overview", async (_req, res) => {
   try {
@@ -46,6 +66,7 @@ function normalizeEmail(value) {
 }
 
 async function getAuthenticatedEmail(req, res) {
+  if (req.user) return req.user.email;
   const token = req.get("authorization")?.match(/^Bearer\s+(.+)$/i)?.[1];
   if (!token) {
     res.status(401).json({ success: false, message: "กรุณาเข้าสู่ระบบใหม่" });
@@ -166,97 +187,26 @@ router.post("/duties", async (req, res) => {
   }
 
   try {
-    const user = await prisma.user.upsert({
-      where: { email },
-      create: { email, name: `${firstName} ${lastName}` },
-      update: { name: `${firstName} ${lastName}` },
-    });
-    const uniqueKey = { date_color: { date, color } };
-    const existing = await prisma.dutyShift.findUnique({ where: uniqueKey });
-    if (existing && existing.userId !== user.id) {
-      return res.status(409).json({ success: false, message: "สีนี้ถูกใช้ในวันที่เลือกแล้ว" });
-    }
-
-    const duty = await prisma.dutyShift.upsert({
-      where: uniqueKey,
-      create: { date, color, firstName, lastName, nickname: nickname || null, affiliation: affiliation || null, userId: user.id },
-      update: { firstName, lastName, nickname: nickname || null, affiliation: affiliation || null },
+    const duty = await prisma.$transaction(async tx => {
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${dateKey + ':' + color}, 0))`;
+      const user = req.user;
+      const uniqueKey = { date_color: { date, color } };
+      const existing = await tx.dutyShift.findUnique({ where: uniqueKey });
+      if (existing && existing.userId !== user.id && user.role !== 'ADMIN') throw Object.assign(Error('????????????????????????????'), { status: 409 });
+      const data = { firstName, lastName, nickname: nickname || null, affiliation: affiliation || null };
+      const row = await tx.dutyShift.upsert({ where: uniqueKey, create: { date, color, ...data, userId: user.id }, update: data });
+      await require('../lib/audit').audit(tx, req, existing ? 'update' : 'create', 'DutyShift', row.id);
+      return row;
     });
     return res.status(201).json({ success: true, data: { id: duty.id } });
   } catch (error) {
+    if (error.status) return res.status(error.status).json({ success: false, message: error.message });
     console.error("Duty shift save failed:", error.message);
     return res.status(503).json({ success: false, message: "บันทึกข้อมูลการเข้าเวรไม่สำเร็จ" });
   }
 });
 
-// Shared key/value storage used by the legacy static frontend. This keeps the
-// old pages compatible while their localStorage-backed modules are migrated.
-const retiredInventoryKeys = new Set(["fms-history-catalog-orders", "fms-stock-records", "fms-infirmary-visits", "fms-infirmary-history", "fms-borrow-return-records"]);
-router.get("/legacy-storage", async (_req, res) => {
-  try {
-    const rows = await prisma.legacyStorage.findMany();
-    res.json({ success: true, data: Object.fromEntries(rows.map((row) => [row.key, row.value])) });
-  } catch (error) {
-    console.error("Legacy storage read failed:", error.message);
-    res.status(503).json({ success: false, message: "อ่านข้อมูลส่วนกลางไม่สำเร็จ" });
-  }
+router.all(['/legacy-storage', '/legacy-storage/{*path}'], (_req, res) => {
+  res.status(410).json({ success: false, message: '??? API ???????????????? legacy storage' });
 });
-
-// Migrate an existing browser localStorage in one request. Existing server
-// values are kept by default so another device cannot overwrite shared data
-// while it is only hydrating its local copy.
-router.post("/legacy-storage/bulk", async (req, res) => {
-  const data = req.body?.data;
-  if (!data || typeof data !== "object" || Array.isArray(data)) {
-    return res.status(400).json({ success: false, message: "ข้อมูลส่วนกลางไม่ถูกต้อง" });
-  }
-
-  const entries = Object.entries(data)
-    .filter(([key]) => String(key).trim() && String(key).length <= 120 && !retiredInventoryKeys.has(String(key).trim()))
-    .map(([key, value]) => [String(key).trim(), value]);
-
-  try {
-    await prisma.$transaction(async (tx) => {
-      for (const [key, value] of entries) {
-        await tx.legacyStorage.upsert({
-          where: { key },
-          create: { key, value: value ?? null },
-          update: req.body?.preserveExisting ? {} : { value: value ?? null },
-        });
-      }
-    });
-    res.json({ success: true, count: entries.length });
-  } catch (error) {
-    console.error("Legacy storage bulk write failed:", error.message);
-    res.status(503).json({ success: false, message: "บันทึกข้อมูลส่วนกลางไม่สำเร็จ" });
-  }
-});
-
-router.put("/legacy-storage/:key", async (req, res) => {
-  const key = String(req.params.key || "").trim();
-  if (retiredInventoryKeys.has(key)) return res.status(409).json({ success: false, message: "ข้อมูลนี้ต้องบันทึกผ่าน API stock/คนไข้/ยืมคืนเท่านั้น" });
-  if (!key || key.length > 120) return res.status(400).json({ success: false, message: "คีย์ไม่ถูกต้อง" });
-  try {
-    const row = await prisma.legacyStorage.upsert({
-      where: { key },
-      create: { key, value: req.body?.value ?? null },
-      update: { value: req.body?.value ?? null },
-    });
-    res.json({ success: true, data: row });
-  } catch (error) {
-    console.error("Legacy storage write failed:", error.message);
-    res.status(503).json({ success: false, message: "บันทึกข้อมูลส่วนกลางไม่สำเร็จ" });
-  }
-});
-
-router.delete("/legacy-storage/:key", async (req, res) => {
-  if (retiredInventoryKeys.has(String(req.params.key).trim())) return res.status(409).json({ success: false, message: "ประวัติเดิมเก็บไว้สำหรับอ่านเท่านั้น" });
-  try {
-    await prisma.legacyStorage.delete({ where: { key: String(req.params.key) } });
-  } catch (error) {
-    if (error.code !== "P2025") throw error;
-  }
-  res.json({ success: true });
-});
-
 module.exports = router;

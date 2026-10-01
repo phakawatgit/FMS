@@ -29,6 +29,7 @@ model Medicine {
   expiry      DateTime? @db.Date
   imageData   Bytes?
   imageType   String?  @db.VarChar(32)
+  imageUrl    String?  @db.Text
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -47,6 +48,8 @@ enum Role {
 
 model User {
   id        String     @id @default(cuid())
+  firebaseUid String? @unique
+  active Boolean @default(true)
   email     String     @unique
   name      String
   password  String?
@@ -198,4 +201,54 @@ model InventoryRequest {
   fingerprint String
   result Json
   createdAt DateTime @default(now())
+}
+
+model CatalogOrder {
+  id String @id
+  sequence Int @unique @default(autoincrement())
+  documentTitle String @db.VarChar(500)
+  createdAt DateTime @default(now())
+  deletedAt DateTime?
+  items CatalogOrderItem[]
+}
+
+model CatalogOrderItem {
+  id String @id @default(cuid())
+  orderId String
+  order CatalogOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  position Int
+  medicineId String?
+  code String
+  quantity Int
+  snapshot Json
+  @@unique([orderId, position])
+}
+
+model Faculty {
+  id String @id @default(cuid())
+  code String @unique @db.VarChar(32)
+  name String @unique @db.VarChar(255)
+  active Boolean @default(true)
+  branches Branch[]
+}
+
+model Branch {
+  id String @id @default(cuid())
+  facultyId String
+  faculty Faculty @relation(fields: [facultyId], references: [id], onDelete: Restrict)
+  name String @db.VarChar(255)
+  active Boolean @default(true)
+  @@unique([facultyId, name])
+}
+
+model AuditLog {
+  id String @id @default(cuid())
+  actorId String?
+  action String
+  entity String
+  entityId String?
+  detail Json
+  createdAt DateTime @default(now())
+  @@index([createdAt])
+  @@index([entity, entityId])
 }

@@ -1,28 +1,41 @@
 const router = require('express').Router();
 const prisma = require('../lib/prisma');
-const {isDeepStrictEqual} = require('node:util');
-const {fail,errorHandler} = require('../lib/inventory');
-const key = 'fms-history-catalog-orders';
-router.get('/',async(req,res,next)=>{try { const row=await prisma.legacyStorage.findUnique({where:{key}});res.json({success:true,data:Array.isArray(row?.value)?row.value:[]}); } catch(e){next(e);} });
-router.post('/',async(req,res,next)=>{try {
-  const {id,documentTitle,items}=req.body;
-  if(typeof id!=='string'||! /^[\w-]{16,100}$/.test(id)||typeof documentTitle!=='string'||documentTitle.length>500||!Array.isArray(items)||!items.length||items.length>100) throw fail('คำสั่งซื้อไม่ถูกต้อง');
-  if(items.some(i=>!i||typeof i.code!=='string'||!Number.isInteger(i.quantity)||i.quantity<1)) throw fail('รายการสินค้าไม่ถูกต้อง');
-  const data=await prisma.$transaction(async tx=>{
-    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${key},0))`;
-    const row=await tx.legacyStorage.findUnique({where:{key}}), orders=Array.isArray(row?.value)?row.value:[];
-    const old=orders.find(o=>o.id===id);
-    if(old){if(old.documentTitle!==documentTitle||!isDeepStrictEqual(old.items,items))throw fail('รหัสคำสั่งซื้อซ้ำกับข้อมูลอื่น',409);return old;}
-    const order={id,documentTitle,items,title:`การสั่งซื้อสินค้าครั้งที่ ${orders.length+1}`,createdAt:new Date().toISOString(),status:'บันทึกคำสั่งซื้อแล้ว'};
-    await tx.legacyStorage.upsert({where:{key},create:{key,value:[order,...orders]},update:{value:[order,...orders]}});return order;
-  },{maxWait:15000,timeout:20000});res.status(201).json({success:true,data});
-}catch(e){next(e);} });
-router.delete('/:id',async(req,res,next)=>{try {
-  await prisma.$transaction(async tx=>{
-    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${key},0))`;
-    const row=await tx.legacyStorage.findUnique({where:{key}});
-    if(!Array.isArray(row?.value))return;
-    await tx.legacyStorage.update({where:{key},data:{value:row.value.filter(o=>o.id!==req.params.id)}});
-  },{maxWait:15000,timeout:20000});res.json({success:true,data:{id:req.params.id}});
-}catch(e){next(e);}});
-router.use(errorHandler);module.exports=router;
+const { isDeepStrictEqual } = require('node:util');
+const { fail, errorHandler } = require('../lib/inventory');
+const { audit } = require('../lib/audit');
+const { output, include } = require('../lib/catalog');
+router.get('/', async (_req, res) => {
+  const rows = await prisma.catalogOrder.findMany({ where: { deletedAt: null }, include, orderBy: { sequence: 'desc' } });
+  res.set('Cache-Control', 'no-store').json({ success: true, data: rows.map(output) });
+});
+router.post('/', async (req, res) => {
+  const { id, documentTitle, items } = req.body || {};
+  if (typeof id !== 'string' || !/^[\w-]{16,100}$/.test(id) || typeof documentTitle !== 'string' || documentTitle.length > 500 || !Array.isArray(items) || !items.length || items.length > 100) throw fail('Invalid order');
+  if (items.some(i => !i || typeof i.code !== 'string' || !i.code || !Number.isInteger(i.quantity) || i.quantity < 1 || i.quantity > 2147483647)) throw fail('Invalid order items');
+  if (new Set(items.map(i => i.code)).size !== items.length) throw fail('Duplicate order items');
+  const result = await prisma.$transaction(async tx => {
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${id},0))`;
+    const old = await tx.catalogOrder.findUnique({ where: { id }, include });
+    if (old) {
+      if (old.deletedAt || old.documentTitle !== documentTitle || !isDeepStrictEqual(old.items.map(i => i.snapshot), items)) throw fail('Order ID already used with different data', 409);
+      return output(old);
+    }
+    const medicines = await tx.medicine.findMany({ where: { code: { in: items.map(i => i.code) }, active: true }, select: { id: true, code: true } });
+    if (medicines.length !== items.length) throw fail('Order contains unavailable products', 409);
+    const row = await tx.catalogOrder.create({ data: { id, documentTitle,
+      items: { create: items.map((item, index) => ({ position: index + 1, medicineId: medicines.find(m => m.code === item.code).id, code: item.code, quantity: item.quantity, snapshot: item })) }
+    }, include });
+    await audit(tx, req, 'create', 'CatalogOrder', id, { itemCount: items.length });
+    return output(row);
+  }, { maxWait: 15000, timeout: 20000 });
+  res.status(201).json({ success: true, data: result });
+});
+router.delete('/:id', async (req, res) => {
+  await prisma.$transaction(async tx => {
+    const changed = await tx.catalogOrder.updateMany({ where: { id: req.params.id, deletedAt: null }, data: { deletedAt: new Date() } });
+    if (changed.count) await audit(tx, req, 'delete', 'CatalogOrder', req.params.id);
+  });
+  res.json({ success: true, data: { id: req.params.id } });
+});
+router.use(errorHandler);
+module.exports = router;

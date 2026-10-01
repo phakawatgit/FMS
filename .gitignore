@@ -7,3 +7,4 @@ __pycache__/
 postgres_data/
 .local-backups/
 .work-tmp/
+*-debug.log

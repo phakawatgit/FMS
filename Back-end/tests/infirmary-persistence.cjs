@@ -38,11 +38,12 @@ async function newPage() {
   await support.context(context);
   await context.addInitScript(url => { window.FMS_API_URL = url; }, api);
   const page = await context.newPage();
-  page.on("pageerror", error => { errors.push(error.message); });
+  page.on("pageerror", error => { errors.push(`${page.url()} ${error.stack || error.message}`); });
   return page;
 }
 async function fill(page, status) {
   await page.goto(`${web}/legacy/infirmary-visit.html`);
+  await page.waitForFunction(() => window.visitDispensing && window.infirmaryApi);
   await page.locator('.visitor-option[data-type="internal"] input').check();
   await page.locator('[name="firstName"]').fill("Persistence test");
   await page.locator('[name="lastName"]').fill(marker);
@@ -103,10 +104,11 @@ const errors = [];
     assert.equal((await db.infirmaryVisit.findUnique({ where: { id } })).status, "normal");
     await fresh.route("**/api/infirmary-visits", route => route.abort());
     await fresh.goto(`${web}/legacy/infirmary-visit-history.html`);
-    await fresh.locator("[data-retry]").waitFor();
+    const retryButton = fresh.locator('[role="alert"] button');
+    await retryButton.waitFor();
     assert.equal(await fresh.locator(".visit-card").count(), 0);
     await fresh.unroute("**/api/infirmary-visits");
-    await fresh.locator("[data-retry]").click();
+    await retryButton.click();
     await fresh.locator(".visit-card").filter({ hasText: marker }).first().waitFor();
     console.log("PASS: clean browser history, detail editing and assessment update");
 
@@ -138,11 +140,13 @@ const errors = [];
     assert.equal(await db.infirmaryVisit.count({ where: { lastName: marker } }), 4);
     console.log("PASS: unavailable API, invalid input, preserved form and duplicate-click guard");
 
+    assert.deepEqual(errors, []);
+    await fresh.close();
+    await page.close();
     await stopApi();
     await startApi();
     const rows = (await (await fetch(`${api}/api/infirmary-visits`)).json()).data;
     assert.equal(rows.filter(row => row.lastName === marker).length, 4);
-    assert.deepEqual(errors, []);
     console.log("PASS: records persist after API restart; no browser JavaScript errors");
   } finally {
     await browser?.close();

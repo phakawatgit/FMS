@@ -28,6 +28,7 @@ async function go(page,name) {await page.goto(`${web}/legacy/${name}.html`,{wait
   // Do not export this test browser's drafts to other users' legacy JSON records.
   await context.route('**/api/legacy-storage**',r=>r.fulfill({contentType:'application/json',body:'{"success":true,"data":{}}'}));
   context.on('request',r=>{const k=r.headers()['idempotency-key'];if(k)keys.add(k);});
+  await require("./auth-test.cjs")(context,api.replace(/\/api$/, ""));
   const page=await context.newPage();page.on('pageerror',e=>{errors.push(e.message);console.error(page.url(),e.stack);});page.setDefaultTimeout(15000);
   await go(page,'infirmary-visit');
   await page.locator('.visitor-option[data-type="internal"] input').check();
@@ -87,6 +88,11 @@ async function go(page,name) {await page.goto(`${web}/legacy/${name}.html`,{wait
   await page.locator('[name="item"][value="ส่วนบุคคล"]').check();
   await page.locator('[name="reason"]').fill('Synthetic');
   await page.locator('[name="dueDate"]').fill('2030-10-01');
+  const loanResponses = [];
+  page.on('response', async response => {
+   if (!response.url().includes('/api/loans')) return;
+   loanResponses.push({status:response.status(),body:await response.text().catch(()=> '')});
+  });
   await page.locator(`[data-favorite="${meds[1].code}"]`).click();
   await page.locator('button[type="submit"]').click();
   // The form saves its draft and displays a confirmation before selection.
@@ -95,7 +101,13 @@ async function go(page,name) {await page.goto(`${web}/legacy/${name}.html`,{wait
   await page.locator(`[data-quantity="${meds[1].code}"]`).fill('4');
   await page.locator(`[data-quantity="${meds[1].code}"]`).dispatchEvent('change');
   await page.locator('#saveBorrowDraft').click();await page.waitForURL('**/borrow-order.html');
-  await page.locator('#saveOrder').click();await page.waitForURL('**/borrow-return.html');
+  await page.locator('.order-notice-modal').waitFor({state:'attached'});
+  await page.locator('#saveOrder').click();
+  try { await page.waitForURL('**/borrow-return.html',{timeout:8000}); }
+  catch (error) {
+   const state=await page.evaluate(()=>({url:location.href,notice:document.querySelector('.order-notice-modal')?.textContent,noticeHidden:document.querySelector('.order-notice-modal')?.hidden,saveDisabled:document.querySelector('#saveOrder')?.disabled}));
+   throw Error(`Loan save did not navigate: ${JSON.stringify({state,loanResponses,wait:error.message})}`);
+  }
   const loan=await db.loan.findFirst({where:{details:{path:['fullName'],equals:marker}}});assert.ok(loan);
   assert.equal((await request('/medicines/'+meds[1].id)).remaining,16);
   await page.goto(`${web}/legacy/return-form.html?id=${loan.id}`,{waitUntil:'domcontentloaded'});
@@ -121,19 +133,24 @@ async function go(page,name) {await page.goto(`${web}/legacy/${name}.html`,{wait
   assert.deepEqual(Object.keys(pruned[0]),[meds[1].code]);
   assert.deepEqual(pruned[0],pruned[1]);
   assert.equal(pruned[2].fullName,'Draft');assert.deepEqual(pruned[2].products,pruned[0]);
-  await fresh.route('**/api/medicines',r=>r.abort());
-  const preserved=await fresh.evaluate(()=>{
+  await fresh.unroute('**/api/medicines');
+  const offline=await context.newPage();
+  await offline.route('**/api/medicines',r=>r.abort());
+  await go(offline,'catalog');
+  await offline.waitForFunction(()=>window.FMSData&&document.querySelector('[role="alert"]'));
+  const preserved=await offline.evaluate(()=>{
     const raw=JSON.stringify({'deleted-code':{quantity:7}});
-    localStorage.setItem('fms-catalog-cart',raw);FMSData.clear();
+    localStorage.setItem('fms-catalog-cart',raw);
     let failed=false;try{FMSData.getItem('fms-catalog-cart');}catch{failed=true;}
     return {failed,unchanged:localStorage.getItem('fms-catalog-cart')===raw};
   });
   assert.deepEqual(preserved,{failed:true,unchanged:true});
-  await fresh.unroute('**/api/medicines');
+  await offline.close();
   const empty=await browser.newContext();
   await empty.addInitScript(url=>{window.FMS_API_URL=url;},api.replace(/\/api$/,''));
   await empty.route(/https:\/\/(fonts\.googleapis|fonts\.gstatic)/,r=>r.abort());
-  await empty.route('**/api/**',r=>r.fulfill({contentType:'application/json',body:JSON.stringify({success:true,data:r.request().url().includes('legacy-storage')?{}:[]})}));
+  await empty.route('**/api/**',r=>new URL(r.request().url()).pathname.endsWith('/api/auth/config')?r.continue():r.fulfill({contentType:'application/json',body:JSON.stringify({success:true,data:r.request().url().includes('legacy-storage')?{}:[]})}));
+  await require("./auth-test.cjs")(empty,api.replace(/\/api$/, ""));
   const blank=await empty.newPage();blank.on('pageerror',e=>errors.push(e.message));
   for(const name of ['catalog','stock','infirmary-visit-history','pending-assessment','borrow-return','dashboard']) {
     await go(blank,name);await blank.waitForTimeout(100);

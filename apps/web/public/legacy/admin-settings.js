@@ -1,158 +1,53 @@
-const ADMIN_OPTIONS_KEY = "fms-admin-options";
-const ADMIN_SESSION_KEY = "fms-admin-session";
-const COLLECTIONS = [
-  ["fms-stock-records", "ยาและเวชภัณฑ์"],
-  ["fms-infirmary-visits", "การเข้าห้องพยาบาล"],
-  ["fms-infirmary-history", "ประวัติห้องพยาบาล"],
-  ["fms-borrow-return-records", "การยืมและคืน"],
-  ["fms-history-borrow-return", "ประวัติการยืมและคืน"],
-  ["fms-history-catalog-orders", "ประวัติการสั่งซื้อ"],
-  ["fms-local-duty-records", "ตารางเข้าเวร"]
-];
-
-const $ = (selector) => document.querySelector(selector);
-const escapeHtml = (value) => String(value ?? "-").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
-const read = (key) => window.FMSAdminAudit.read(key);
-const save = (key, value) => window.FMSAdminAudit.write(key, value);
-
-function formatDate(value) {
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? "-" : new Intl.DateTimeFormat("th-TH", { dateStyle: "medium", timeStyle: "short" }).format(date);
-}
-
-function getOptions() {
-  const defaults = {
-    faculties: ["หลักสูตรวิศวกรรมศาสตร์", "หลักสูตรเทคโนโลยีการเกษตรและอุตสาหกรรม", "หลักสูตรบริหารธุรกิจและนวัตกรรม"],
-    branches: ["เทคโนโลยีสารสนเทศ", "พยาบาลศาสตร์"],
-    medicines: []
-  };
-  let saved = {};
-  try { saved = JSON.parse(window.FMSData.getItem(ADMIN_OPTIONS_KEY) || "{}"); } catch {}
-  const stockNames = read("fms-stock-records").map((item) => item.name || item.productName || item.genericName).filter(Boolean);
-  return {
-    faculties: Array.isArray(saved.faculties) && saved.faculties.length ? saved.faculties : defaults.faculties,
-    branches: Array.isArray(saved.branches) && saved.branches.length ? saved.branches : defaults.branches,
-    medicines: Array.from(new Set([...(saved.medicines || []), ...stockNames]))
-  };
-}
-
-function renderOverview() {
-  $("#databaseRows").innerHTML = COLLECTIONS.map(([key, label]) => {
-    const records = read(key);
-    const latest = records.map((item) => item.updatedAt || item.createdAt || item.date || item.borrowDate).filter(Boolean).sort().at(-1);
-    return `<tr><td>${escapeHtml(label)}</td><td><code>${escapeHtml(key)}</code></td><td>${records.length}</td><td>${formatDate(latest)}</td></tr>`;
-  }).join("");
-}
-
-function renderOptions() {
-  const options = getOptions();
-  const labels = { faculties: "หลักสูตร", branches: "สาขา", medicines: "ยา" };
-  Object.entries(labels).forEach(([type, label]) => {
-    const target = $(`[data-options-list="${type}"]`);
-    target.innerHTML = options[type].length
-      ? options[type].map((item, index) => `<li><span>${escapeHtml(item)}</span><button type="button" data-remove-option="${type}" data-index="${index}" aria-label="ลบ ${escapeHtml(item)}">×</button></li>`).join("")
-      : `<li class="empty-option">ยังไม่มีข้อมูล${label}</li>`;
-  });
-  save(ADMIN_OPTIONS_KEY, options);
-}
-
-function renderActivities() {
-  const records = read(window.FMSAdminAudit.ACTIVITY_KEY);
-  $("#activityRows").innerHTML = records.length ? records.map((item) => `<tr><td>${escapeHtml(formatDate(item.createdAt))}</td><td><strong>${escapeHtml(item.action)}</strong></td><td>${escapeHtml(item.actor)}</td><td>${escapeHtml(JSON.stringify(item.detail || {}))}</td></tr>`).join("") : `<tr><td colspan="4" class="empty-table">ยังไม่มีประวัติการใช้งาน</td></tr>`;
-}
-
-let deletedCategory = "all";
-function getDeletedCategory(collection = "") {
-  const key = String(collection).toLowerCase();
-  if (key.includes("stock")) return "stock";
-  if (key.includes("catalog")) return "catalog";
-  if (key.includes("infirmary")) return "infirmary";
-  if (key.includes("borrow")) return "borrow";
-  if (key.includes("duty")) return "duty";
-  return "other";
-}
-function getDeletedCategoryLabel(category) {
-  return { stock: "คลังยา", catalog: "แคตตาล็อก", infirmary: "การเข้าห้องพยาบาล", borrow: "การยืมและคืน", duty: "ตารางเข้าเวร", other: "อื่น ๆ" }[category] || "อื่น ๆ";
-}
-function renderDeleted() {
-  const records = read(window.FMSAdminAudit.DELETED_KEY).filter((item) => deletedCategory === "all" || getDeletedCategory(item.collection) === deletedCategory);
-  $("#deletedRows").innerHTML = records.length ? records.map((item) => { const category = getDeletedCategory(item.collection); return `<tr><td>${escapeHtml(formatDate(item.deletedAt))}</td><td><span class="deleted-menu-badge is-${category}">${escapeHtml(getDeletedCategoryLabel(category))}</span></td><td>${escapeHtml(item.collection)}</td><td>${escapeHtml(item.record?.name || item.record?.productName || item.record?.email || item.record?.id || item.record?.value || "ข้อมูลรายการ")}</td><td>${escapeHtml(item.reason)}</td></tr>`; }).join("") : `<tr><td colspan="5" class="empty-table">ยังไม่มีข้อมูลที่ถูกลบในประเภทนี้</td></tr>`;
-}
-
-function renderAll() {
-  const options = getOptions();
-  const databaseRecords = COLLECTIONS.reduce((sum, [key]) => sum + read(key).length, 0);
-  $("#summaryCollections").textContent = databaseRecords;
-  $("#summaryRecords").textContent = Object.values(options).reduce((sum, values) => sum + values.length, 0);
-  $("#summaryActivities").textContent = read(window.FMSAdminAudit.ACTIVITY_KEY).length;
-  $("#summaryDeleted").textContent = read(window.FMSAdminAudit.DELETED_KEY).length;
-  renderOverview();
-  renderOptions();
-  renderActivities();
-  renderDeleted();
-}
-
-$("#optionForm").addEventListener("submit", (event) => {
-  event.preventDefault();
-  const form = new FormData(event.currentTarget);
-  const type = form.get("type");
-  const value = String(form.get("value") || "").trim();
-  if (!value) return;
-  const options = getOptions();
-  if (!options[type].includes(value)) options[type].push(value);
-  save(ADMIN_OPTIONS_KEY, options);
-  window.FMSAdminAudit.log("option-created", { type, value });
-  event.currentTarget.reset();
-  renderAll();
-});
-
-const optionTypeSelect = $("#optionTypeSelect");
-const optionTypeButton = $("#optionTypeButton");
-const optionTypeMenu = optionTypeSelect.querySelector(".admin-select-menu");
-optionTypeButton.addEventListener("click", () => {
-  const isOpen = !optionTypeMenu.hidden;
-  optionTypeMenu.hidden = isOpen;
-  optionTypeButton.setAttribute("aria-expanded", String(!isOpen));
-});
-optionTypeMenu.addEventListener("click", (event) => {
-  const option = event.target.closest("[data-option-type]");
-  if (!option) return;
-  $("#optionTypeValue").value = option.dataset.optionType;
-  $("#optionTypeLabel").textContent = option.textContent;
-  optionTypeMenu.querySelectorAll("[data-option-type]").forEach((item) => item.setAttribute("aria-selected", String(item === option)));
-  optionTypeMenu.hidden = true;
-  optionTypeButton.setAttribute("aria-expanded", "false");
-});
-document.addEventListener("click", (event) => {
-  if (!optionTypeSelect.contains(event.target)) {
-    optionTypeMenu.hidden = true;
-    optionTypeButton.setAttribute("aria-expanded", "false");
+(() => {
+  if (window.FMSAuth.user?.role !== 'ADMIN') { location.replace('./menu.html'); return; }
+  const $ = s => document.querySelector(s);
+  const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  let settings, logs = [], users = [], category = 'all';
+  const message = document.createElement('p'); message.setAttribute('role','status'); $('.settings-hero').append(message);
+  const form = $('#optionForm');
+  const code = document.createElement('input'); code.name = 'code'; code.placeholder = '???????????? ???? engineering'; code.maxLength = 32;
+  const faculty = document.createElement('select'); faculty.name = 'facultyId'; faculty.setAttribute('aria-label','???????????????');
+  form.insertBefore(code, form.lastElementChild); form.insertBefore(faculty, form.lastElementChild);
+  $('#databasePanel .panel-note').textContent = '????????? PostgreSQL';
+  $('#deletedPanel').insertAdjacentHTML('beforeend','<div class="table-wrap"><table><tbody id="deletedRows"></tbody></table></div>');
+  $('#databasePanel').insertAdjacentHTML('beforeend','<h2>??????????????</h2><div class="table-wrap"><table><tbody id="userRows"></tbody></table></div>');
+  const more = document.createElement('button'); more.type='button'; more.textContent='????????????????'; $('#activityPanel').append(more);
+  const sections = [['fms-stock-records','Medicine'],['fms-infirmary-visits','InfirmaryVisit'],['fms-borrow-return-records','Loan'],['fms-history-catalog-orders','CatalogOrder'],['fms-local-duty-records','DutyShift']];
+  async function run(work) { message.textContent='????????????'; try { await work(); await load(); message.textContent='??????????'; } catch(e) { message.textContent=e.message; } }
+  function choose(type) {
+    $('#optionTypeValue').value=type; code.hidden=type!=='faculties'; code.required=type==='faculties'; faculty.hidden=type!=='branches'; faculty.required=type==='branches';
+    if(type==='medicines') location.href='./stock-add.html';
   }
-});
-
-$("#optionsGrid").addEventListener("click", (event) => {
-  const button = event.target.closest("[data-remove-option]");
-  if (!button) return;
-  const type = button.dataset.removeOption;
-  const options = getOptions();
-  const [removed] = options[type].splice(Number(button.dataset.index), 1);
-  save(ADMIN_OPTIONS_KEY, options);
-  window.FMSAdminAudit.logDeleted(`admin-options.${type}`, { value: removed }, "admin-deleted-option");
-  renderAll();
-});
-
-document.querySelectorAll("[data-panel]").forEach((button) => button.addEventListener("click", () => {
-  document.querySelectorAll("[data-panel]").forEach((item) => item.classList.toggle("is-active", item === button));
-  document.querySelectorAll(".admin-panel").forEach((panel) => panel.hidden = panel.id !== button.dataset.panel);
-}));
-document.querySelectorAll("[data-deleted-category]").forEach((button) => button.addEventListener("click", () => {
-  deletedCategory = button.dataset.deletedCategory;
-  document.querySelectorAll("[data-deleted-category]").forEach((item) => item.classList.toggle("is-active", item === button));
-  renderDeleted();
-}));
-
-document.querySelector("#backMenuButton").addEventListener("click", () => window.location.replace("./menu.html"));
-let session = null;
-try { session = JSON.parse(window.FMSData.getItem(ADMIN_SESSION_KEY) || "null"); } catch {}
-if (session?.role !== "admin") window.location.replace("./index.html");
-renderAll();
+  function render() {
+    const faculties=settings.faculties;
+    faculty.replaceChildren(new Option('?????????????',''),...faculties.filter(f=>f.active).map(f=>new Option(f.name,f.id)));
+    const lists={faculties,branches:faculties.flatMap(f=>f.branches.map(b=>({...b,label:f.name+' / '+b.name}))),medicines:JSON.parse(FMSData.getItem('fms-stock-records'))};
+    for(const [kind,rows] of Object.entries(lists)) $('[data-options-list="'+kind+'"]').innerHTML=rows.map(r=>`<li><span>${esc(r.label||r.name)}${r.active===false?' (??????????)':''}</span>${kind==='medicines'?`<a href="./stock-add.html?edit=${encodeURIComponent(r.id)}">?????</a>`:`<button type="button" data-toggle-kind="${kind}" data-id="${esc(r.id)}" data-active="${!r.active}">${r.active?'???????':'???????'}</button>`}</li>`).join('');
+    let count=0;
+    $('#databaseRows').innerHTML=sections.map(([key,label])=>{const rows=JSON.parse(FMSData.getItem(key));count+=rows.length;return `<tr><td>${label}</td><td>${label}</td><td>${rows.length}</td><td>${esc(rows[0]?.updatedAt||rows[0]?.createdAt||'-')}</td></tr>`}).join('');
+    $('#summaryCollections').textContent=count;
+    $('#summaryRecords').textContent=faculties.length+lists.branches.length;
+    $('#summaryActivities').textContent=logs.length;
+    const deleted=logs.filter(l=>['delete','deactivate'].includes(l.action));
+    $('#summaryDeleted').textContent=deleted.length;
+    const row=l=>`<tr><td>${esc(new Date(l.createdAt).toLocaleString('th-TH',{timeZone:'Asia/Bangkok'}))}</td><td>${esc(l.action+' '+l.entity)}</td><td>${esc(users.find(u=>u.id===l.actorId)?.email||l.actorId||'system')}</td><td>${esc(l.entityId||'')}</td></tr>`;
+    $('#activityRows').innerHTML=logs.map(row).join('');
+    const groups={stock:['medicines'],catalog:['CatalogOrder'],infirmary:['infirmary-visits'],borrow:['loans'],duty:['DutyShift']};
+    $('#deletedRows').innerHTML=deleted.filter(l=>category==='all'||(groups[category]||[]).includes(l.entity)||category==='other'&&!Object.values(groups).flat().includes(l.entity)).map(row).join('');
+    $('#userRows').innerHTML=users.map(u=>`<tr data-user="${esc(u.id)}"><td>${esc(u.email)}</td><td><select aria-label="??????"><option ${u.role==='NURSE'?'selected':''}>NURSE</option><option ${u.role==='ADMIN'?'selected':''}>ADMIN</option></select></td><td><label><input type="checkbox" ${u.active?'checked':''}>??????????</label></td><td><button type="button" data-save-user>??????</button></td></tr>`).join('');
+  }
+  async function load() {
+    await FMSData.hydrate();
+    [settings,users,logs]=await Promise.all([FMSAuth.request('settings'),FMSAuth.request('admin/users'),FMSAuth.request('admin/audit?limit=100')]); render(); more.disabled=logs.length<100;
+  }
+  form.addEventListener('submit',event=>{event.preventDefault();const data=new FormData(form);run(async()=>{await FMSAuth.request('settings/'+data.get('type'),{method:'POST',body:JSON.stringify({name:data.get('value'),code:data.get('code'),facultyId:data.get('facultyId')})});form.querySelector('[name=value]').value='';});});
+  $('#optionsGrid').onclick=event=>{const b=event.target.closest('[data-toggle-kind]');if(b)run(()=>FMSAuth.request(`settings/${b.dataset.toggleKind}/${b.dataset.id}`,{method:'PATCH',body:JSON.stringify({active:b.dataset.active==='true'})}));};
+  $('#userRows').onclick=event=>{const b=event.target.closest('[data-save-user]');if(!b)return;const tr=b.closest('tr');run(()=>FMSAuth.request('admin/users/'+tr.dataset.user,{method:'PATCH',body:JSON.stringify({role:tr.querySelector('select').value,active:tr.querySelector('input').checked})}));};
+  $('#optionTypeButton').onclick=()=>{$('#optionTypeSelect .admin-select-menu').hidden=!$('#optionTypeSelect .admin-select-menu').hidden;};
+  document.querySelectorAll('[data-option-type]').forEach(b=>b.onclick=()=>{choose(b.dataset.optionType);$('#optionTypeLabel').textContent=b.textContent;$('#optionTypeSelect .admin-select-menu').hidden=true;});
+  document.querySelectorAll('[data-panel]').forEach(b=>b.onclick=()=>{document.querySelectorAll('.admin-panel').forEach(p=>p.hidden=p.id!==b.dataset.panel);document.querySelectorAll('[data-panel]').forEach(x=>x.classList.toggle('is-active',x===b));});
+  document.querySelectorAll('[data-deleted-category]').forEach(b=>b.onclick=()=>{category=b.dataset.deletedCategory;render();});
+  more.onclick=async()=>{try{const next=await FMSAuth.request('admin/audit?limit=100&cursor='+encodeURIComponent(logs.at(-1).id));logs.push(...next);render();more.disabled=next.length<100;}catch(e){message.textContent=e.message;}};
+  $('#backMenuButton').onclick=()=>location.href='./menu.html';
+  choose('faculties');load().catch(e=>message.textContent=e.message);
+})();

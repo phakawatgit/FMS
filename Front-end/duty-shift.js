@@ -14,7 +14,7 @@ const DUTY_KEY = "fms-local-duty-records";
 const API_BASE = window.FMS_API_URL || `${location.protocol}//${location.hostname}:4000`;
 const DUTY_PROFILE_KEY = "fms-duty-profiles";
 localStorage.removeItem(DUTY_PROFILE_KEY);
-const app = initializeApp(firebaseConfig);
+const app = window.FMSAuth.app;
 const auth = getAuth(app);
 const monthSelect = document.getElementById("calendarMonth");
 const yearSelect = document.getElementById("calendarYear");
@@ -290,30 +290,6 @@ async function loadDutyRecordsFromDatabase(user) {
   };
 
   let databaseRecords = await readDuties();
-  const legacyRecords = records.filter((record) => belongsToUser(record, user));
-  let importedLegacyRecord = false;
-  for (const record of legacyRecords) {
-    const exists = databaseRecords.some((item) => item.date === record.date && item.colorId === record.colorId && item.email?.toLowerCase() === user.email?.toLowerCase());
-    if (exists) continue;
-    const response = await fetch(`${API_BASE}/api/duties`, {
-      method: "POST",
-      headers: { ...headers, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        date: record.date,
-        color: record.colorId,
-        firstName: record.firstName,
-        lastName: record.lastName,
-        nickname: record.nickname,
-        affiliation: record.affiliation,
-      }),
-    });
-    if (response.status === 409) continue;
-    const result = await response.json();
-    if (!response.ok) throw new Error(result.message || "Legacy duty record could not be imported");
-    importedLegacyRecord = true;
-  }
-
-  if (importedLegacyRecord) databaseRecords = await readDuties();
   records = databaseRecords.map((record) => ({
     ...record,
     colorValue: colors.find((color) => color.id === record.colorId)?.value,
@@ -432,14 +408,6 @@ window.addEventListener("storage", (event) => {
 });
 
 onAuthStateChanged(auth, async (user) => {
-  if (hasAdminSession()) {
-    currentUser = { uid: "admin", displayName: "Admin" };
-    records = readRecords();
-    renderPalette();
-    renderCalendar();
-    renderRecords();
-    return;
-  }
   if (!user) { window.location.href = "./index.html"; return; }
   currentUser = user;
   records = readRecords();

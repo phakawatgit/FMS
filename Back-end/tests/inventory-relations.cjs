@@ -109,7 +109,7 @@ async function check(id, remaining, dispensed, borrowed, manualUsed = 0) {
     await check(b.id,20-latest.dispensations[0].quantity,latest.dispensations[0].quantity,0);
     await request('/infirmary-visits/'+external.id,'PATCH',payload([]));
     await check(b.id,20,0,0);
-    await request('/legacy-storage/fms-stock-records','PUT',{value:[]},409);
+    await request('/legacy-storage/fms-stock-records','PUT',{value:[]},410);
     const movements=await request('/medicines/movements');assert.ok(movements.some(m=>m.medicineId===a.id&&m.source==='manual'));
     console.log('PASS: reason required, stock components protected, historical snapshots, archive, uniform records and audit history');
   } finally {

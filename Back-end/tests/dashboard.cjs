@@ -4,7 +4,7 @@ const {chromium}=require('playwright');
 require('dotenv').config({path:require('node:path').join(__dirname,'../.env'),quiet:true});
 const db=require('../src/lib/prisma');
 const {aggregate,filters}=require('../src/lib/dashboard');
-const api='http://127.0.0.1:4000/api';
+const api=process.env.TEST_API_URL||'http://127.0.0.1:4000/api';
 const marker='dashboard-test-'+randomUUID();
 const orderIds=[];let browser,medicine,visit,filterVisit;
 async function request(path,method='GET',body){const r=await fetch(api+path,{method,headers:{'Content-Type':'application/json'},...(body?{body:JSON.stringify(body)}:{})});const json=await r.json();assert.ok(r.ok,JSON.stringify(json));return json.data;}
@@ -25,6 +25,7 @@ async function request(path,method='GET',body){const r=await fetch(api+path,{met
   const count=await db.infirmaryVisit.count({where:{createdAt:{gte:new Date(before.filters.start+'T00:00:00+07:00'),lt:new Date(Date.parse(before.filters.end+'T00:00:00+07:00')+86400000)}}});assert.equal(before.totalVisits,count);
   browser=await chromium.launch({headless:true,channel:'msedge'});const context=await browser.newContext({timezoneId:'America/New_York'});
   await context.route(/https:\/\/(fonts\.googleapis|fonts\.gstatic)/,r=>r.abort());
+  await require("./auth-test.cjs")(context,api.replace(/\/api$/, ""));
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto('http://localhost:3000/legacy/dashboard.html',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.getElementById('dashboardDataStatus')?.textContent.includes('อัปเดต'));
@@ -59,7 +60,7 @@ async function request(path,method='GET',body){const r=await fetch(api+path,{met
   await context.route('**/api/legacy-storage**',r=>r.fulfill({contentType:'application/json',body:'{"success":true,"data":{}}'}));
   const ordering=await context.newPage();await ordering.goto('http://localhost:3000/legacy/dashboard.html',{waitUntil:'domcontentloaded'});
   await ordering.evaluate(code=>localStorage.setItem('fms-catalog-cart',JSON.stringify({[code]:{quantity:2}})),medicine.code);
-  await ordering.goto('http://localhost:3000/legacy/catalog-order.html',{waitUntil:'domcontentloaded'});await ordering.locator('#orderTitle').fill(marker);
+  await ordering.goto('http://localhost:3000/legacy/catalog-order.html',{waitUntil:'domcontentloaded'});await ordering.locator('#orderSaveError').waitFor({state:'attached'});await ordering.locator('#orderTitle').fill(marker);
   let lost=true;
   await ordering.route('**/api/catalog-orders',async route=>{if(route.request().method()!=='POST')return route.continue();const body=route.request().postDataJSON();if(!orderIds.includes(body.id))orderIds.push(body.id);if(lost){lost=false;await route.fetch();await route.abort();}else await route.continue();});
   await ordering.click('#submitOrder');await ordering.waitForFunction(()=>document.getElementById('orderSaveError')?.textContent.length>0);assert.equal(await ordering.locator('#exportModal').isVisible(),false);await ordering.click('#submitOrder');await ordering.locator('#exportModal').waitFor({state:'visible'});
@@ -76,6 +77,6 @@ async function request(path,method='GET',body){const r=await fetch(api+path,{met
   console.log('PASS dashboard: aggregates, Bangkok dates, DB/API/UI, filters, refresh, stale/empty, export, concurrent/idempotent orders, language');
 }finally{
   await browser?.close();
-  await db.$transaction(async tx=>{await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${'fms-history-catalog-orders'},0))`;const row=await tx.legacyStorage.findUnique({where:{key:'fms-history-catalog-orders'}});if(Array.isArray(row?.value))await tx.legacyStorage.update({where:{key:row.key},data:{value:row.value.filter(o=>!orderIds.includes(o.id))}});});
+  await db.catalogOrder.deleteMany({where:{id:{in:orderIds}}});
   if(visit){await db.dispensation.deleteMany({where:{visitId:visit.id}});await db.infirmaryVisit.delete({where:{id:visit.id}});}if(medicine)await db.medicine.delete({where:{id:medicine.id}});if(filterVisit)await db.infirmaryVisit.delete({where:{id:filterVisit.id}});await db.$disconnect();
 }})().catch(e=>{console.error(e);process.exitCode=1;});

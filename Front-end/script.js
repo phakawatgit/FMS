@@ -42,8 +42,6 @@ const confirmPasswordInput = document.getElementById("confirmPassword");
 const resetStatus = document.getElementById("resetStatus");
 const API_BASE = window.FMS_API_URL || `${location.protocol}//${location.hostname}:4000`;
 const ADMIN_SESSION_KEY = "fms-admin-session";
-const ADMIN_USERNAME = "Admin";
-const ADMIN_PASSWORD = "admin12345678";
 
 document.querySelectorAll("[data-password-toggle]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -66,7 +64,7 @@ const FIREBASE_CONFIG = {
     appId: "1:636847349725:web:01eaad241d971a2437a034"
 };
 
-const firebaseApp = initializeApp(FIREBASE_CONFIG);
+const firebaseApp = window.FMSAuth.app;
 const firebaseAuth = getAuth(firebaseApp);
 const googleProvider = new GoogleAuthProvider();
 // Always let the user choose the Google account instead of silently reusing
@@ -281,21 +279,16 @@ authForm.addEventListener("submit", (event) => {
     const email = document.getElementById("email").value.trim();
     const password = passwordInput.value;
     const fullName = document.getElementById("fullName").value.trim();
-    if (currentMode === "login" && email.toLowerCase() === ADMIN_USERNAME.toLowerCase() && password === ADMIN_PASSWORD) {
-        localStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify({ username: ADMIN_USERNAME, role: "admin", signedInAt: new Date().toISOString() }));
-        window.FMSAdminAudit?.log("login", { provider: "admin-demo", username: ADMIN_USERNAME });
-        showSignedInMessage({ displayName: ADMIN_USERNAME, email: ADMIN_USERNAME });
-        return;
-    }
     // A Firebase user must never inherit the local demo-admin session.
     localStorage.removeItem(ADMIN_SESSION_KEY);
     const authTask = currentMode === "signup"
         ? createUserWithEmailAndPassword(firebaseAuth, email, password).then(async ({ user }) => {
             if (fullName) await updateProfile(user, { displayName: fullName });
-            return user;
+            return { user };
         })
         : signInWithEmailAndPassword(firebaseAuth, email, password);
-    authTask.then(({ user }) => {
+    authTask.then(async ({ user }) => {
+        await window.FMSAuth.me();
         window.FMSAdminAudit?.log(currentMode === "signup" ? "create-account" : "login", { provider: "email", email: user.email || email });
         showSignedInMessage(user);
     }).catch(showFirebaseError);
@@ -308,6 +301,7 @@ googleButton.addEventListener("click", async () => {
         localStorage.removeItem(ADMIN_SESSION_KEY);
         const result = await signInWithPopup(firebaseAuth, googleProvider);
         window.FMSAdminAudit?.log("google-login", { email: result.user.email || "" });
+        await window.FMSAuth.me();
         showSignedInMessage(result.user);
     } catch (error) {
         showFirebaseError(error);

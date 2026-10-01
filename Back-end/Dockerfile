@@ -9,8 +9,9 @@ COPY prisma ./prisma
 RUN npx prisma generate
 
 COPY src ./src
+COPY scripts ./scripts
 COPY .env.example ./.env.example
 
 EXPOSE 4000
 
-CMD ["sh", "-c", "npx prisma migrate deploy && npx prisma db push && npm start"]
+CMD ["sh", "-c", "npx prisma migrate deploy && npm run images:backfill && npm start"]

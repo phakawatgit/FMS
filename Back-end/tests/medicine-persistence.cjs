@@ -70,6 +70,7 @@ async function page() {
     await tab.goto(`${web}/legacy/catalog.html`);
     await tab.locator('.catalog-card').filter({ hasText: marker }).first().waitFor();
     await tab.locator(`#addButton`).click();
+    await tab.waitForFunction(() => document.getElementById('imageInput')?.accept === 'image/jpeg,image/png,image/webp');
     await tab.locator('[name="name"]').fill(marker + "-browser");
     await tab.locator('[name="total"]').fill("10");
     await tab.locator('[name="unit"]').fill('tablet');
@@ -92,7 +93,12 @@ async function page() {
     await fresh.goto(`${web}/legacy/catalog.html`);
     const card = fresh.locator(`.catalog-card[data-detail-code="${created.code}"]`); await card.waitFor();
     await card.locator(".catalog-image").click();
-    await fresh.locator('.detail-summary').waitFor();
+    await fresh.waitForURL("**/catalog-detail.html?code=*");
+    try { await fresh.locator('.detail-summary').waitFor(); }
+    catch (error) {
+      const state=await fresh.evaluate(()=>({url:location.href,detail:document.getElementById('detail')?.innerText.slice(0,240),auth:!!window.FMSAuth,data:!!window.FMSData,medicineApi:!!window.MedicineAPI,reference:!!window.FMSReference,scripts:[...document.scripts].map(script=>script.src).filter(Boolean),alert:document.querySelector('[role="alert"]')?.innerText}));
+      throw Error(`Catalog detail did not render: ${JSON.stringify({state,errors,wait:error.message})}`);
+    }
     assert.ok(await fresh.locator('.detail-product-image img').evaluate(img => img.complete && img.naturalWidth > 0));
     await fresh.locator('#detailLayoutAddCart').first().click();
     await fresh.goto(`${web}/legacy/catalog-cart.html`);
@@ -103,14 +109,14 @@ async function page() {
     await fresh.locator("[data-add-drug]").click();
     await fresh.waitForFunction(id => [...document.querySelectorAll("[data-drug-rows] option")].some(option => option.value === id), created.id);
     await fresh.goto(`${web}/legacy/stock-add.html?edit=${created.id}`);
-    await fresh.locator('[type="submit"]:enabled').waitFor();
+    await fresh.waitForFunction(code => document.querySelector('[name="code"]')?.value === code, created.code);
     assert.equal(await fresh.locator('[name="code"]').inputValue(), created.code);
     await fresh.locator('[name="productName"]').fill("Edited product");
     await fresh.locator('[type="submit"]').click(); await fresh.waitForURL("**/stock.html?updated=1");
     let edited = await db.medicine.findUnique({ where: { id: created.id } });
     assert.equal(edited.productName, "Edited product"); assert.deepEqual(edited.imageData, created.imageData);
     await fresh.goto(`${web}/legacy/stock-add.html?edit=${created.id}`);
-    await fresh.locator('[type="submit"]:enabled').waitFor();
+    await fresh.waitForFunction(code => document.querySelector('[name="code"]')?.value === code, created.code);
     const replacement = await sharp({ create: { width: 48, height: 48, channels: 3, background: "blue" } }).webp().toBuffer();
     await fresh.locator('#imageInput').setInputFiles({ name: "replacement.webp", mimeType: "image/webp", buffer: replacement });
     await fresh.waitForFunction(() => document.querySelector('#imagePreview img')?.src.startsWith('data:image/jpeg'));
@@ -140,10 +146,11 @@ async function page() {
     assert.equal((await db.medicine.findUnique({ where: { id: pair[0].id } })).active, false);
     await fresh.route("**/api/medicines", route => route.abort());
     await fresh.goto(`${web}/legacy/catalog.html`);
-    await fresh.locator('#medicineApiError button').waitFor();
+    const retryButton = fresh.locator('[role="alert"] button');
+    await retryButton.waitFor();
     assert.equal(await fresh.locator('.catalog-card').count(), 0);
     await fresh.unroute("**/api/medicines");
-    await fresh.locator('#medicineApiError button').click();
+    await retryButton.click();
     await fresh.locator('.catalog-card').filter({ hasText: marker }).first().waitFor();
     console.log("PASS: browser create/image, error preserves form, duplicate guard, clean browser, catalog/cart/order/Infirmary, edit and delete");
     await stop(); await start();

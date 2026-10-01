@@ -4,10 +4,11 @@ const { randomUUID } = require("node:crypto");
 const prisma = require("../lib/prisma");
 const router = express.Router();
 const inv = require("../lib/inventory");
+const { medicineImageUrl } = require('../lib/image-url');
 // Allow cold local PostgreSQL connections and queued writers to acquire a
 // transaction; Prisma's 2-second default can expire during connection setup.
 const transactionOptions = { maxWait: 15000, timeout: 10000 };
-const select = Object.fromEntries(["manualUsed", "dispensed", "borrowed", "active", "id", "code", "name", "productName", "genericName", "category", "form", "size", "unit", "benefit", "symptom", "usage", "warning", "total", "used", "expiry", "imageType", "createdAt", "updatedAt"].map(key => [key, true]));
+const select = Object.fromEntries(["manualUsed", "dispensed", "borrowed", "active", "id", "code", "name", "productName", "genericName", "category", "form", "size", "unit", "benefit", "symptom", "usage", "warning", "total", "used", "expiry", "imageType", "imageUrl", "createdAt", "updatedAt"].map(key => [key, true]));
 const fail = (message, status = 400) => Object.assign(new Error(message), { status });
 function output(row) {
   const { imageType, ...data } = row;
@@ -52,7 +53,7 @@ async function validate(body, partial = false) {
     }
   }
   if (body.image !== undefined) {
-    if (body.image === null || body.image === "") { data.imageData = null; data.imageType = null; }
+    if (body.image === null || body.image === "") { data.imageData = null; data.imageType = null; data.imageUrl = null; }
     else {
       if (typeof body.image !== "string") throw fail("รูปภาพไม่ถูกต้อง");
       const match = /^data:image\/(jpeg|png|webp);base64,([A-Za-z0-9+/]+={0,2})$/.exec(body.image);
@@ -95,7 +96,7 @@ router.post("/", async (req, res) => {
     const data = await validate(req.body); inventory(data);
     if (!data.unit) throw fail("กรุณาระบุหน่วยสต็อก");
     const created = await tx.medicine.create({ data: { ...data, manualUsed: data.used, code: `pending-${randomUUID()}` } });
-    const row = await tx.medicine.update({ where: { id: created.id }, data: { code: `${prefix(data.name)}${String(created.sequence).padStart(7, "0")}` } });
+    const row = await tx.medicine.update({ where: { id: created.id }, data: { code: `${prefix(data.name)}${String(created.sequence).padStart(7, "0")}`, imageUrl: created.imageType ? medicineImageUrl(created.id) : null } });
     await tx.stockMovement.create({ data: { medicineId: row.id, source: "opening", reason: "ยอดตั้งต้น", before: { total: 0, used: 0, manualUsed: 0, dispensed: 0, borrowed: 0, remaining: 0 }, after: inv.counts(row) } });
     return output(Object.fromEntries(Object.keys(select).map(k => [k, row[k]])));
   });
@@ -105,6 +106,7 @@ async function update(req, build) {
   return inv.atomic(req, async tx => {
     const row = (await inv.lockMedicines(tx, [req.params.id])).get(req.params.id);
     const data = await build(row);
+    if (data.imageType) data.imageUrl = medicineImageUrl(row.id);
     if (data.unit !== undefined && (!data.unit || row.unit && data.unit !== row.unit && await tx.stockMovement.count({ where: { medicineId: row.id } }))) throw fail("รายการนี้มีประวัติแล้ว หากเปลี่ยนหน่วยกรุณาสร้างรายการยาใหม่");
     const stockChange = (data.total !== undefined && data.total !== row.total) || (data.used !== undefined && data.used !== row.used);
     if (stockChange && (typeof req.body.reason !== 'string' || !req.body.reason.trim() || req.body.reason.length > 2000)) throw fail("กรุณาระบุเหตุผลการปรับสต็อก");

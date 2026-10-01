@@ -18,6 +18,7 @@ module.exports = function setup(api) {
   return {
     keys,
     async context(context) {
+      await require("./auth-test.cjs")(context, api);
       await context.route(/https:\/\/(fonts\.googleapis|fonts\.gstatic)/, r => r.abort());
       await context.route('**/api/legacy-storage**', r=>r.fulfill({contentType:'application/json',body:'{"success":true,"data":{}}'}));
       context.on('request',r=>{const key=r.headers()['idempotency-key'];if(key)keys.add(key);});

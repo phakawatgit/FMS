@@ -23,6 +23,7 @@ async function atomic(req, work) {
       return old.result;
     }
     const result = JSON.parse(JSON.stringify(await work(tx)));
+    await require('./audit').audit(tx, req, req.method === 'DELETE' ? 'deactivate' : req.method === 'POST' ? 'create' : 'update', req.baseUrl.split('/').pop(), result?.id, { requestId: key });
     await tx.inventoryRequest.create({ data: { id: key, fingerprint, result } });
     return result;
   }, { maxWait: 15000, timeout: 20000 });

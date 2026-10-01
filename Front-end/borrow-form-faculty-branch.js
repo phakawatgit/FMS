@@ -1,39 +1,7 @@
 const borrowBranchSelect = document.querySelector('select[name="branch"]');
 const borrowBranchLabel = borrowBranchSelect?.closest("label");
 
-const borrowFacultyBranches = {
-  all: [
-    "วิศวกรรมไฟฟ้า แขนงไฟฟ้ากำลัง",
-    "วิศวกรรมไฟฟ้า แขนงอิเล็กทรอนิกส์และไฟฟ้าสื่อสาร",
-    "วิศวกรรมหุ่นยนต์และอิเล็กทรอนิกส์อัจฉริยะ",
-    "วิศวกรรมเครื่องกล",
-    "วิศวกรรมคอมพิวเตอร์",
-    "วิศวกรรมอุตสาหการและการผลิต",
-    "วิศวกรรมโยธา",
-    "เทคโนโลยีการจัดการผลิตพืช / เทคโนโลยีการผลิตพืชด้วยศาสตร์พระราชา",
-    "สัตวศาสตร์ แขนงการผลิตและธุรกิจปศุสัตว์",
-    "สัตวศาสตร์ แขนงการผลิตและธุรกิจสัตว์เลี้ยง",
-    "วิทยาศาสตร์การประมงและทรัพยากรทางน้ำ",
-    "บริหารธุรกิจและการเป็นผู้ประกอบการ",
-    "นวัตกรรมอาหารและการจัดการ"
-  ],
-  engineering: [
-    "วิศวกรรมไฟฟ้า แขนงไฟฟ้ากำลัง",
-    "วิศวกรรมไฟฟ้า แขนงอิเล็กทรอนิกส์และไฟฟ้าสื่อสาร",
-    "วิศวกรรมหุ่นยนต์และอิเล็กทรอนิกส์อัจฉริยะ",
-    "วิศวกรรมเครื่องกล",
-    "วิศวกรรมคอมพิวเตอร์",
-    "วิศวกรรมอุตสาหการและการผลิต",
-    "วิศวกรรมโยธา"
-  ],
-  agriculture: [
-    "เทคโนโลยีการจัดการผลิตพืช / เทคโนโลยีการผลิตพืชด้วยศาสตร์พระราชา",
-    "สัตวศาสตร์ แขนงการผลิตและธุรกิจปศุสัตว์",
-    "สัตวศาสตร์ แขนงการผลิตและธุรกิจสัตว์เลี้ยง",
-    "วิทยาศาสตร์การประมงและทรัพยากรทางน้ำ"
-  ],
-  business: ["บริหารธุรกิจและการเป็นผู้ประกอบการ", "นวัตกรรมอาหารและการจัดการ"]
-};
+const borrowFacultyBranches = window.FMSReference.branches();
 
 if (borrowBranchSelect && borrowBranchLabel) {
   const facultyLabel = document.createElement("label");
@@ -43,6 +11,7 @@ if (borrowBranchSelect && borrowBranchLabel) {
   const branchLabelText = borrowBranchLabel.querySelector("span");
   if (branchLabelText) branchLabelText.textContent = "สาขา";
   const borrowFacultySelect = facultyLabel.querySelector("select");
+  window.FMSReference.fill(borrowFacultySelect);
 
   function renderBorrowBranches() {
     const branches = borrowFacultyBranches[borrowFacultySelect.value] || borrowFacultyBranches.all;

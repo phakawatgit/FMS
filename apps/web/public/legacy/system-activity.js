@@ -10,7 +10,7 @@ const firebaseConfig = {
   appId: "1:636847349725:web:01eaad241d971a2437a034"
 };
 
-const auth = getAuth(initializeApp(firebaseConfig));
+const auth = getAuth(window.FMSAuth.app);
 const cardsTarget = document.getElementById("activityCards");
 let language = "th";
 
