@@ -146,7 +146,7 @@
   const reverseCopy = Object.fromEntries(Object.entries(copy).map(([thai, english]) => [english, thai]));
   const languageStorageKey = "fms-language";
   let savedLanguage = "";
-  try { savedLanguage = localStorage.getItem(languageStorageKey) || ""; } catch (_) {}
+  try { savedLanguage = FMSStorage.getItem(languageStorageKey) || ""; } catch (_) {}
   let pageIsEnglish = savedLanguage === "en" || (!savedLanguage && document.documentElement.lang === "en");
   let translating = false;
 
@@ -268,7 +268,7 @@
     const label = button.querySelector("span");
 
     document.documentElement.lang = isEnglish ? "en" : "th";
-    try { localStorage.setItem(languageStorageKey, isEnglish ? "en" : "th"); } catch (_) {}
+    try { FMSStorage.setItem(languageStorageKey, isEnglish ? "en" : "th"); } catch (_) {}
 
     if (label) {
       label.textContent = isEnglish ? "English" : "ไทย";
@@ -326,7 +326,7 @@
       const label = button.querySelector("span");
       if (label) label.textContent = isEnglish ? "English" : "ไทย";
       button.setAttribute("aria-label", isEnglish ? "Switch to Thai" : "เปลี่ยนภาษา");
-      try { localStorage.setItem(languageStorageKey, isEnglish ? "en" : "th"); } catch (_) {}
+      try { FMSStorage.setItem(languageStorageKey, isEnglish ? "en" : "th"); } catch (_) {}
     }, 0);
   }, true);
 

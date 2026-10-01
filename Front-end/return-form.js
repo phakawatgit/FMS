@@ -2,7 +2,7 @@ const STORAGE_KEY = "fms-borrow-return-records";
 const defaultRecords = [];
 const records = (() => {
   try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+    const saved = JSON.parse(FMSStorage.getItem(STORAGE_KEY) || "null");
     return Array.isArray(saved) ? saved.filter((item) => item.item !== "คุณ เพ็ญพิชชา ภาญจนพาณิชย์ (แผนก)") : defaultRecords;
   } catch { return defaultRecords; }
 })();
@@ -22,7 +22,7 @@ let returnNoticeConfirmAction = null;
 const returnPageElement = document.querySelector(".return-page");
 const returnFooterElement = document.querySelector(".return-footer");
 const stockItems = (() => {
-  try { const items = JSON.parse(localStorage.getItem("fms-stock-records") || "[]"); return Array.isArray(items) ? items : []; }
+  try { const items = JSON.parse(FMSStorage.getItem("fms-stock-records") || "[]"); return Array.isArray(items) ? items : []; }
   catch { return []; }
 })();
 const normalizeCode = (value) => String(value ?? "").trim().toLowerCase();
@@ -181,13 +181,13 @@ function saveReturn(returnedItems, currentStock, stockReturns, products) {
       stock.used = Math.max(0, (Number(stock.used) || 0) - item.returned);
       stock.remaining = Math.max(0, (Number(stock.total) || 0) - stock.used);
     });
-    localStorage.setItem("fms-stock-records", JSON.stringify(currentStock));
+    FMSStorage.setItem("fms-stock-records", JSON.stringify(currentStock));
   }
   const wasOverdue = String(record.status || "").toLowerCase() === "overdue";
   record.items = remainingItems;
   record.status = remainingItems.length ? (wasOverdue ? "overdue" : "borrowed") : "returned";
   if (!remainingItems.length) record.returnedDate = returnDate;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+  FMSStorage.setItem(STORAGE_KEY, JSON.stringify(records));
   window.FMSBorrowHistoryStore?.save(records);
   window.location.href = "./borrow-return-history.html";
 }
@@ -198,7 +198,7 @@ document.getElementById("submitReturn").addEventListener("click", () => {
   const returnedItems = products.map((item, index) => ({ ...item, returned: Number(returnProductsElement.querySelector(`[data-return-quantity="${index}"]`)?.value) || 0 }));
   if (!returnedItems.some((item) => item.returned > 0)) { showReturnNotice("กรุณาระบุจำนวนยาและเวชภัณฑ์ที่นำมาคืน"); return; }
   let currentStock = [];
-  try { const savedStock = JSON.parse(localStorage.getItem("fms-stock-records") || "[]"); if (Array.isArray(savedStock)) currentStock = savedStock; } catch {}
+  try { const savedStock = JSON.parse(FMSStorage.getItem("fms-stock-records") || "[]"); if (Array.isArray(savedStock)) currentStock = savedStock; } catch {}
   const stockReturns = returnedItems.filter((item) => item.returned > 0).map((item) => ({ item, stock: findStockItem(currentStock, item) }));
   if (record.stockCommitted && stockReturns.some(({ stock }) => !stock)) {
     showReturnNotice("ไม่พบยาและเวชภัณฑ์บางรายการในคลัง จึงยังบันทึกการคืนไม่ได้", { tone: "error", title: "ไม่พบข้อมูลในคลัง", eyebrow: "บันทึกการคืนไม่สำเร็จ" });
@@ -213,6 +213,17 @@ document.getElementById("submitReturn").addEventListener("click", () => {
     onConfirm: () => saveReturn(returnedItems, currentStock, stockReturns, products),
   });
 });
+
+document.getElementById("submitReturn").addEventListener("click", async (event) => {
+  event.preventDefault(); event.stopImmediatePropagation();
+  if (!record) return;
+  const products = normalizeProducts(record);
+  const items = products.map((item, index) => ({ code: item.code, quantity: Number(returnProductsElement.querySelector(`[data-return-quantity="${index}"]`)?.value) || 0 })).filter(item => item.quantity > 0);
+  if (!items.length) return showReturnNotice("กรุณาระบุจำนวนที่นำมาคืน");
+  const button = document.getElementById("submitReturn"); button.disabled = true;
+  try { await FMSStorage.returnBorrowRecord(record.id, items); window.location.href = "./borrow-return-history.html"; }
+  catch (error) { button.disabled = false; showReturnNotice(error.message || "บันทึกการคืนไม่สำเร็จ", { tone: "error", title: "บันทึกการคืนไม่สำเร็จ" }); }
+}, true);
 
 document.getElementById("confirmReturnNotice").addEventListener("click", acceptReturnNotice);
 document.getElementById("cancelReturnNotice").addEventListener("click", closeReturnNotice);

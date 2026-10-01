@@ -26,10 +26,10 @@ const normalize = value => {
   };
   return categoryMap[category] || category;
 };
-const records = JSON.parse(localStorage.getItem("fms-stock-records") || "[]");
+const records = JSON.parse(FMSStorage.getItem("fms-stock-records") || "[]");
 const medicines = records.map(item => ({ ...item, category: normalize(item.category), total: Number(item.total) || 0, used: Number(item.used) || 0, remaining: Math.max(0, (Number(item.total) || 0) - (Number(item.used) || 0)) }));
 let filter = "all";
-let cart = JSON.parse(localStorage.getItem("fms-catalog-cart") || "{}");
+let cart = JSON.parse(FMSStorage.getItem("fms-catalog-cart") || "{}");
 let catalogEnglish = false;
 const catalogLabels = {
   all: ["ทั้งหมด", "All"],
@@ -52,7 +52,7 @@ let quantityModalCode = "", quantityModalOption = "แผง";
 const quantityModalInput = quantityModal.querySelector("#quantityModalInput");
 function openQuantityModal(code) { const item = medicines.find(row => String(row.code) === String(code)); quantityModalCode = code; quantityModalOption = cart[code]?.option || "แผง"; quantityModal.querySelector("#quantityModalProduct").textContent = item?.name || item?.productName || "สินค้า"; quantityModalInput.value = cart[code]?.quantity || 1; quantityModal.querySelectorAll("[data-modal-option]").forEach(button => button.classList.toggle("selected", button.dataset.modalOption === quantityModalOption)); quantityModal.hidden = false; quantityModalInput.focus(); quantityModalInput.select(); }
 function closeQuantityModal() { quantityModal.hidden = true; quantityModalCode = ""; }
-function confirmQuantityModal() { const quantity = Math.max(1, Number(quantityModalInput.value) || 1); cart[quantityModalCode] = { quantity, option: quantityModalOption }; localStorage.setItem("fms-catalog-cart", JSON.stringify(cart)); updateCartCount(); render(); showCartToast(quantity); closeQuantityModal(); }
+function confirmQuantityModal() { const quantity = Math.max(1, Number(quantityModalInput.value) || 1); cart[quantityModalCode] = { quantity, option: quantityModalOption }; FMSStorage.setItem("fms-catalog-cart", JSON.stringify(cart)); updateCartCount(); render(); showCartToast(quantity); closeQuantityModal(); }
 quantityModal.querySelectorAll("[data-modal-option]").forEach(button => button.addEventListener("click", () => { quantityModalOption = button.dataset.modalOption; quantityModal.querySelectorAll("[data-modal-option]").forEach(option => option.classList.toggle("selected", option === button)); })); quantityModal.querySelector(".quantity-modal-close").addEventListener("click", closeQuantityModal); quantityModal.querySelector(".quantity-modal-cancel").addEventListener("click", closeQuantityModal); quantityModal.querySelector(".quantity-modal-confirm").addEventListener("click", confirmQuantityModal); quantityModal.addEventListener("click", event => { if (event.target === quantityModal) closeQuantityModal(); }); quantityModalInput.addEventListener("keydown", event => { if (event.key === "Enter") confirmQuantityModal(); if (event.key === "Escape") closeQuantityModal(); });
 
 function updateCartCount() { const count = Object.values(cart).filter(item => (Number(item.quantity) || 0) > 0).length; cartCount.textContent = count > 99999 ? "100000+" : count; cartCount.classList.toggle("wide", count >= 10); }
@@ -82,7 +82,7 @@ grid.addEventListener("click", event => {
   cart[code] = cart[code] || { quantity: 0 };
   cart[code].quantity = Math.max(0, cart[code].quantity + (add ? 1 : Number(change.dataset.delta)));
   if (!cart[code].quantity) delete cart[code];
-  localStorage.setItem("fms-catalog-cart", JSON.stringify(cart));
+  FMSStorage.setItem("fms-catalog-cart", JSON.stringify(cart));
   updateCartCount();
   render();
   if (add) showCartToast(cart[code]?.quantity || 0);

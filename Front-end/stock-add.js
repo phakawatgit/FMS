@@ -6,14 +6,14 @@ const nameInput = form.elements.name;
 const codeInput = form.elements.code;
 const returnToCatalog = new URLSearchParams(location.search).get("from") === "catalog";
 const editSnapshot = (() => {
-  try { return JSON.parse(localStorage.getItem("fms-edit-stock-record") || "null"); } catch { return null; }
+  try { return JSON.parse(FMSStorage.getItem("fms-edit-stock-record") || "null"); } catch { return null; }
 })();
 const editParams = new URLSearchParams(location.search);
-const requestedEditCode = editParams.get("edit") || editParams.get("code") || localStorage.getItem("fms-edit-stock-code") || editSnapshot?.code || "";
+const requestedEditCode = editParams.get("edit") || editParams.get("code") || FMSStorage.getItem("fms-edit-stock-code") || editSnapshot?.code || "";
 const editCode = String(requestedEditCode).trim();
 let storedRecords = [];
 try {
-  storedRecords = JSON.parse(localStorage.getItem("fms-stock-records") || "[]");
+  storedRecords = JSON.parse(FMSStorage.getItem("fms-stock-records") || "[]");
 } catch {
   storedRecords = [];
 }
@@ -22,56 +22,31 @@ const editRecord = editCode
   ? storedRecords.find(item => normalizeCode(item.code) === normalizeCode(editCode) || normalizeCode(item.name) === normalizeCode(editCode) || normalizeCode(item.productName) === normalizeCode(editCode)) || editSnapshot || null
   : editSnapshot;
 let selectedImageData = "";
-let selectedImagePromise = Promise.resolve("");
 
-const allowedImageTypes = ["image/jpeg", "image/png", "image/webp"];
-imageInput.setAttribute("accept", ".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp");
-
-imageInput.addEventListener("change", () => {
-  const file = imageInput.files[0];
-  if (!file) return;
-  const extension = file.name.split(".").pop().toLowerCase();
-  const allowedExtensions = ["jpg", "jpeg", "png", "webp"];
-  if (!allowedImageTypes.includes(file.type) && !allowedExtensions.includes(extension)) {
-    imageInput.value = "";
-    selectedImageData = "";
-    selectedImagePromise = Promise.resolve("");
-    preview.textContent = "รองรับเฉพาะ JPG, PNG และ WEBP";
-    message.textContent = "กรุณาเลือกไฟล์ JPG, PNG หรือ WEBP";
-    message.style.color = "#cf3434";
-    return;
+function previewImage(value) {
+  const raw = String(value || "").trim();
+  if (!raw) { preview.textContent = "รูปภาพยา"; return; }
+  try {
+    const url = new URL(raw);
+    if (!["http:", "https:"].includes(url.protocol)) throw new Error("invalid protocol");
+    const image = document.createElement("img");
+    image.alt = "ตัวอย่างรูปยา";
+    image.src = url.href;
+    image.onerror = () => { preview.textContent = "เปิด URL รูปภาพไม่ได้"; };
+    preview.replaceChildren(image);
+  } catch {
+    preview.textContent = "กรุณาระบุ URL รูปภาพ HTTP หรือ HTTPS";
   }
-  selectedImagePromise = new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const source = new Image();
-      source.onload = () => {
-        const maxSize = 1200;
-        const scale = Math.min(1, maxSize / Math.max(source.naturalWidth, source.naturalHeight));
-        const canvas = document.createElement("canvas");
-        canvas.width = Math.max(1, Math.round(source.naturalWidth * scale));
-        canvas.height = Math.max(1, Math.round(source.naturalHeight * scale));
-        canvas.getContext("2d").drawImage(source, 0, 0, canvas.width, canvas.height);
-        selectedImageData = canvas.toDataURL("image/jpeg", 0.82);
-        preview.innerHTML = `<img src="${selectedImageData}" alt="ตัวอย่างรูปยา">`;
-        message.textContent = "";
-        resolve(selectedImageData);
-      };
-      source.onerror = reject;
-      source.src = reader.result;
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-});
+}
 
+imageInput.type = "url";
+imageInput.addEventListener("input", () => { selectedImageData = imageInput.value.trim(); previewImage(selectedImageData); });
 form.addEventListener("reset", () => setTimeout(() => {
   selectedImageData = "";
-  selectedImagePromise = Promise.resolve("");
+  imageInput.value = "";
   preview.textContent = "รูปภาพยา";
   message.textContent = "";
 }, 0));
-
 const thaiMedicineNames = {
   "ยาพารา": "paracetamol", "พาราเซตามอล": "paracetamol", "พารา": "paracetamol",
   "ยาแก้ไอ": "cough", "ยาอมแก้เจ็บคอ": "lozenge", "ยาลดกรด": "antacid",
@@ -91,7 +66,7 @@ function getCodePrefix(value) {
 }
 
 function getNextMedicineNumber() {
-  return Math.max(1, Number(localStorage.getItem("fms-stock-code-sequence")) || 1);
+  return Math.max(1, Number(FMSStorage.getItem("fms-stock-code-sequence")) || 1);
 }
 
 function updateMedicineCode() {
@@ -112,7 +87,8 @@ if (editRecord) {
   codeInput.value = editRecord.code || editCode;
   if (editRecord.image) {
     selectedImageData = editRecord.image;
-    preview.innerHTML = `<img src="${editRecord.image}" alt="ตัวอย่างรูปยา">`;
+    imageInput.value = editRecord.image;
+    previewImage(editRecord.image);
   }
   document.title = "FMS | แก้ไขยา";
   document.querySelector(".form-heading h1")?.replaceChildren("แก้ไขยา");
@@ -122,8 +98,8 @@ if (editRecord) {
   if (submitButton) submitButton.textContent = "บันทึกการแก้ไข";
   const clearButton = document.getElementById("clearButton");
   if (clearButton) clearButton.hidden = true;
-  localStorage.removeItem("fms-edit-stock-code");
-  localStorage.removeItem("fms-edit-stock-record");
+  FMSStorage.removeItem("fms-edit-stock-code");
+  FMSStorage.removeItem("fms-edit-stock-record");
 }
 
 form.addEventListener("submit", async (event) => {
@@ -134,7 +110,11 @@ form.addEventListener("submit", async (event) => {
     return;
   }
   try {
-    const image = await selectedImagePromise;
+    const image = imageInput.value.trim();
+    if (image) {
+      const parsedImageUrl = new URL(image);
+      if (!["http:", "https:"].includes(parsedImageUrl.protocol)) throw new Error("Invalid image URL");
+    }
     const number = getNextMedicineNumber();
     if (editRecord) codeInput.value = editRecord.code || editCode;
     else codeInput.value = `${getCodePrefix(nameInput.value)}${String(number).padStart(7, "0")}`;
@@ -154,24 +134,24 @@ form.addEventListener("submit", async (event) => {
         : "ปกติ";
     data.image = image || selectedImageData || "";
     data.createdAt = editRecord?.createdAt || new Date().toISOString();
-    const records = JSON.parse(localStorage.getItem("fms-stock-records") || "[]");
+    const records = JSON.parse(FMSStorage.getItem("fms-stock-records") || "[]");
     if (editRecord) {
       const index = records.findIndex((item) => normalizeCode(item.code) === normalizeCode(editCode));
       if (index >= 0) records[index] = { ...records[index], ...data, code: editRecord.code || editCode };
       else records.unshift(data);
     } else records.unshift(data);
-    localStorage.setItem("fms-stock-records", JSON.stringify(records));
-    localStorage.setItem("fms-stock-code-sequence", String(number + 1));
-    localStorage.setItem("fms-stock-filter", "all");
-    localStorage.removeItem("fms-edit-stock-code");
-    localStorage.removeItem("fms-edit-stock-record");
+    FMSStorage.setItem("fms-stock-records", JSON.stringify(records));
+    FMSStorage.setItem("fms-stock-code-sequence", String(number + 1));
+    FMSStorage.setItem("fms-stock-filter", "all");
+    FMSStorage.removeItem("fms-edit-stock-code");
+    FMSStorage.removeItem("fms-edit-stock-record");
     message.style.color = "#16823b";
     message.textContent = editRecord ? "แก้ไขรายการยาเรียบร้อยแล้ว" : "บันทึกรายการยาเรียบร้อยแล้ว";
     setTimeout(() => {
       location.href = returnToCatalog ? "./catalog.html?updated=1" : "./stock.html?updated=1";
     }, 300);
   } catch {
-    message.textContent = "ไม่สามารถอ่านรูปภาพได้ กรุณาเลือกรูปใหม่อีกครั้ง";
+    message.textContent = "กรุณาระบุ URL รูปภาพที่ถูกต้อง (HTTP/HTTPS)";
   }
 });
 

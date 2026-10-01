@@ -300,13 +300,13 @@ authForm.addEventListener("submit", (event) => {
     const password = passwordInput.value;
     const fullName = document.getElementById("fullName").value.trim();
     if (currentMode === "login" && email.toLowerCase() === ADMIN_USERNAME.toLowerCase() && password === ADMIN_PASSWORD) {
-        localStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify({ username: ADMIN_USERNAME, role: "admin", signedInAt: new Date().toISOString() }));
+        sessionStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify({ username: ADMIN_USERNAME, role: "admin", signedInAt: new Date().toISOString() }));
         window.FMSAdminAudit?.log("login", { provider: "admin-demo", username: ADMIN_USERNAME });
         showSignedInMessage({ displayName: ADMIN_USERNAME, email: ADMIN_USERNAME });
         return;
     }
     // A Firebase user must never inherit the local demo-admin session.
-    localStorage.removeItem(ADMIN_SESSION_KEY);
+    sessionStorage.removeItem(ADMIN_SESSION_KEY);
     if (currentMode === "signup") {
         submitButton.disabled = true;
         createUserWithEmailAndPassword(firebaseAuth, email, password)
@@ -355,7 +355,7 @@ googleButton.addEventListener("click", async () => {
     statusText.textContent = translations[currentLanguage].googleProgress;
     try {
         // Google sign-in is a normal user session, not the local admin demo.
-        localStorage.removeItem(ADMIN_SESSION_KEY);
+        sessionStorage.removeItem(ADMIN_SESSION_KEY);
         const result = await signInWithPopup(firebaseAuth, googleProvider);
         window.FMSAdminAudit?.log("google-login", { email: result.user.email || "" });
         showSignedInMessage(result.user);

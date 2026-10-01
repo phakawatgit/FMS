@@ -1,4 +1,4 @@
-const savedStock = JSON.parse(localStorage.getItem("fms-stock-records") || "[]");
+const savedStock = JSON.parse(FMSStorage.getItem("fms-stock-records") || "[]");
 const medicines = savedStock.map((record) => ({
   name: record.name || record.productName || "รายการยาใหม่",
   thai: record.genericName ? `(${record.genericName})` : "",
@@ -63,20 +63,20 @@ grid.addEventListener("click", async (event) => {
     item.remaining = Math.max(0, item.total - item.used);
     const record = savedStock[recordIndexFor(item)];
     if (record) { record[field] = item[field]; record.remaining = item.remaining; }
-    localStorage.setItem("fms-stock-records", JSON.stringify(savedStock)); render(); return;
+    FMSStorage.setItem("fms-stock-records", JSON.stringify(savedStock)); render(); return;
   }
   if (!action) { if (item) location.href = `./stock-detail.html?code=${encodeURIComponent(item.code)}`; return; }
   const index = item ? recordIndexFor(item) : -1;
   if (!item || index < 0 || !savedStock[index]) return;
   if (action.dataset.management === "edit") {
-    localStorage.setItem("fms-edit-stock-record", JSON.stringify(savedStock[index]));
-    localStorage.setItem("fms-edit-stock-code", String(savedStock[index].code || item.code || ""));
+    FMSStorage.setItem("fms-edit-stock-record", JSON.stringify(savedStock[index]));
+    FMSStorage.setItem("fms-edit-stock-code", String(savedStock[index].code || item.code || ""));
     location.href = `./stock-add.html?edit=${encodeURIComponent(savedStock[index].code || item.code || "")}`; return;
   }
   if (await openDeleteDialog(savedStock[index].name || savedStock[index].productName || "นี้")) {
     window.FMSAdminAudit?.logDeleted("fms-stock-records", savedStock[index], "user-deleted-stock");
     savedStock.splice(index, 1); medicines.splice(medicines.indexOf(item), 1);
-    localStorage.setItem("fms-stock-records", JSON.stringify(savedStock)); render();
+    FMSStorage.setItem("fms-stock-records", JSON.stringify(savedStock)); render();
   }
 });
 const filterConfig = ["all", "oral", "topical", "equipment"];

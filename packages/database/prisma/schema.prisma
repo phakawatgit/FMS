@@ -6,3 +6,432 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+enum UserRole {
+  ADMIN
+  NURSE
+  STAFF
+}
+
+enum StockTransactionType {
+  INTAKE
+  ADJUSTMENT
+  DISPENSATION
+  BORROW
+  RETURN
+  WRITE_OFF
+}
+
+enum BorrowStatus {
+  BORROWED
+  PARTIALLY_RETURNED
+  RETURNED
+}
+
+enum ReferralStatus {
+  NOT_REQUIRED
+  REFERRED
+  COMPLETED
+}
+
+enum ShiftType {
+  MORNING
+  AFTERNOON
+  NIGHT
+  FULL_DAY
+  OTHER
+}
+
+enum AttendanceStatus {
+  SCHEDULED
+  PRESENT
+  ABSENT
+}
+
+enum Role {
+  ADMIN
+  NURSE
+}
+
+model User {
+  id           String   @id @default(uuid()) @db.Uuid
+  employeeId   String   @unique @map("employee_id") @db.VarChar(64)
+  name         String   @db.VarChar(200)
+  email        String   @unique @db.VarChar(320)
+  passwordHash String   @map("password_hash") @db.VarChar(255)
+  role         UserRole @default(STAFF)
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  activityLogs      ActivityLog[]
+  stockTransactions StockTransaction[]
+  visits            Visit[]
+  shiftAssignments  ShiftAssignment[]
+
+  @@index([role])
+  @@map("users")
+}
+
+model ActivityLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  action     String   @db.VarChar(120)
+  entityType String   @map("entity_type") @db.VarChar(100)
+  entityId   String   @map("entity_id") @db.VarChar(128)
+  details    Json?
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([userId, createdAt])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@map("activity_logs")
+}
+
+model Category {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @unique @db.VarChar(120)
+  description String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  items Item[]
+
+  @@map("categories")
+}
+
+model Item {
+  id           String   @id @default(uuid()) @db.Uuid
+  categoryId   String   @map("category_id") @db.Uuid
+  sku          String?  @unique @db.VarChar(80)
+  name         String   @db.VarChar(200)
+  description  String?  @db.Text
+  unit         String   @db.VarChar(40)
+  reorderLevel Decimal  @default(0) @map("reorder_level") @db.Decimal(12, 3)
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  category          Category           @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  stockBatches      StockBatch[]
+  stockTransactions StockTransaction[]
+
+  @@index([categoryId, name])
+  @@index([isActive, name])
+  @@map("items")
+}
+
+model StockBatch {
+  id              String    @id @default(uuid()) @db.Uuid
+  itemId          String    @map("item_id") @db.Uuid
+  batchNumber     String    @map("batch_number") @db.VarChar(100)
+  expiresAt       DateTime? @map("expires_at") @db.Date
+  currentQuantity Decimal   @default(0) @map("current_quantity") @db.Decimal(12, 3)
+  receivedAt      DateTime  @default(now()) @map("received_at") @db.Timestamptz(6)
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  item              Item               @relation(fields: [itemId], references: [id], onDelete: Restrict)
+  stockTransactions StockTransaction[]
+  dispensations     Dispensation[]
+
+  @@unique([itemId, batchNumber])
+  @@index([itemId, expiresAt])
+  @@map("stock_batches")
+}
+
+model StockTransaction {
+  id           String               @id @default(uuid()) @db.Uuid
+  userId       String               @map("user_id") @db.Uuid
+  itemId       String               @map("item_id") @db.Uuid
+  stockBatchId String               @map("stock_batch_id") @db.Uuid
+  type         StockTransactionType
+  quantity     Decimal              @db.Decimal(12, 3)
+  note         String?              @db.Text
+  createdAt    DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Restrict)
+  item       Item       @relation(fields: [itemId], references: [id], onDelete: Restrict)
+  stockBatch StockBatch @relation(fields: [stockBatchId], references: [id], onDelete: Restrict)
+
+  @@index([userId, createdAt])
+  @@index([itemId, createdAt])
+  @@index([stockBatchId, createdAt])
+  @@index([type, createdAt])
+  @@map("stock_transactions")
+}
+
+model Catalog {
+  id                 String              @id @default(uuid()) @db.Uuid
+  code               String              @unique @db.VarChar(80)
+  name               String              @db.VarChar(200)
+  productName        String?             @map("product_name") @db.VarChar(200)
+  genericName        String?             @map("generic_name") @db.VarChar(200)
+  category           String              @db.VarChar(80)
+  form               String?             @db.VarChar(120)
+  size               String?             @db.VarChar(120)
+  unit               String              @default("unit") @db.VarChar(40)
+  total              Int                 @default(0)
+  used               Int                 @default(0)
+  remaining          Int                 @default(0)
+  status             String              @default("ปกติ") @db.VarChar(40)
+  benefit            String?             @db.Text
+  symptom            String?             @db.Text
+  usage              String?             @db.Text
+  warning            String?             @db.Text
+  expiry             DateTime?           @db.Date
+  imageUrl           String?             @map("image_url") @db.VarChar(2048)
+  imageData          Bytes?              @map("image_data")
+  imageMimeType      String?             @map("image_mime_type") @db.VarChar(80)
+  patientMedications PatientMedication[]
+  borrowItems        BorrowItem[]
+  createdAt          DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime            @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([category, name])
+  @@index([status])
+  @@map("catalog")
+}
+
+model BorrowRecord {
+  id             String       @id @default(uuid()) @db.Uuid
+  borrowerName   String       @map("borrower_name") @db.VarChar(200)
+  nickname       String?      @db.VarChar(120)
+  studentId      String?      @map("student_id") @db.VarChar(80)
+  branch         String?      @db.VarChar(120)
+  phone          String?      @db.VarChar(40)
+  roles          Json
+  borrowTypes    Json         @map("borrow_types")
+  activity       String?      @db.Text
+  reason         String?      @db.Text
+  borrowedAt     DateTime     @default(now()) @map("borrowed_at") @db.Timestamptz(6)
+  dueAt          DateTime     @map("due_at") @db.Date
+  returnedAt     DateTime?    @map("returned_at") @db.Timestamptz(6)
+  status         BorrowStatus @default(BORROWED)
+  createdAt      DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime     @updatedAt @map("updated_at") @db.Timestamptz(6)
+  items          BorrowItem[]
+
+  @@index([status, dueAt])
+  @@index([studentId, borrowedAt])
+  @@index([borrowerName, borrowedAt])
+  @@map("borrow_records")
+}
+
+model BorrowItem {
+  id              String         @id @default(uuid()) @db.Uuid
+  borrowRecordId  String         @map("borrow_record_id") @db.Uuid
+  catalogId       String?        @map("catalog_id") @db.Uuid
+  catalogCode     String         @map("catalog_code") @db.VarChar(80)
+  itemName        String         @map("item_name") @db.VarChar(200)
+  unit            String         @db.VarChar(40)
+  quantityBorrowed Int           @map("quantity_borrowed")
+  quantityReturned Int           @default(0) @map("quantity_returned")
+  createdAt       DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  borrowRecord    BorrowRecord   @relation(fields: [borrowRecordId], references: [id], onDelete: Cascade)
+  catalog         Catalog?       @relation(fields: [catalogId], references: [id], onDelete: SetNull)
+  returns         BorrowReturn[]
+
+  @@unique([borrowRecordId, catalogCode])
+  @@index([catalogId])
+  @@index([catalogCode])
+  @@map("borrow_items")
+}
+
+model BorrowReturn {
+  id           String     @id @default(uuid()) @db.Uuid
+  borrowItemId String     @map("borrow_item_id") @db.Uuid
+  quantity     Int
+  condition    String?    @db.VarChar(120)
+  note         String?    @db.Text
+  returnedAt   DateTime   @default(now()) @map("returned_at") @db.Timestamptz(6)
+  borrowItem   BorrowItem @relation(fields: [borrowItemId], references: [id], onDelete: Cascade)
+
+  @@index([borrowItemId, returnedAt])
+  @@map("borrow_returns")
+}
+
+model Patient {
+  id               String    @id @default(uuid()) @db.Uuid
+  studentId        String?   @map("patient_number") @db.VarChar(80)
+  name             String    @db.VarChar(200)
+  firstName        String?   @map("first_name") @db.VarChar(100)
+  lastName         String?   @map("last_name") @db.VarChar(100)
+  nickname         String?   @db.VarChar(120)
+  age              Int?
+  faculty          String?   @db.VarChar(120)
+  branch           String?   @db.VarChar(120)
+  visitorType      String?   @map("visitor_type") @db.VarChar(30)
+  visitorDetail    String?   @map("visitor_detail") @db.VarChar(200)
+  gender           String?   @db.VarChar(40)
+  blood            String?   @db.VarChar(10)
+  weight           Decimal?  @db.Decimal(7, 2)
+  height           Decimal?  @db.Decimal(7, 2)
+  symptom          String?   @db.Text
+  sys              String?   @db.VarChar(12)
+  dia              String?   @db.VarChar(12)
+  pr               String?   @db.VarChar(12)
+  status           String?   @db.VarChar(30)
+  hospitalName     String?   @map("hospital_name") @db.VarChar(200)
+  visitedAt        DateTime? @map("visited_at") @db.Timestamptz(6)
+  infirmaryHistory Json?     @map("infirmary_history")
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  visits      Visit[]
+  medications PatientMedication[]
+
+  @@index([name])
+  @@index([studentId])
+  @@map("patients")
+}
+
+model PatientMedication {
+  id           String   @id @default(uuid()) @db.Uuid
+  patientId    String   @map("patient_id") @db.Uuid
+  catalogId    String?  @map("catalog_id") @db.Uuid
+  visitId      String   @map("visit_id") @db.VarChar(120)
+  catalogCode  String   @map("catalog_code") @db.VarChar(80)
+  medicineName String   @map("medicine_name") @db.VarChar(200)
+  quantity     Int
+  dispensedAt  DateTime @default(now()) @map("dispensed_at") @db.Timestamptz(6)
+
+  patient Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  catalog Catalog? @relation(fields: [catalogId], references: [id], onDelete: SetNull)
+
+  @@unique([visitId, catalogCode])
+  @@index([patientId, dispensedAt])
+  @@index([catalogCode, dispensedAt])
+  @@map("patient_medications")
+}
+
+model Visit {
+  id             String         @id @default(uuid()) @db.Uuid
+  patientId      String         @map("patient_id") @db.Uuid
+  nurseId        String         @map("nurse_id") @db.Uuid
+  visitedAt      DateTime       @default(now()) @map("visited_at") @db.Timestamptz(6)
+  symptoms       String?        @db.Text
+  diagnosis      String?        @db.Text
+  treatmentNotes String?        @map("treatment_notes") @db.Text
+  referralStatus ReferralStatus @default(NOT_REQUIRED) @map("referral_status")
+  createdAt      DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime       @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  patient       Patient        @relation(fields: [patientId], references: [id], onDelete: Restrict)
+  nurse         User           @relation(fields: [nurseId], references: [id], onDelete: Restrict)
+  dispensations Dispensation[]
+
+  @@index([patientId, visitedAt])
+  @@index([nurseId, visitedAt])
+  @@index([visitedAt])
+  @@map("visits")
+}
+
+model Dispensation {
+  id           String   @id @default(uuid()) @db.Uuid
+  visitId      String   @map("visit_id") @db.Uuid
+  stockBatchId String   @map("stock_batch_id") @db.Uuid
+  quantity     Decimal  @db.Decimal(12, 3)
+  instructions String?  @db.Text
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  visit      Visit      @relation(fields: [visitId], references: [id], onDelete: Restrict)
+  stockBatch StockBatch @relation(fields: [stockBatchId], references: [id], onDelete: Restrict)
+
+  @@unique([visitId, stockBatchId])
+  @@index([stockBatchId, createdAt])
+  @@map("dispensations")
+}
+
+model Shift {
+  id        String    @id @default(uuid()) @db.Uuid
+  date      DateTime  @db.Date
+  startTime DateTime  @map("start_time") @db.Time(0)
+  endTime   DateTime  @map("end_time") @db.Time(0)
+  shiftType ShiftType @map("shift_type")
+  notes     String?   @db.Text
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  assignments ShiftAssignment[]
+
+  @@index([date, shiftType])
+  @@map("shifts")
+}
+
+model ShiftAssignment {
+  id               String           @id @default(uuid()) @db.Uuid
+  shiftId          String           @map("shift_id") @db.Uuid
+  userId           String           @map("user_id") @db.Uuid
+  attendanceStatus AttendanceStatus @default(SCHEDULED) @map("attendance_status")
+  attendedAt       DateTime?        @map("attended_at") @db.Timestamptz(6)
+  notes            String?          @db.Text
+  createdAt        DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  shift Shift @relation(fields: [shiftId], references: [id], onDelete: Restrict)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([shiftId, userId])
+  @@index([userId, attendanceStatus])
+  @@map("shift_assignments")
+}
+
+model LegacyStorage {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+}
+
+model Nurse {
+  fullName    String   @id @db.VarChar(255)
+  nickname    String?  @db.VarChar(120)
+  affiliation String?  @db.VarChar(255)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model PasswordResetOtp {
+  id                  String    @id @default(uuid())
+  email               String
+  firebaseUid         String
+  codeHash            String
+  expiresAt           DateTime
+  attempts            Int       @default(0)
+  verifiedAt          DateTime?
+  resetTokenHash      String?
+  resetTokenExpiresAt DateTime?
+  createdAt           DateTime  @default(now())
+
+  @@index([email, createdAt])
+  @@index([resetTokenHash])
+}
+
+model DutyShift {
+  id          String     @id
+  date        DateTime
+  color       String
+  firstName   String
+  lastName    String
+  nickname    String?
+  affiliation String?
+  userId      String
+  createdAt   DateTime   @default(now())
+  user        LegacyUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([date, color])
+  @@index([date])
+}
+
+model LegacyUser {
+  id         String      @id
+  email      String      @unique
+  name       String
+  password   String?
+  role       Role        @default(NURSE)
+  createdAt  DateTime    @default(now())
+  dutyShifts DutyShift[]
+
+  @@map("User")
+}

@@ -21,7 +21,7 @@ function escapeHtml(value) {
 
 function getRecords() {
   try {
-    const records = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+    const records = JSON.parse(FMSStorage.getItem(STORAGE_KEY) || "[]");
     return Array.isArray(records) ? records.filter((record) => ["normal", "refer"].includes(record.status)) : [];
   } catch {
     return [];

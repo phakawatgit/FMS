@@ -27,7 +27,7 @@ const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => 
 const normalize = (value) => String(value ?? "").trim().toLocaleLowerCase().replace(/\s+/g, " ");
 function readArray(key) {
   try {
-    const value = JSON.parse(localStorage.getItem(key) || "null");
+    const value = JSON.parse(FMSStorage.getItem(key) || "null");
     return Array.isArray(value) ? value : null;
   } catch (error) {
     console.warn(`History Catalog data (${key}) could not be read.`, error);
@@ -128,7 +128,7 @@ function deleteOrder(orderId) {
   const index = orders.findIndex((order, orderIndex) => String(order.id || `order-${orderIndex}`) === String(orderId));
   if (index < 0) return;
   orders.splice(index, 1);
-  localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
+  FMSStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
   render();
 }
 let swipeStartX = 0;

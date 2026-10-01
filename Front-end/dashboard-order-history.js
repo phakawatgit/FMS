@@ -1,14 +1,5 @@
 (() => {
   const key = "fms-history-catalog-orders";
-  // Remove the old placeholder history once. New orders saved from the order
-  // form are kept and will be shown normally after this cleanup.
-  const cleanupKey = "fms-history-catalog-orders-cleanup-v1";
-  try {
-    if (!localStorage.getItem(cleanupKey)) {
-      localStorage.removeItem(key);
-      localStorage.setItem(cleanupKey, "1");
-    }
-  } catch (_) {}
   const container = document.getElementById("purchaseCalendarContent");
   const openOrderIds = new Set();
   const calendarStartYear = new Date().getFullYear();
@@ -20,7 +11,7 @@
   const escape = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
   const normalized = (value) => String(value ?? "").trim().toLocaleLowerCase().replace(/\s+/g, " ");
   const read = (storageKey) => {
-    try { const value = JSON.parse(localStorage.getItem(storageKey) || "[]"); return Array.isArray(value) ? value : []; }
+    try { const value = JSON.parse(FMSStorage.getItem(storageKey) || "[]"); return Array.isArray(value) ? value : []; }
     catch { return []; }
   };
   function parseOrderDate(order) {

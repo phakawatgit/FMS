@@ -1135,3 +1135,56 @@ body .topbar .language > svg {
 body .topbar.dashboard-topbar .language > svg {
   display: none !important;
 }
+
+.dispense-section {
+  display: grid;
+  gap: .55rem;
+  margin-top: .75rem;
+  max-width: 34rem;
+}
+.dispense-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: .85rem;
+  font-weight: 600;
+}
+.dispense-header button, .medication-remove {
+  border: 0;
+  border-radius: .45rem;
+  padding: .35rem .65rem;
+  background: #e9f3ff;
+  color: #175d9b;
+  font: 500 .78rem Kanit,sans-serif;
+  cursor: pointer;
+}
+.medication-list {
+  display: grid;
+  gap: .45rem;
+}
+.medication-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 7rem auto;
+  gap: .5rem;
+  align-items: end;
+}
+.medication-field {
+  display: grid;
+  gap: .18rem;
+  font-size: .75rem;
+  font-weight: 600;
+}
+.medication-field select, .medication-field input {
+  width: 100%;
+  height: 2.1rem;
+  border: 1px solid #d4d4d4;
+  border-radius: .55rem;
+  padding: 0 .6rem;
+  background: #f5f5f5;
+  color: #233256;
+  font: 400 .75rem Kanit,sans-serif;
+}
+@media (max-width: 480px) {
+  .medication-row { grid-template-columns: minmax(0, 1fr) 5rem auto; gap: .3rem; }
+  .medication-remove { padding: .35rem .45rem; }
+}

@@ -9,7 +9,7 @@ const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => 
 const normalize = (value) => String(value ?? "").trim().toLocaleLowerCase().replace(/\s+/g, " ");
 
 function loadBorrowRecords() {
-  try { if(window.FMSBorrowHistoryStore)return window.FMSBorrowHistoryStore.read();const value=JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");return Array.isArray(value)?value:[]; } catch(error){console.warn("Borrow and return history could not be read.",error);return[]}
+  try { if(window.FMSBorrowHistoryStore)return window.FMSBorrowHistoryStore.read();const value=JSON.parse(FMSStorage.getItem(STORAGE_KEY)||"[]");return Array.isArray(value)?value:[]; } catch(error){console.warn("Borrow and return history could not be read.",error);return[]}
 }
 function normalizeItems(record) {
   const items = Array.isArray(record.borrowedItems) ? record.borrowedItems : Array.isArray(record.items) ? record.items : [];
@@ -115,7 +115,7 @@ let lastDetailEventId = null;
 function currentStockRecord(item) {
   const code=String(item.code||item.productCode||"").trim().toLocaleLowerCase();
   const name=normalize(item.name||item.productName);
-  try{const records=JSON.parse(localStorage.getItem(STOCK_KEY)||"[]");if(!Array.isArray(records))return null;return records.find(row=>code&&String(row.code||row.productCode||"").trim().toLocaleLowerCase()===code)||records.find(row=>[row.name,row.productName,row.genericName].some(value=>normalize(value)===name))||null}catch{return null}
+  try{const records=JSON.parse(FMSStorage.getItem(STOCK_KEY)||"[]");if(!Array.isArray(records))return null;return records.find(row=>code&&String(row.code||row.productCode||"").trim().toLocaleLowerCase()===code)||records.find(row=>[row.name,row.productName,row.genericName].some(value=>normalize(value)===name))||null}catch{return null}
 }
 function detailMarkup(event) {
   const record=event.record||{},status=statusLabel(event),typeLabel=event.type==="borrow"?"รายละเอียดการยืม":"รายละเอียดการคืน",dateLabel=event.type==="borrow"?"วันที่ยืม":"วันที่คืน";

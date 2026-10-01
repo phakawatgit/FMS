@@ -1,4 +1,4 @@
-const detailPageRecords = JSON.parse(localStorage.getItem("fms-stock-records") || "[]");
+const detailPageRecords = JSON.parse(FMSStorage.getItem("fms-stock-records") || "[]");
 const detailPageRecord = detailPageRecords.find((item) => String(item.code || "") === String(new URLSearchParams(location.search).get("code") || ""));
 
 document.querySelector(".language")?.addEventListener("click", () => {

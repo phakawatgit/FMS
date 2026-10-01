@@ -2,7 +2,7 @@
 (() => {
   const read = (key) => {
     try {
-      const value = JSON.parse(localStorage.getItem(key) || "[]");
+      const value = JSON.parse(FMSStorage.getItem(key) || "[]");
       return Array.isArray(value) ? value : [];
     } catch { return []; }
   };

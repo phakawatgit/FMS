@@ -11,7 +11,7 @@ HTML page
   -> page CSS
   -> shared header / language / storage
   -> page JavaScript
-  -> localStorage and/or API
+  -> FMSStorage API -> PostgreSQL
 ```
 
 แต่ละหน้าเป็น entry point แยกกัน เช่น `dashboard.html`, `stock.html` และ `catalog.html` จึงไม่มี React component tree ร่วมกันแบบ Next.js
@@ -37,8 +37,8 @@ app/globals.css         Global Tailwind/CSS
 
 | ข้อมูล | แหล่งเก็บปัจจุบัน |
 |---|---|
-| UI state เช่น ภาษา ตัวกรอง และข้อมูล offline | Browser `localStorage` |
-| ข้อมูล legacy ที่ sync ได้ | `/api/legacy-storage` |
+| ข้อมูลระบบและ UI state ที่ต้องคงอยู่ | `/api/legacy-storage` -> PostgreSQL |
+| ข้อมูล session ชั่วคราว | Browser `sessionStorage` |
 | Duty Shift รุ่น API ใหม่ | Express + Prisma + PostgreSQL |
 | Authentication บางหน้า | Firebase Auth |
 

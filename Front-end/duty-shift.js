@@ -39,7 +39,7 @@ const ADMIN_SESSION_KEY = "fms-admin-session";
 
 function hasAdminSession() {
   try {
-    return JSON.parse(localStorage.getItem(ADMIN_SESSION_KEY) || "null")?.role === "admin";
+    return JSON.parse(sessionStorage.getItem(ADMIN_SESSION_KEY) || "null")?.role === "admin";
   } catch {
     return false;
   }
@@ -55,14 +55,14 @@ function escapeHtml(value) {
 
 function readRecords() {
   try {
-    const saved = JSON.parse(localStorage.getItem(DUTY_KEY) || "[]");
+    const saved = JSON.parse(FMSStorage.getItem(DUTY_KEY) || "[]");
     return Array.isArray(saved) ? saved.filter((record) => record?.date) : [];
   } catch { return []; }
 }
 
 function readProfiles() {
   try {
-    const saved = JSON.parse(localStorage.getItem(DUTY_PROFILE_KEY) || "{}");
+    const saved = JSON.parse(FMSStorage.getItem(DUTY_PROFILE_KEY) || "{}");
     return saved && typeof saved === "object" && !Array.isArray(saved) ? saved : {};
   } catch { return {}; }
 }
@@ -281,7 +281,7 @@ function renderLanguage() {
 function saveLocalRecord(record) {
   records = records.filter((item) => !(belongsToUser(item, currentUser) && item.date === record.date));
   records.push(record);
-  localStorage.setItem(DUTY_KEY, JSON.stringify(records));
+  FMSStorage.setItem(DUTY_KEY, JSON.stringify(records));
 
   const profileKey = String(currentUser?.email || getUserKey(currentUser) || "").trim().toLowerCase();
   if (profileKey) {
@@ -297,7 +297,7 @@ function saveLocalRecord(record) {
       affiliation: record.affiliation,
       updatedAt: record.updatedAt,
     };
-    localStorage.setItem(DUTY_PROFILE_KEY, JSON.stringify(profiles));
+    FMSStorage.setItem(DUTY_PROFILE_KEY, JSON.stringify(profiles));
   }
 }
 

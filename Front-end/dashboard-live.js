@@ -1,8 +1,19 @@
 /* Live dashboard aggregates the records saved by the infirmary and stock pages. */
 (() => {
+  let databaseDashboard = null;
+  const apiBase = window.FMS_API_URL || `${location.protocol}//${location.hostname}:4000`;
+  async function refreshDatabaseDashboard() {
+    try {
+      const response = await fetch(`${apiBase}/api/dashboard/data`, { cache: "no-store" });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.message || "Dashboard data unavailable");
+      databaseDashboard = result.data;
+      window.dispatchEvent(new StorageEvent("storage", { key: "fms-dashboard-data" }));
+    } catch (error) { console.error("Dashboard database data could not be refreshed.", error); }
+  }
   const read = (key) => {
     try {
-      const value = JSON.parse(localStorage.getItem(key) || "[]");
+      const value = JSON.parse(FMSStorage.getItem(key) || "[]");
       return Array.isArray(value) ? value : [];
     } catch { return []; }
   };
@@ -20,6 +31,17 @@
   const visits = () => {
     const start = parseInputDate(startDate.value), end = parseInputDate(endDate.value);
     const branch = branchInput.value.trim();
+    if (databaseDashboard) {
+      const source = Array.isArray(databaseDashboard.visits) ? databaseDashboard.visits : [];
+      return source.filter((record) => {
+        const date = cleanDate(record.createdAt || record.date || record.visitDate);
+        if (date && start && day(date) < start) return false;
+        if (date && end && day(date) > end) return false;
+        if (branch && branch !== "all" && branch !== translations[language].all && !String(record.branch || "").toLowerCase().includes(branch.toLowerCase())) return false;
+        const faculty = facultySelect.value;
+        return !faculty || faculty === "all" || String(record.faculty || "").toLowerCase() === faculty.toLowerCase();
+      });
+    }
     const activeVisits = read("fms-infirmary-visits");
     const historyVisits = read("fms-infirmary-history");
     const source = activeVisits.length ? activeVisits : historyVisits;
@@ -27,10 +49,12 @@
       const date = cleanDate(record.createdAt || record.date || record.visitDate);
       if (date && start && day(date) < start) return false;
       if (date && end && day(date) > end) return false;
-      return !branch || branch === translations[language].all || String(record.branch || "").toLowerCase().includes(branch.toLowerCase());
+      if (branch && branch !== "all" && branch !== translations[language].all && !String(record.branch || "").toLowerCase().includes(branch.toLowerCase())) return false;
+      const faculty = facultySelect.value;
+      return !faculty || faculty === "all" || String(record.faculty || "").toLowerCase() === faculty.toLowerCase();
     });
   };
-  const stock = () => read("fms-stock-records").map((item) => ({
+  const stock = () => (databaseDashboard?.stock || read("fms-stock-records")).map((item) => ({
     ...item,
     name: item.name || item.productName || "รายการยา",
     remaining: Math.max(0, Number(item.remaining ?? (Number(item.total || 0) - Number(item.used || 0))) || 0)
@@ -39,9 +63,14 @@
   const aggregate = (records, field, quantity = false) => {
     const counts = new Map();
     records.forEach((record) => {
-      const name = String(record[field] || "").trim();
-      if (!name) return;
-      counts.set(name, (counts.get(name) || 0) + (quantity ? Math.max(0, Number(record.quantity) || 1) : 1));
+      const entries = field === "medicine" && Array.isArray(record.medicines)
+        ? record.medicines.map((item) => ({ name: item.name || item.medicineName, quantity: item.quantity }))
+        : [{ name: record[field], quantity: record.quantity }];
+      entries.forEach((entry) => {
+        const name = String(entry.name || "").trim();
+        if (!name) return;
+        counts.set(name, (counts.get(name) || 0) + (quantity ? Math.max(0, Number(entry.quantity) || 1) : 1));
+      });
     });
     return [...counts].map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count);
   };
@@ -232,10 +261,13 @@
   startDate.addEventListener("change", render);
   endDate.addEventListener("change", render);
   branchInput.addEventListener("input", render);
+  facultySelect.addEventListener("change", render);
   resetButton.addEventListener("click", () => setTimeout(render, 0));
   languageButton.addEventListener("click", () => setTimeout(render, 0));
-  window.addEventListener("storage", (event) => { if (["fms-infirmary-visits", "fms-infirmary-history", "fms-stock-records"].includes(event.key)) render(); });
-  window.addEventListener("focus", render);
+  window.addEventListener("storage", (event) => { if (["fms-infirmary-visits", "fms-infirmary-history", "fms-stock-records", "fms-dashboard-data"].includes(event.key)) render(); });
+  window.addEventListener("focus", () => { render(); refreshDatabaseDashboard(); });
+  refreshDatabaseDashboard();
+  window.setInterval(refreshDatabaseDashboard, 30000);
   render();
   window.setInterval(render, 5000);
 })();

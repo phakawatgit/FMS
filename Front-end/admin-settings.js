@@ -27,7 +27,7 @@ function getOptions() {
     medicines: []
   };
   let saved = {};
-  try { saved = JSON.parse(localStorage.getItem(ADMIN_OPTIONS_KEY) || "{}"); } catch {}
+  try { saved = JSON.parse(FMSStorage.getItem(ADMIN_OPTIONS_KEY) || "{}"); } catch {}
   const stockNames = read("fms-stock-records").map((item) => item.name || item.productName || item.genericName).filter(Boolean);
   return {
     faculties: Array.isArray(saved.faculties) && saved.faculties.length ? saved.faculties : defaults.faculties,
@@ -191,6 +191,6 @@ document.addEventListener("click", (event) => {
 });
 renderNotifications();
 let session = null;
-try { session = JSON.parse(localStorage.getItem(ADMIN_SESSION_KEY) || "null"); } catch {}
+try { session = JSON.parse(sessionStorage.getItem(ADMIN_SESSION_KEY) || "null"); } catch {}
 if (session?.role !== "admin") window.location.replace("./index.html");
 renderAll();

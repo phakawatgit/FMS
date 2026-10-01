@@ -241,8 +241,23 @@ body {
   font-weight: 700;
   cursor: pointer;
 }
-.upload-button input {
-  display: none;
+.image-url-field {
+  display: grid;
+  gap: .4rem;
+  margin: .75rem 0 .1rem;
+  color: #526078;
+  font-size: .8rem;
+  font-weight: 700;
+}
+.image-url-field input {
+  width: 100%;
+  min-width: 0;
+  padding: .65rem .75rem;
+  border: 1px solid #dce2eb;
+  border-radius: .55rem;
+  background: #fff;
+  color: #263247;
+  font: inherit;
 }
 .preview-hint {
   margin: 0 0 1rem;

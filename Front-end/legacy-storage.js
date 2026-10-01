@@ -1,78 +1,168 @@
 (function () {
   "use strict";
 
-  // Both Live Server and Docker use the API on port 4000. Using the current
-  // hostname also works when the page is opened via 127.0.0.1.
   const apiBase = window.FMS_API_URL || `${location.protocol}//${location.hostname}:4000`;
   const endpoint = `${apiBase}/api/legacy-storage`;
-  const nativeStorage = window.localStorage;
-  const nativeSetItem = nativeStorage.setItem.bind(nativeStorage);
-  const nativeRemoveItem = nativeStorage.removeItem.bind(nativeStorage);
-  const pending = new Set();
-  let hydrated = false;
+  const values = new Map();
+  let storageReady = false;
 
-  function readLocalStorage() {
-    const values = {};
-    for (let index = 0; index < nativeStorage.length; index += 1) {
-      const key = nativeStorage.key(index);
-      if (!key) continue;
-      const raw = nativeStorage.getItem(key);
-      try { values[key] = JSON.parse(raw); } catch (_) { values[key] = raw; }
+  function request(method, url, body) {
+    const xhr = new XMLHttpRequest();
+    xhr.open(method, url, false);
+    if (body !== undefined) xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.send(body === undefined ? null : JSON.stringify(body));
+    if (xhr.status < 200 || xhr.status >= 300) {
+      throw new Error(`Legacy storage request failed (${xhr.status || "network error"}).`);
     }
-    return values;
+    return xhr.responseText ? JSON.parse(xhr.responseText) : {};
   }
 
-  function migrateMissingLocalData(remote) {
-    const local = readLocalStorage();
-    const missing = {};
-    Object.entries(local).forEach(([key, value]) => {
-      if (!Object.prototype.hasOwnProperty.call(remote, key)) missing[key] = value;
-    });
-    if (!Object.keys(missing).length) return;
-    fetch(`${endpoint}/bulk`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ data: missing, preserveExisting: true }),
-    }).catch(() => {});
+  function showStorageError() {
+    let notice = document.getElementById("fms-storage-error");
+    if (!notice) {
+      notice = document.createElement("div");
+      notice.id = "fms-storage-error";
+      notice.setAttribute("role", "alert");
+      notice.textContent = "เชื่อมต่อฐานข้อมูลไม่ได้ ข้อมูลยังไม่ได้บันทึก กรุณาลองใหม่เมื่อติดต่อระบบได้";
+      Object.assign(notice.style, {
+        position: "fixed", zIndex: "99999", inset: "0 0 auto", padding: "12px 18px",
+        color: "#fff", background: "#a32323", textAlign: "center", font: "16px sans-serif"
+      });
+      document.addEventListener("DOMContentLoaded", () => document.body.prepend(notice), { once: true });
+      if (document.body) document.body.prepend(notice);
+    }
   }
 
-  function sync(key, value) {
-    if (pending.has(key)) return;
-    pending.add(key);
-    fetch(`${endpoint}/${encodeURIComponent(key)}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ value }),
-    }).catch(() => {}).finally(() => pending.delete(key));
+  function dispatchChange(key) {
+    window.dispatchEvent(new StorageEvent("storage", { key }));
   }
 
-  // Fetch before the page's other scripts run. If the API is unavailable,
-  // localStorage remains the offline fallback.
   try {
-    const request = new XMLHttpRequest();
-    request.open("GET", endpoint, false);
-    request.send();
-    if (request.status >= 200 && request.status < 300) {
-      const remote = JSON.parse(request.responseText).data || {};
-      Object.entries(remote).forEach(([key, value]) => nativeSetItem(key, typeof value === "string" ? value : JSON.stringify(value)));
-      migrateMissingLocalData(remote);
-      hydrated = true;
+    const response = request("GET", endpoint);
+    Object.entries(response.data || {}).forEach(([key, value]) => values.set(key, value));
+
+    // One-time import of existing FMS browser records. The server copy wins on
+    // conflicts; browser data is removed only after the server confirms the import.
+    const oldStorage = window.localStorage;
+    const pendingImport = {};
+    for (let index = 0; index < oldStorage.length; index += 1) {
+      const key = oldStorage.key(index);
+      if (!key || !key.startsWith("fms-") || key === "fms-admin-session" || values.has(key)) continue;
+      const raw = oldStorage.getItem(key);
+      try { pendingImport[key] = JSON.parse(raw); } catch { pendingImport[key] = raw; }
     }
-  } catch (_) {
-    // Live Server can still be used offline; the browser-local copy remains available.
+    if (Object.keys(pendingImport).length) {
+      Object.entries(pendingImport).forEach(([key, value]) => {
+        request("PUT", `${endpoint}/${encodeURIComponent(key)}`, { value });
+        values.set(key, value);
+      });
+    }
+
+    // Remove old FMS browser copies after the server is confirmed available.
+    for (let index = oldStorage.length - 1; index >= 0; index -= 1) {
+      const key = oldStorage.key(index);
+      if (key?.startsWith("fms-")) oldStorage.removeItem(key);
+    }
+    storageReady = true;
+  } catch (error) {
+    console.error("FMS legacy storage is unavailable.", error);
+    showStorageError();
   }
 
-  const originalSetItem = Storage.prototype.setItem;
-  const originalRemoveItem = Storage.prototype.removeItem;
-  Storage.prototype.setItem = function (key, value) {
-    originalSetItem.call(this, key, value);
-    if (this === nativeStorage && hydrated) {
-      try { sync(String(key), JSON.parse(value)); } catch (_) { sync(String(key), value); }
+  window.FMSStorage = Object.freeze({
+    get length() { return values.size; },
+    key(index) { return Array.from(values.keys())[index] ?? null; },
+    getItem(key) {
+      if (!storageReady) return null;
+      const value = values.get(String(key));
+      return value === undefined || value === null
+        ? null
+        : typeof value === "string" ? value : JSON.stringify(value);
+    },
+    async saveInfirmaryVisit(record) {
+      if (!storageReady) {
+        showStorageError();
+        throw new Error("FMS legacy storage is unavailable.");
+      }
+      try {
+        const response = await fetch(`${apiBase}/api/infirmary-visits`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ record }),
+        });
+        const result = await response.json();
+        if (!response.ok || !result.success) {
+          throw new Error(result.message || `Visit save failed (${response.status}).`);
+        }
+        values.set("fms-infirmary-visits", result.data.records);
+        dispatchChange("fms-infirmary-visits");
+        return result.data;
+      } catch (error) {
+        console.error("Infirmary visit was not saved.", error);
+        showStorageError();
+        throw error;
+      }
+    },
+    async createBorrowRecord(record) {
+      const response = await fetch(`${apiBase}/api/borrow-records`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(record) });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.message || `Borrow save failed (${response.status}).`);
+      values.set("fms-borrow-return-records", [result.data, ...(values.get("fms-borrow-return-records") || []).filter((item) => String(item.id) !== String(result.data.id))]);
+      dispatchChange("fms-borrow-return-records");
+      return result.data;
+    },
+    async returnBorrowRecord(id, items) {
+      const response = await fetch(`${apiBase}/api/borrow-records/${encodeURIComponent(id)}/returns`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items }) });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.message || `Return save failed (${response.status}).`);
+      const records = values.get("fms-borrow-return-records") || [];
+      values.set("fms-borrow-return-records", [result.data, ...records.filter((item) => String(item.id) !== String(result.data.id))]);
+      dispatchChange("fms-borrow-return-records");
+      return result.data;
+    },
+    setItem(key, rawValue) {
+      if (!storageReady) {
+        showStorageError();
+        throw new Error("FMS legacy storage is unavailable.");
+      }
+      const name = String(key);
+      const raw = String(rawValue);
+      let value = raw;
+      try { value = JSON.parse(raw); } catch {}
+      try {
+        if (name === "fms-stock-records") {
+          const result = request("PUT", `${apiBase}/api/catalog`, { records: value });
+          value = result.data || [];
+        } else {
+          request("PUT", `${endpoint}/${encodeURIComponent(name)}`, { value });
+        }
+        values.set(name, value);
+        dispatchChange(name);
+      } catch (error) {
+        console.error("FMS data was not saved.", error);
+        showStorageError();
+        throw error;
+      }
+    },
+    removeItem(key) {
+      if (!storageReady) {
+        showStorageError();
+        throw new Error("FMS legacy storage is unavailable.");
+      }
+      const name = String(key);
+      try {
+        if (name === "fms-stock-records") request("PUT", `${apiBase}/api/catalog`, { records: [] });
+        else request("DELETE", `${endpoint}/${encodeURIComponent(name)}`);
+        values.delete(name);
+        dispatchChange(name);
+      } catch (error) {
+        console.error("FMS data was not deleted.", error);
+        showStorageError();
+        throw error;
+      }
+    },
+    clear() {
+      Array.from(values.keys()).forEach((key) => this.removeItem(key));
     }
-  };
-  Storage.prototype.removeItem = function (key) {
-    originalRemoveItem.call(this, key);
-    if (this === nativeStorage && hydrated) fetch(`${endpoint}/${encodeURIComponent(key)}`, { method: "DELETE" }).catch(() => {});
-  };
-
+  });
 })();

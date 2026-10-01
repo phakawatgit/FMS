@@ -1,0 +1,38 @@
+Act as a Senior QA Automation Engineer. The development team has just written the backend code (Prisma client singleton, global error handler, health check route, and visit dispensation controller).
+
+I have NOT run `npx prisma generate`, started the server, or tested the endpoints yet.
+
+Please perform a Senior QA review and provide the following 3 deliverables:
+
+---
+
+### Deliverable 1: Step-by-Step Testing Guide (From Zero to Verified API)
+Give me clear, sequential terminal commands and instructions to set up and manually test this new code:
+1. Commands to sync the database schema and generate Prisma client (`npx prisma generate`, `npx prisma db push` or `migrate`).
+2. Command to start the development server.
+3. Ready-to-use `curl` commands (or JSON payloads for Postman/Insomnia) to test:
+   - `GET /api/health` (Positive & DB disconnect test)
+   - `POST /api/visits` (Successful visit + stock deduction)
+   - `POST /api/visits` (Negative test: Insufficient stock / Non-existent batch ID)
+
+---
+
+### Deliverable 2: Code Review & Vulnerability Checklist
+Analyze the generated backend code for critical edge cases and potential bugs:
+- **Race Conditions**: Is stock deduction inside `prisma.$transaction` thread-safe if two nurses dispense the same batch simultaneously?
+- **Data Integrity**: Will the transaction cleanly rollback if one item fails during multi-item dispensation?
+- **Validation Gaps**: Are negative quantities, zero quantities, or invalid UUIDs properly blocked by Zod?
+- **Error Handling**: Are Prisma DB errors (e.g. connection timeout, foreign key failure) handled without leaking sensitive stack traces?
+
+---
+
+### Deliverable 3: Automated Test Suites
+Generate complete, runnable test files matching our existing tech stack:
+1. **Jest Integration Test (`tests/integration/visit.test.ts`)**:
+   - Test successful visit creation + stock decrement verification in DB.
+   - Test transaction rollback when stock is insufficient.
+   - Test Zod validation rejection on invalid input.
+2. **Playwright E2E API Test (`tests/e2e/visit.spec.ts`)**:
+   - End-to-end API test verifying response codes and JSON schema outputs.
+
+Please output complete, production-ready TypeScript code for the test files.

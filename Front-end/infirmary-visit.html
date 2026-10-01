@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="./dashboard-topbar.css?v=1">
   <link rel="stylesheet" href="./dashboard-refresh.css?v=14">
   <link rel="stylesheet" href="./infirmary-visit-faculty-branch.css?v=6">
-<script src="./legacy-storage.js?v=2"></script></head>
+<script src="./legacy-storage.js?v=3"></script></head>
 <body>
   <header class="topbar dashboard-topbar">
     <a class="brand" href="./menu.html"><img src="./assets/fms.png" alt="FMS"><span>First Aid &amp; Medicine Management System</span></a>
@@ -52,10 +52,7 @@
         <div class="vitals-head"><span data-i18n="vitals">ผลการวัดความดัน</span></div>
         <div class="vital-inputs"><label>SYS<input name="sys" type="number" min="0" inputmode="numeric"></label><label>DIA<input name="dia" type="number" min="0" inputmode="numeric"></label><label>PR<input name="pr" type="number" min="0" inputmode="numeric"></label></div>
       </section>
-      <section class="bottom-grid">
-        <label><span data-i18n="medicine">ยาที่ได้รับ</span><select name="medicine"><option>เลือกยา</option><option>Paracetamol 500 mg</option><option>ORS</option><option>Cetirizine 10 mg</option></select></label>
-        <label><span data-i18n="quantity">จำนวนยา /หน่วย</span><input name="quantity" type="number" min="0" placeholder="หน่วย"></label>
-      </section>
+      <section class="dispense-section"><div class="dispense-header"><span data-i18n="medicine">ยาที่ได้รับ</span><button id="addMedicationButton" type="button">＋ เพิ่มยา</button></div><div id="medicationList" class="medication-list"></div></section>
       <fieldset class="status"><legend data-i18n="status">สถานะ</legend><label><input type="checkbox" name="status" value="normal"><i></i><span data-i18n="normal">ปกติ</span></label><label><input type="checkbox" name="status" value="observe"><i></i><span data-i18n="observe">รอดูอาการ</span></label><label><input type="checkbox" name="status" value="refer"><i></i><span data-i18n="refer">ส่งโรงพยาบาล</span></label></fieldset>
       <div id="referralHospitalField" class="referral-hospital" hidden><label><span>ชื่อโรงพยาบาลที่ส่งต่อ</span><input name="hospitalName" disabled placeholder="ระบุชื่อโรงพยาบาล"></label></div>
       <p id="formMessage" class="form-message" aria-live="polite"></p>

@@ -1,13 +1,13 @@
 const STORAGE_KEY = "fms-borrow-return-records";
 const defaultRecords = [];
 const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
-const storedRecords = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+const storedRecords = JSON.parse(FMSStorage.getItem(STORAGE_KEY) || "null");
 const records = Array.isArray(storedRecords) ? storedRecords.filter((record) => record.item !== "คุณ เพ็ญพิชชา ภาญจนพาณิชย์ (แผนก)") : defaultRecords;
 const legacyExtendedRecord = records.find((record) => String(record.item || record.fullName || "").includes("ดวงเพ็ญ") && String(record.due || "") === "10/10/2569");
 if (legacyExtendedRecord && !legacyExtendedRecord.extensionDate) {
   legacyExtendedRecord.originalDue = "02/10/2569";
   legacyExtendedRecord.extensionDate = legacyExtendedRecord.extendedDue || legacyExtendedRecord.due;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+  FMSStorage.setItem(STORAGE_KEY, JSON.stringify(records));
   window.FMSBorrowHistoryStore?.save(records);
 }
 const page = document.getElementById("borrowPage");
@@ -258,7 +258,7 @@ function renderReturnDetail(record) {
   const name = record.fullName || record.name || record.item || "ไม่ระบุชื่อผู้ยืม";
   const category = record.kind || record.borrower || "ยาและเวชภัณฑ์";
   let stockItems = [];
-  try { stockItems = JSON.parse(localStorage.getItem("fms-stock-records") || "[]"); } catch { stockItems = []; }
+  try { stockItems = JSON.parse(FMSStorage.getItem("fms-stock-records") || "[]"); } catch { stockItems = []; }
   const sourceItems = Array.isArray(record.items) ? record.items : Array.isArray(record.medications) ? record.medications : null;
   const products = sourceItems || (record.products && typeof record.products === "object"
     ? Object.entries(record.products).map(([code, value]) => {
@@ -389,7 +389,7 @@ document.getElementById("extendBorrowForm").addEventListener("submit", (event) =
   record.extendedDue = thaiDue;
   record.extensionDate = thaiDue;
   record.status = "borrowed";
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+  FMSStorage.setItem(STORAGE_KEY, JSON.stringify(records));
   window.FMSBorrowHistoryStore?.save(records);
   closeExtendBorrowModal();
   renderList();

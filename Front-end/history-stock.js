@@ -3,7 +3,7 @@ const DISPENSE_KEY = "fms-infirmary-visits";
 
 function readArray(key) {
   try {
-    const value = JSON.parse(localStorage.getItem(key) || "[]");
+    const value = JSON.parse(FMSStorage.getItem(key) || "[]");
     return Array.isArray(value) ? value : [];
   } catch (error) {
     console.warn(`History data (${key}) could not be read.`, error);

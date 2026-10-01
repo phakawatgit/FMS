@@ -17,7 +17,7 @@ const ADMIN_SESSION_KEY = "fms-admin-session";
 
 function hasAdminSession() {
   try {
-    return JSON.parse(localStorage.getItem(ADMIN_SESSION_KEY) || "null")?.role === "admin";
+    return JSON.parse(sessionStorage.getItem(ADMIN_SESSION_KEY) || "null")?.role === "admin";
   } catch {
     return false;
   }
@@ -51,7 +51,7 @@ function escapeHtml(value) {
 
 function readRecords(key) {
   try {
-    const records = JSON.parse(localStorage.getItem(key) || "[]");
+    const records = JSON.parse(FMSStorage.getItem(key) || "[]");
     return Array.isArray(records) ? records : [];
   } catch {
     return [];

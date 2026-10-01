@@ -4,7 +4,7 @@
 
   function read(key) {
     try {
-      const value = JSON.parse(localStorage.getItem(key) || "[]");
+      const value = JSON.parse(FMSStorage.getItem(key) || "[]");
       return Array.isArray(value) ? value : [];
     } catch {
       return [];
@@ -12,7 +12,7 @@
   }
 
   function write(key, value) {
-    localStorage.setItem(key, JSON.stringify(value));
+    FMSStorage.setItem(key, JSON.stringify(value));
   }
 
   function log(action, detail = {}) {
@@ -20,7 +20,7 @@
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       action,
       detail,
-      actor: localStorage.getItem("fms-admin-session") ? "Admin" : "User",
+      actor: sessionStorage.getItem("fms-admin-session") ? "Admin" : "User",
       createdAt: new Date().toISOString()
     };
     const records = read(ACTIVITY_KEY);

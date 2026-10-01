@@ -51,7 +51,7 @@ const ADMIN_SESSION_KEY = "fms-admin-session";
 
 function isAdminSession() {
   try {
-    return JSON.parse(localStorage.getItem(ADMIN_SESSION_KEY) || "null")?.role === "admin";
+    return JSON.parse(sessionStorage.getItem(ADMIN_SESSION_KEY) || "null")?.role === "admin";
   } catch {
     return false;
   }
@@ -85,7 +85,7 @@ let notificationsMarkedRead = false;
 
 function loadLocalDutyRecords() {
   try {
-    const records = JSON.parse(localStorage.getItem(LOCAL_DUTY_STORAGE_KEY) || "[]");
+    const records = JSON.parse(FMSStorage.getItem(LOCAL_DUTY_STORAGE_KEY) || "[]");
     dutyRecords = new Map();
     records.forEach((record) => {
       if (!record.date) return;
@@ -99,7 +99,7 @@ function loadLocalDutyRecords() {
 
 function readDutyProfiles() {
   try {
-    const profiles = JSON.parse(localStorage.getItem(DUTY_PROFILE_KEY) || "{}");
+    const profiles = JSON.parse(FMSStorage.getItem(DUTY_PROFILE_KEY) || "{}");
     return profiles && typeof profiles === "object" && !Array.isArray(profiles) ? profiles : {};
   } catch {
     return {};
@@ -171,7 +171,7 @@ function ensureTodayDutyRecord(user = getCurrentUser()) {
 
 function saveLocalDutyRecords() {
   const records = Array.from(dutyRecords.values()).flat();
-  localStorage.setItem(LOCAL_DUTY_STORAGE_KEY, JSON.stringify(records));
+  FMSStorage.setItem(LOCAL_DUTY_STORAGE_KEY, JSON.stringify(records));
 }
 
 function getDateKey(date) {
@@ -434,7 +434,7 @@ function saveDutyProfile(record, user = getCurrentUser()) {
     affiliation: record.affiliation,
     updatedAt: record.updatedAt,
   };
-  localStorage.setItem(DUTY_PROFILE_KEY, JSON.stringify(profiles));
+  FMSStorage.setItem(DUTY_PROFILE_KEY, JSON.stringify(profiles));
 }
 
 languageInputs.forEach((input) => input.addEventListener("change", () => { language = input.value; renderLanguage(); }));
@@ -471,7 +471,7 @@ document.addEventListener("keydown", (event) => { if (event.key === "Escape" && 
 previousColorPage.addEventListener("click", () => { if (currentColorPage > 0) { currentColorPage -= 1; renderPalette(); } });
 nextColorPage.addEventListener("click", () => { if (currentColorPage < Math.ceil(colors.length / 20) - 1) { currentColorPage += 1; renderPalette(); } });
 signOutButton.addEventListener("click", () => {
-  localStorage.removeItem(ADMIN_SESSION_KEY);
+  sessionStorage.removeItem(ADMIN_SESSION_KEY);
   signOut(auth).finally(() => { window.location.href = "./index.html"; });
 });
 

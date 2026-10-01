@@ -1,4 +1,4 @@
-const stock=JSON.parse(localStorage.getItem("fms-stock-records")||"[]"),selected=JSON.parse(localStorage.getItem("fms-borrow-products")||"{}"),form=JSON.parse(localStorage.getItem("fms-borrow-form")||"{}"),esc=value=>String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[char])),products=Object.keys(selected).map(code=>{const row=stock.find(item=>String(item.code)===String(code))||{code,name:code};return{...row,quantity:Number(selected[code].quantity)||1}}),modal=document.getElementById("exportModal");
+const stock=JSON.parse(FMSStorage.getItem("fms-stock-records")||"[]"),selected=JSON.parse(FMSStorage.getItem("fms-borrow-products")||"{}"),form=JSON.parse(FMSStorage.getItem("fms-borrow-form")||"{}"),esc=value=>String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[char])),products=Object.keys(selected).map(code=>{const row=stock.find(item=>String(item.code)===String(code))||{code,name:code};return{...row,quantity:Number(selected[code].quantity)||1}}),modal=document.getElementById("exportModal");
 const roles=Array.isArray(form.roles)?form.roles:(form.role?[form.role]:[]),borrowTypes=Array.isArray(form.items)?form.items:(Array.isArray(form.item)?form.item:(form.item?[form.item]:[])),borrowerName=form.fullName||form.name||"ยังไม่ระบุชื่อ",borrowType=borrowTypes.join("、")||"กระเป๋าพยาบาล",borrowDate=form.borrowDate?new Date(form.borrowDate):new Date(),dueDate=form.dueDate?new Date(form.dueDate+"T12:00:00"):new Date(borrowDate);if(!form.dueDate)dueDate.setDate(dueDate.getDate()+(borrowType.includes("ส่วนบุคคล")?90:7));const dateText=date=>date.toLocaleDateString("th-TH",{day:"2-digit",month:"2-digit",year:"2-digit"});
 document.getElementById("borrowerDetails").innerHTML=`<div class="detail wide"><span class="detail-label">สถานะ:</span> <span class="borrower-type">${(roles.length?roles:["ผู้ยืม"]).map(role=>`<label class="role-check"><input type="checkbox" checked disabled> ${esc(role)}</label>`).join("")}</span></div><div class="detail wide"><span class="detail-label">ชื่อ-นามสกุล:</span><span class="detail-value">${esc(borrowerName)}</span></div><div class="detail"><span class="detail-label">ชื่อเล่น:</span><span class="detail-value">${esc(form.nickname||"—")}</span></div><div class="detail"><span class="detail-label">รหัสนักศึกษา:</span><span class="detail-value">${esc(form.studentId||"—")}</span></div><div class="detail"><span class="detail-label">สาขา:</span><span class="detail-value">${esc(form.branch||"—")}</span></div><div class="detail"><span class="detail-label">เบอร์โทรศัพท์:</span><span class="detail-value">${esc(form.phone||"—")}</span></div><div class="detail wide"><span class="detail-label">ต้องการยืม:</span><span class="detail-value">${esc(borrowType)}${form.activity?`　เพื่อ ${esc(form.activity)}`:""}${form.reason?`　${esc(form.reason)}`:""}</span></div><div class="detail date-row"><span><b>ยืมวันที่</b>　${dateText(borrowDate)}</span><span><b>และคืนวันที่</b>　${dateText(dueDate)}</span></div>`;
 document.getElementById("orderItemCount").textContent=`${products.length} รายการ`;document.getElementById("orderProducts").innerHTML=products.length?products.map(item=>`<label class="order-item"><input type="checkbox" data-export-item="${esc(item.code)}" checked><span>${item.image?`<img src="${item.image}" alt="${esc(item.name||item.productName)}">`:`<span class="order-image-empty">รูปภาพสินค้า</span>`}</span><span><strong>${esc(item.name||item.productName||"รายการยา")}</strong><small>รหัสยา: ${esc(item.code)}</small></span><span class="order-quantity">จำนวน　${item.quantity}</span></label>`).join(""):`<div class="order-empty">ยังไม่มีรายการยาและเวชภัณฑ์</div>`;
@@ -12,12 +12,22 @@ async function exportBorrowExcel(){if(!window.JSZip){await new Promise((resolve,
 document.getElementById("exportExcel").addEventListener("click",async()=>{try{await exportBorrowExcel()}catch(error){console.error(error);alert("สร้างไฟล์ Excel ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง")}});
 const cancelOrderButton=document.getElementById("cancelOrder"),saveOrderButton=document.getElementById("saveOrder");
 cancelOrderButton.addEventListener("click",()=>{window.location.href="./borrow-selected.html"});
+saveOrderButton.addEventListener("click", async (event) => {
+  event.preventDefault(); event.stopImmediatePropagation();
+  const items = chosen();
+  if (!form.fullName || !items.length) return alert("กรุณากรอกชื่อผู้ยืมและเลือกรายการยา");
+  saveOrderButton.disabled = true;
+  try {
+    await FMSStorage.createBorrowRecord({ fullName: form.fullName, nickname: form.nickname, studentId: form.studentId, branch: form.branch, phone: form.phone, roles, borrowTypes, activity: form.activity, reason: form.reason, dueDate: form.dueDate, items: items.map(item => ({ code: item.code, quantity: item.quantity })) });
+    FMSStorage.removeItem("fms-borrow-products"); window.location.href = "./borrow-return.html";
+  } catch (error) { saveOrderButton.disabled = false; alert(error.message || "บันทึกการยืมไม่สำเร็จ"); }
+}, true);
 saveOrderButton.addEventListener("click",()=>{
   const items=chosen();
   if(!form.fullName&&!form.name){alert("กรุณากรอกชื่อผู้ยืมก่อนบันทึก");return}
   if(!items.length){alert("กรุณาเลือกรายการยาและเวชภัณฑ์ก่อนบันทึก");return}
   let liveStock=[];
-  try{const currentStock=JSON.parse(localStorage.getItem("fms-stock-records")||"[]");if(Array.isArray(currentStock))liveStock=currentStock}catch{}
+  try{const currentStock=JSON.parse(FMSStorage.getItem("fms-stock-records")||"[]");if(Array.isArray(currentStock))liveStock=currentStock}catch{}
   const stockChanges=[];
   for(const item of items){
     const stockItem=liveStock.find(row=>String(row.code)===String(item.code));
@@ -28,14 +38,14 @@ saveOrderButton.addEventListener("click",()=>{
   }
   const formatRecordDate=date=>`${String(date.getDate()).padStart(2,"0")}/${String(date.getMonth()+1).padStart(2,"0")}/${date.getFullYear()+543}`;
   let savedRecords=[];
-  try{const current=JSON.parse(localStorage.getItem("fms-borrow-return-records")||"[]");if(Array.isArray(current))savedRecords=current}catch{}
+  try{const current=JSON.parse(FMSStorage.getItem("fms-borrow-return-records")||"[]");if(Array.isArray(current))savedRecords=current}catch{}
   const primaryKind=borrowTypes.find(type=>type==="ส่วนบุคคล"||type==="กระเป๋าพยาบาล")||borrowTypes[0]||"กระเป๋าพยาบาล";
   const loanItems=items.map(item=>{const stockItem=liveStock.find(row=>String(row.code)===String(item.code));return{name:stockItem.name||stockItem.productName||item.name||"รายการยา",productName:stockItem.productName||item.productName||stockItem.name||"รายการยา",code:stockItem.code,quantity:Math.max(1,Number(item.quantity)||1),image:stockItem.image||item.image||""}});
   savedRecords.unshift({id:Date.now(),item:borrowerName,fullName:borrowerName,borrower:primaryKind,kind:primaryKind,borrowerType:borrowTypes.join("、"),date:formatRecordDate(borrowDate),due:formatRecordDate(dueDate),status:"borrowed",role:roles.join("、"),roles:roles.slice(),department:form.branch||"",branch:form.branch||"",nickname:form.nickname||"",studentId:form.studentId||"",phone:form.phone||"",activity:form.activity||"",reason:form.reason||"",items:loanItems.map(item=>({...item})),borrowedItems:loanItems.map(item=>({...item})),stockCommitted:true});
   stockChanges.forEach(({stockItem,quantity})=>{stockItem.used=(Number(stockItem.used)||0)+quantity;stockItem.remaining=Math.max(0,(Number(stockItem.total)||0)-stockItem.used)});
-  localStorage.setItem("fms-stock-records",JSON.stringify(liveStock));
-  localStorage.setItem("fms-borrow-return-records",JSON.stringify(savedRecords));if(!window.FMSBorrowHistoryStore?.save(savedRecords))alert("บันทึกการยืมแล้ว แต่สำรองประวัติไม่สำเร็จ กรุณาตรวจสอบพื้นที่จัดเก็บเบราว์เซอร์");
-  localStorage.removeItem("fms-borrow-products");
+  FMSStorage.setItem("fms-stock-records",JSON.stringify(liveStock));
+  FMSStorage.setItem("fms-borrow-return-records",JSON.stringify(savedRecords));if(!window.FMSBorrowHistoryStore?.save(savedRecords))alert("บันทึกการยืมแล้ว แต่สำรองประวัติไม่สำเร็จ กรุณาตรวจสอบพื้นที่จัดเก็บเบราว์เซอร์");
+  FMSStorage.removeItem("fms-borrow-products");
   saveOrderButton.disabled=true;
   window.location.href="./borrow-return.html";
 });

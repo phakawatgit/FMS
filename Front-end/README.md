@@ -13,14 +13,15 @@
   ├─ โหลด CSS ของหน้านั้น
   ├─ โหลด header-controls / page-tools
   ├─ โหลด language-toggle
-  ├─ โหลด legacy-storage เพื่อ sync localStorage กับ API
+  ├─ โหลด legacy-storage เพื่อเชื่อม FMSStorage กับ API
   └─ โหลด JavaScript ของ module
 
 ข้อมูลหน้าเว็บ
-  ├─ localStorage (offline fallback)
-  ├─ /api/legacy-storage (ข้อมูลร่วมระหว่างอุปกรณ์เมื่อ API พร้อม)
+  ├─ FMSStorage → /api/legacy-storage → PostgreSQL (แหล่งเก็บข้อมูลถาวร)
   └─ Firebase Auth (การเข้าสู่ระบบของหน้าที่ใช้ Firebase)
 ```
+
+ข้อมูลของระบบทุกหน้าต้องอ่านและเขียนผ่าน `FMSStorage` ซึ่งเรียก `/api/legacy-storage` โดยตรง ไม่มี browser storage สำรองสำหรับข้อมูลระบบ หาก backend ใช้งานไม่ได้ หน้าเว็บจะแจ้งว่าบันทึกไม่ได้ ข้อมูล session สำหรับการเข้าสู่ระบบชั่วคราวยังอยู่ใน `sessionStorage` และไม่ถูกส่งไปเก็บร่วมกับข้อมูลระบบ
 
 ## หน้าและโมดูล
 
@@ -47,7 +48,7 @@
 - `header-controls.js` — ปุ่มและพฤติกรรมของ Topbar
 - `header-controls.css` — Layout ของ Topbar และ Responsive ทุกหน้า
 - `page-tools.js` / `page-tools.css` — เครื่องมือด้านบนของหน้า
-- `legacy-storage.js` — sync ข้อมูล localStorage กับ Backend
+- `legacy-storage.js` — `FMSStorage` client สำหรับอ่านและเขียนข้อมูลกับ Backend; นำเข้าข้อมูล FMS เก่าจาก browser storage หนึ่งครั้งเมื่อเชื่อมต่อสำเร็จ
 - `notification-utils.js` — คำนวณรายการแจ้งเตือนจากข้อมูลยาและรายการยืม
 - `theme-colors.css` / `font-kanit.css` — สีและฟอนต์ร่วม
 - `assets/` — รูปภาพ ไอคอน และภาพประกอบ
@@ -56,8 +57,8 @@
 
 1. ตั้งชื่อหน้าเป็น `module.html` และสคริปต์เป็น `module.js` / `module.css`
 2. ใส่ `header-controls.css` และ `language-toggle.js` ให้หน้าใหม่
-3. ใช้ `localStorage` key ที่ขึ้นต้นด้วย `fms-`
-4. ถ้าข้อมูลต้องใช้ร่วมกันหลายเครื่อง ให้ผ่าน `/api/legacy-storage` หรือ API ของระบบใหม่
+3. อ่านและเขียนข้อมูลระบบผ่าน `FMSStorage` และ `/api/legacy-storage` หรือ API ของระบบใหม่เท่านั้น
+4. ห้ามเพิ่ม browser storage เป็นแหล่งเก็บข้อมูลหรือ offline fallback
 5. เพิ่มหน้าใหม่ในตารางด้านบนทันที
 
 ## ความสัมพันธ์กับ Next.js
