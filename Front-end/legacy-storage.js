@@ -21,18 +21,21 @@
     if (body !== undefined) xhr.setRequestHeader("Content-Type", "application/json");
     xhr.send(body === undefined ? null : JSON.stringify(body));
     if (xhr.status < 200 || xhr.status >= 300) {
-      throw new Error(`Legacy storage request failed (${xhr.status || "network error"}).`);
+      let responseMessage = "";
+      try { responseMessage = JSON.parse(xhr.responseText || "{}").message || ""; } catch {}
+      const error = new Error(responseMessage || `Legacy storage request failed (${xhr.status || "network error"}).`);
+      error.status = xhr.status;
+      throw error;
     }
     return xhr.responseText ? JSON.parse(xhr.responseText) : {};
   }
 
-  function showStorageError() {
+  function showStorageError(error) {
     let notice = document.getElementById("fms-storage-error");
     if (!notice) {
       notice = document.createElement("div");
       notice.id = "fms-storage-error";
       notice.setAttribute("role", "alert");
-      notice.textContent = "เชื่อมต่อฐานข้อมูลไม่ได้ ข้อมูลยังไม่ได้บันทึก กรุณาลองใหม่เมื่อติดต่อระบบได้";
       Object.assign(notice.style, {
         position: "fixed", zIndex: "99999", inset: "0 0 auto", padding: "12px 18px",
         color: "#fff", background: "#a32323", textAlign: "center", font: "16px sans-serif"
@@ -40,6 +43,13 @@
       document.addEventListener("DOMContentLoaded", () => document.body.prepend(notice), { once: true });
       if (document.body) document.body.prepend(notice);
     }
+    notice.textContent = error?.status === 401
+      ? "กรุณาเข้าสู่ระบบใหม่ก่อนใช้งานข้อมูลส่วนกลาง"
+      : error?.status === 403
+        ? error.message === "CSRF validation failed"
+          ? "เซสชันหมดอายุ กรุณาออกจากระบบแล้วเข้าสู่ระบบใหม่"
+          : "บัญชีนี้ไม่มีสิทธิ์ทำรายการนี้ กรุณาเข้าสู่ระบบด้วยบัญชีผู้ดูแลระบบหรือตรวจสอบสิทธิ์"
+        : "เชื่อมต่อฐานข้อมูลไม่ได้ ข้อมูลยังไม่ได้บันทึก กรุณาลองใหม่เมื่อติดต่อระบบได้";
   }
 
   function dispatchChange(key) {
@@ -85,7 +95,7 @@
     storageReady = true;
   } catch (error) {
     console.error("FMS legacy storage is unavailable.", error);
-    showStorageError();
+    showStorageError(error);
   }
 
   window.FMSStorage = Object.freeze({
@@ -119,7 +129,7 @@
         return result.data;
       } catch (error) {
         console.error("Infirmary visit was not saved.", error);
-        showStorageError();
+        showStorageError(error);
         throw error;
       }
     },
@@ -163,7 +173,24 @@
         dispatchChange(name);
       } catch (error) {
         console.error("FMS data was not saved.", error);
+        showStorageError(error);
+        throw error;
+      }
+    },
+    addCatalogRecord(record) {
+      if (!storageReady) {
         showStorageError();
+        throw new Error("FMS legacy storage is unavailable.");
+      }
+      try {
+        const result = request("POST", `${apiBase}/api/catalog`, { record });
+        const records = values.get("fms-stock-records") || [];
+        values.set("fms-stock-records", [result.data, ...records.filter((item) => item.code !== result.data.code)]);
+        dispatchChange("fms-stock-records");
+        return result.data;
+      } catch (error) {
+        console.error("Catalog item was not added.", error);
+        showStorageError(error);
         throw error;
       }
     },
@@ -180,7 +207,7 @@
         dispatchChange(name);
       } catch (error) {
         console.error("FMS data was not deleted.", error);
-        showStorageError();
+        showStorageError(error);
         throw error;
       }
     },

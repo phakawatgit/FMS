@@ -66,7 +66,11 @@ function getCodePrefix(value) {
 }
 
 function getNextMedicineNumber() {
-  return Math.max(1, Number(FMSStorage.getItem("fms-stock-code-sequence")) || 1);
+  const highestExistingCode = storedRecords.reduce((highest, item) => {
+    const suffix = /\d+$/.exec(String(item.code || ""));
+    return suffix ? Math.max(highest, Number(suffix[0])) : highest;
+  }, 0);
+  return Math.max(1, highestExistingCode + 1);
 }
 
 function updateMedicineCode() {
@@ -139,19 +143,24 @@ form.addEventListener("submit", async (event) => {
       const index = records.findIndex((item) => normalizeCode(item.code) === normalizeCode(editCode));
       if (index >= 0) records[index] = { ...records[index], ...data, code: editRecord.code || editCode };
       else records.unshift(data);
-    } else records.unshift(data);
-    FMSStorage.setItem("fms-stock-records", JSON.stringify(records));
-    FMSStorage.setItem("fms-stock-code-sequence", String(number + 1));
-    FMSStorage.setItem("fms-stock-filter", "all");
-    FMSStorage.removeItem("fms-edit-stock-code");
-    FMSStorage.removeItem("fms-edit-stock-record");
+      FMSStorage.setItem("fms-stock-records", JSON.stringify(records));
+    } else {
+      const created = FMSStorage.addCatalogRecord(data);
+      codeInput.value = created.code;
+    }
+    if (editRecord) {
+      FMSStorage.removeItem("fms-edit-stock-code");
+      FMSStorage.removeItem("fms-edit-stock-record");
+    }
     message.style.color = "#16823b";
     message.textContent = editRecord ? "แก้ไขรายการยาเรียบร้อยแล้ว" : "บันทึกรายการยาเรียบร้อยแล้ว";
     setTimeout(() => {
       location.href = returnToCatalog ? "./catalog.html?updated=1" : "./stock.html?updated=1";
     }, 300);
-  } catch {
-    message.textContent = "กรุณาระบุ URL รูปภาพที่ถูกต้อง (HTTP/HTTPS)";
+  } catch (error) {
+    message.textContent = error.message === "Invalid image URL"
+      ? "กรุณาระบุ URL รูปภาพที่ถูกต้อง (HTTP/HTTPS)"
+      : error.message || "บันทึกรายการยาไม่สำเร็จ กรุณาลองอีกครั้ง";
   }
 });
 

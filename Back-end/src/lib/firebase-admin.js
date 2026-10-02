@@ -1,5 +1,6 @@
 const admin = require("firebase-admin");
 const fs = require("node:fs");
+const path = require("node:path");
 
 let app;
 
@@ -9,7 +10,10 @@ function getFirebaseAdmin() {
   let serviceAccount;
 
   if (FIREBASE_SERVICE_ACCOUNT_PATH) {
-    serviceAccount = JSON.parse(fs.readFileSync(FIREBASE_SERVICE_ACCOUNT_PATH, "utf8"));
+    const serviceAccountPath = path.isAbsolute(FIREBASE_SERVICE_ACCOUNT_PATH)
+      ? FIREBASE_SERVICE_ACCOUNT_PATH
+      : path.resolve(__dirname, "../..", FIREBASE_SERVICE_ACCOUNT_PATH);
+    serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, "utf8"));
   } else if (FIREBASE_PROJECT_ID && FIREBASE_CLIENT_EMAIL && FIREBASE_PRIVATE_KEY) {
     serviceAccount = {
       projectId: FIREBASE_PROJECT_ID,

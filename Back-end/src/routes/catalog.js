@@ -100,6 +100,46 @@ router.get("/", async (req, res) => {
   }
 });
 
+// Any signed-in staff member can add a new catalog item. Existing items and
+// stock quantities remain protected by the admin-only full-list update route.
+router.post("/", async (req, res) => {
+  try {
+    const data = normalize(req.body?.record);
+    const codeMatch = /^(.*?)(\d+)$/.exec(data.code);
+    let code = data.code;
+    let created;
+
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+      try {
+        created = await prisma.catalog.create({ data: { ...data, code } });
+        break;
+      } catch (error) {
+        if (error.code !== "P2002" || !codeMatch) throw error;
+        const existingCodes = await prisma.catalog.findMany({
+          where: { code: { startsWith: codeMatch[1] } },
+          select: { code: true },
+        });
+        const maxNumber = existingCodes.reduce((max, item) => {
+          const match = /^(.*?)(\d+)$/.exec(item.code);
+          return match?.[1] === codeMatch[1] ? Math.max(max, Number(match[2])) : max;
+        }, Number(codeMatch[2]));
+        code = `${codeMatch[1]}${String(maxNumber + 1).padStart(codeMatch[2].length, "0")}`;
+      }
+    }
+
+    if (!created) return res.status(409).json({ success: false, message: "สร้างรหัสยาไม่สำเร็จ กรุณาลองอีกครั้ง" });
+    return res.status(201).json({ success: true, data: serialize(created, req) });
+  } catch (error) {
+    const invalidInput = ["invalid record", "field too long", "required field missing", "invalid inventory amount", "invalid expiry", "image must be a URL", "image must be an HTTP URL", "image too large"].includes(error.message);
+    if (!invalidInput) console.error("Catalog create failed:", error.message);
+    const status = invalidInput ? 400 : error.code === "P2002" ? 409 : 503;
+    return res.status(status).json({
+      success: false,
+      message: status === 400 ? "ข้อมูล Catalog ไม่ถูกต้อง" : status === 409 ? "รหัสยานี้มีอยู่แล้ว กรุณาลองอีกครั้ง" : "บันทึก Catalog ไม่สำเร็จ",
+    });
+  }
+});
+
 router.put("/", requireRole("ADMIN"), async (req, res) => {
   try {
     const rows = await syncRecords(req.body?.records);

@@ -25,9 +25,12 @@ services:
       - ./Back-end/.env
     environment:
       DATABASE_URL: postgresql://fms:fms_password@postgres:5432/fms?schema=public
+      FIREBASE_SERVICE_ACCOUNT_PATH: /run/secrets/firebase-service-account
       PORT: 4000
       FRONTEND_URL: http://localhost:3001
       NODE_ENV: development
+    secrets:
+      - firebase-service-account
     ports:
       - "4000:4000"
     depends_on:
@@ -55,8 +58,6 @@ services:
   studio:
     image: fms-api:local
     command: ["npx", "prisma", "studio", "--schema", "prisma/schema.prisma", "--hostname", "0.0.0.0", "--port", "5555", "--browser", "none"]
-    env_file:
-      - ./Back-end/.env
     environment:
       DATABASE_URL: postgresql://fms:fms_password@postgres:5432/fms?schema=public
     ports:
@@ -67,3 +68,7 @@ services:
 
 volumes:
   postgres_data:
+
+secrets:
+  firebase-service-account:
+    file: ./Back-end/firebase-service-account.json
