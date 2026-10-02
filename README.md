@@ -17,7 +17,7 @@ npm run dev:stack
 
 Docker Compose starts PostgreSQL, the Express API used by the current web pages, the Next.js web app, and Prisma Studio together. The API and Studio connect to the same database container.
 
-- Web: `http://localhost:3000`
+- Web: `http://localhost:3001`
 - API: `http://localhost:4000`
 - Prisma Studio: `http://localhost:5555`
 

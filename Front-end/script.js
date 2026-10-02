@@ -41,6 +41,7 @@ const signupOtpForm = document.getElementById("signupOtpForm");
 const signupOtpInput = document.getElementById("signupOtp");
 const signupOtpStatus = document.getElementById("signupOtpStatus");
 const signupOtpEmail = document.getElementById("signupOtpEmail");
+const signupOtpSubmit = document.getElementById("signupOtpSubmit");
 const signupOtpResend = document.getElementById("signupOtpResend");
 const resetEmailForm = document.getElementById("resetEmailForm");
 const resetOtpForm = document.getElementById("resetOtpForm");
@@ -67,6 +68,16 @@ async function establishApiSession(user) {
         await signOut(firebaseAuth);
         throw error;
     }
+}
+
+async function apiRequest(path, options = {}) {
+    const response = await fetch(`${API_BASE}${path}`, {
+        ...options,
+        headers: { "Content-Type": "application/json", ...(options.headers || {}) },
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok || !result.success) throw new Error(result.message || "เชื่อมต่อระบบไม่สำเร็จ");
+    return result;
 }
 
 document.querySelectorAll("[data-password-toggle]").forEach((button) => {
@@ -99,6 +110,9 @@ googleProvider.setCustomParameters({ prompt: "select_account" });
 
 let currentMode = "login";
 let currentLanguage = "en";
+let pendingSignupUser = null;
+let resetEmail = "";
+let resetToken = "";
 
 const translations = {
     en: {
@@ -134,7 +148,7 @@ const translations = {
         resetTitle: "Verify your email",
         resetDescription: "Enter your email to receive a password reset link",
         emailAddress: "Email address",
-        sendOtp: "Send reset link",
+        sendOtp: "Send password reset link",
         otpLabel: "OTP code",
         otpPlaceholder: "Enter 6-digit code",
         verifyOtp: "Verify OTP",
@@ -318,11 +332,17 @@ authForm.addEventListener("submit", async (event) => {
         try {
             const { user } = await createUserWithEmailAndPassword(firebaseAuth, email, password);
             if (fullName) await updateProfile(user, { displayName: fullName });
-            await sendEmailVerification(user);
-            await signOut(firebaseAuth);
-            statusText.textContent = currentLanguage === "th"
-                ? "ส่งลิงก์ยืนยันไปที่อีเมลแล้ว ยืนยันก่อนเข้าสู่ระบบ"
-                : "Verification link sent. Verify your email, then sign in.";
+            const idToken = await user.getIdToken();
+            await apiRequest("/api/auth/signup/otp/request", { method: "POST", headers: { Authorization: `Bearer ${idToken}` } });
+            pendingSignupUser = user;
+            authForm.hidden = true;
+            document.querySelector(".divider").hidden = true;
+            googleButton.hidden = true;
+            terms.hidden = true;
+            signupOtpFlow.hidden = false;
+            signupOtpEmail.textContent = email;
+            signupOtpStatus.textContent = currentLanguage === "th" ? "ส่ง OTP ไปยังอีเมลแล้ว" : "OTP sent to your email.";
+            signupOtpInput.focus();
         } catch (error) {
             showFirebaseError(error);
         } finally {
@@ -381,6 +401,47 @@ function hideResetFlow() {
 forgotButton.addEventListener("click", showResetFlow);
 resetBackButton.addEventListener("click", hideResetFlow);
 
+signupOtpBack.addEventListener("click", async () => {
+    await signOut(firebaseAuth).catch(() => {});
+    signupOtpFlow.hidden = true;
+    authForm.hidden = false;
+    document.querySelector(".divider").hidden = false;
+    googleButton.hidden = false;
+    terms.hidden = false;
+    signupOtpInput.value = "";
+    signupOtpStatus.textContent = "";
+    pendingSignupUser = null;
+});
+
+async function requestSignupOtp() {
+    if (!pendingSignupUser) return;
+    const idToken = await pendingSignupUser.getIdToken();
+    await apiRequest("/api/auth/signup/otp/request", { method: "POST", headers: { Authorization: `Bearer ${idToken}` } });
+}
+
+signupOtpResend.addEventListener("click", async () => {
+    signupOtpResend.disabled = true;
+    try {
+        await requestSignupOtp();
+        signupOtpStatus.textContent = currentLanguage === "th" ? "ส่ง OTP อีกครั้งแล้ว" : "OTP resent.";
+    } catch (error) { signupOtpStatus.textContent = error.message; }
+    finally { signupOtpResend.disabled = false; }
+});
+
+signupOtpForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!pendingSignupUser) return;
+    signupOtpSubmit.disabled = true;
+    try {
+        const idToken = await pendingSignupUser.getIdToken();
+        await apiRequest("/api/auth/signup/otp/verify", { method: "POST", headers: { Authorization: `Bearer ${idToken}` }, body: JSON.stringify({ code: signupOtpInput.value.trim() }) });
+        await pendingSignupUser.getIdToken(true);
+        await establishApiSession(pendingSignupUser);
+        showSignedInMessage(pendingSignupUser);
+    } catch (error) { signupOtpStatus.textContent = error.message; }
+    finally { signupOtpSubmit.disabled = false; }
+});
+
 resetEmailForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     const email = resetEmailInput.value.trim();
@@ -388,16 +449,42 @@ resetEmailForm.addEventListener("submit", async (event) => {
     const button = resetEmailForm.querySelector("button[type=submit]");
     button.disabled = true;
     try {
-        await sendPasswordResetEmail(firebaseAuth, email);
-        resetStatus.textContent = currentLanguage === "th"
-            ? "ส่งลิงก์ตั้งรหัสผ่านใหม่ไปที่อีเมลแล้ว"
-            : "Password reset link sent. Check your inbox.";
-        window.setTimeout(hideResetFlow, 2500);
+        await apiRequest("/api/auth/password-reset/otp/request", { method: "POST", body: JSON.stringify({ email }) });
+        resetEmail = email;
+        resetEmailForm.hidden = true;
+        resetOtpForm.hidden = false;
+        resetStatus.textContent = currentLanguage === "th" ? "ส่ง OTP ไปยังอีเมลแล้ว" : "OTP sent to your email.";
+        resetOtpInput.focus();
     } catch (error) {
         showFirebaseError(error);
     } finally {
         button.disabled = false;
     }
+});
+
+resetOtpForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    try {
+        const result = await apiRequest("/api/auth/password-reset/otp/verify", { method: "POST", body: JSON.stringify({ email: resetEmail, code: resetOtpInput.value.trim() }) });
+        resetToken = result.resetToken;
+        resetOtpForm.hidden = true;
+        newPasswordForm.hidden = false;
+        resetStatus.textContent = currentLanguage === "th" ? "ยืนยัน OTP แล้ว ตั้งรหัสผ่านใหม่ได้เลย" : "OTP verified. Set a new password.";
+        newPasswordInput.focus();
+    } catch (error) { resetStatus.textContent = error.message; }
+});
+
+newPasswordForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (newPasswordInput.value !== confirmPasswordInput.value) {
+        resetStatus.textContent = currentLanguage === "th" ? "รหัสผ่านไม่ตรงกัน" : "Passwords do not match.";
+        return;
+    }
+    try {
+        await apiRequest("/api/auth/password-reset/complete", { method: "POST", body: JSON.stringify({ email: resetEmail, resetToken, password: newPasswordInput.value }) });
+        resetStatus.textContent = currentLanguage === "th" ? "เปลี่ยนรหัสผ่านสำเร็จแล้ว" : "Password updated successfully.";
+        window.setTimeout(hideResetFlow, 1800);
+    } catch (error) { resetStatus.textContent = error.message; }
 });
 
 function showSignedInMessage(user) {
@@ -411,10 +498,15 @@ function showSignedInMessage(user) {
 function showFirebaseError(error) {
     const messages = {
         "auth/invalid-credential": "อีเมลหรือรหัสผ่านไม่ถูกต้อง",
+        "auth/invalid-email": "รูปแบบอีเมลไม่ถูกต้อง",
+        "auth/user-not-found": "อีเมลหรือรหัสผ่านไม่ถูกต้อง",
         "auth/email-already-in-use": "อีเมลนี้ถูกใช้งานแล้ว",
         "auth/weak-password": "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร",
-        "auth/operation-not-allowed": "ยังไม่ได้เปิด Google ใน Firebase Console > Authentication > Sign-in method",
-        "auth/unauthorized-domain": "เพิ่ม 127.0.0.1 ใน Firebase Console > Authentication > Settings > Authorized domains",
+        "auth/operation-not-allowed": "กรุณาเปิด Email/Password และ Google ใน Firebase Console > Authentication > Sign-in method",
+        "auth/unauthorized-domain": "เพิ่ม localhost และโดเมนที่ใช้เข้าเว็บใน Firebase Console > Authentication > Settings > Authorized domains",
+        "auth/network-request-failed": "เชื่อมต่อ Firebase ไม่สำเร็จ กรุณาตรวจอินเทอร์เน็ตแล้วลองใหม่",
+        "auth/too-many-requests": "มีการลองมากเกินไป กรุณารอสักครู่แล้วลองใหม่",
+        "auth/missing-email": "กรุณากรอกอีเมล",
         "auth/popup-closed-by-user": "ปิดหน้าต่าง Google แล้ว"
     };
     statusText.textContent = messages[error.code] || error.message || "เข้าสู่ระบบไม่สำเร็จ กรุณาลองใหม่";
