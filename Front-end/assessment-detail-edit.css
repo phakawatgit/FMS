@@ -74,3 +74,133 @@
     grid-column: auto;
   }
 }
+
+/* Form polish: clear hierarchy, comfortable controls, and touch-friendly actions. */
+.edit-panel {
+  margin-top: 1.35rem;
+  padding: clamp(1rem, 2vw, 1.5rem);
+  border: 1px solid #d8e2ef;
+  border-radius: 1rem;
+  background: linear-gradient(180deg, #f8fbff 0%, #f4f7fb 100%);
+  box-shadow: 0 8px 24px rgba(23, 58, 98, .08);
+}
+
+.edit-panel h3 {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  margin: 0 0 1.1rem;
+  color: #123b68;
+  font-size: clamp(1rem, 1.5vw, 1.2rem);
+  font-weight: 700;
+}
+
+.edit-panel h3::before {
+  content: "";
+  width: .28rem;
+  height: 1.35rem;
+  border-radius: 999px;
+  background: #ff8a22;
+}
+
+.edit-grid {
+  gap: .9rem;
+}
+
+.edit-grid label {
+  gap: .35rem;
+  color: #38516d;
+  font-size: .82rem;
+  font-weight: 600;
+}
+
+.edit-grid input,
+.edit-grid textarea,
+.edit-grid select {
+  min-height: 2.7rem;
+  padding: .55rem .75rem;
+  border: 1px solid #cfdae7;
+  border-radius: .65rem;
+  outline: 0;
+  background: #fff;
+  color: #173a62;
+  font-size: .88rem;
+  transition: border-color .18s ease, box-shadow .18s ease;
+}
+
+.edit-grid input::placeholder,
+.edit-grid textarea::placeholder {
+  color: #9aabba;
+}
+
+.edit-grid input:focus,
+.edit-grid textarea:focus,
+.edit-grid select:focus {
+  border-color: #3788d8;
+  box-shadow: 0 0 0 3px rgba(55, 136, 216, .14);
+}
+
+.edit-grid textarea {
+  min-height: 5rem;
+}
+
+.edit-actions {
+  align-items: center;
+  gap: .65rem;
+  margin-top: 1.2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #dce5ef;
+}
+
+.edit-actions button {
+  min-width: 6.5rem;
+  min-height: 2.55rem;
+  padding: .55rem 1rem;
+  border: 1px solid transparent;
+  border-radius: .65rem;
+  font-size: .82rem;
+  font-weight: 600;
+  transition: transform .16s ease, box-shadow .16s ease, background .16s ease;
+}
+
+.edit-actions button:hover {
+  transform: translateY(-1px);
+}
+
+.edit-actions button:focus-visible {
+  outline: 3px solid rgba(55, 136, 216, .25);
+  outline-offset: 2px;
+}
+
+.edit-actions button[type=button] {
+  border-color: #d3deea;
+  background: #fff;
+  color: #38516d;
+}
+
+.edit-actions button[type=button]:hover {
+  background: #f0f5fa;
+}
+
+.edit-actions button[type=submit] {
+  background: #1267a8;
+  box-shadow: 0 5px 12px rgba(18, 103, 168, .2);
+}
+
+.edit-actions button[type=submit]:hover {
+  background: #0d568d;
+}
+
+@media(max-width:650px) {
+  .edit-panel {
+    padding: 1rem;
+  }
+
+  .edit-actions {
+    justify-content: stretch;
+  }
+
+  .edit-actions button {
+    flex: 1;
+  }
+}

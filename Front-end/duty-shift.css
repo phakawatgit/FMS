@@ -691,6 +691,44 @@ body {
     margin-left: 23px;
   }
 }
+
+/* Make the recent-duty search match the bordered controls used on other pages. */
+.duty-page .recent-heading .record-search {
+  width: min(17rem, 42%);
+  height: 3rem;
+  padding: 0 .85rem 0 1rem;
+  border: 2px solid #b9d8df !important;
+  border-radius: .8rem !important;
+  background: #fff !important;
+  box-shadow: 0 4px 12px rgba(1, 64, 109, .08) !important;
+  transition: border-color .18s ease, box-shadow .18s ease;
+}
+
+.duty-page .recent-heading .record-search:focus-within {
+  border-color: #01b4ba !important;
+  box-shadow: 0 0 0 4px rgba(1, 180, 186, .12), 0 5px 14px rgba(1, 64, 109, .1) !important;
+}
+
+.duty-page .recent-heading .record-search input {
+  height: 100%;
+  color: #143b58;
+  font-size: .9rem;
+}
+
+.duty-page .recent-heading .record-search input::placeholder {
+  color: #7893a1;
+}
+
+.duty-page .recent-heading .record-search > span {
+  color: #01406d;
+  font-size: 1.3rem;
+}
+
+@media(max-width:680px) {
+  .duty-page .recent-heading .record-search {
+    width: 100%;
+  }
+}
 @media print {
   body {
     background: #fff;

@@ -678,6 +678,48 @@ header.topbar {
 }
 
 /* Extra-small phones need slightly tighter spacing. */
+
+/* Match the bordered card language used across the rest of the FMS pages. */
+.search-box {
+  height: 3rem;
+  margin-bottom: .7rem;
+  padding: 0 .85rem 0 1rem;
+  border: 1.5px solid var(--theme-line, #b9d8df);
+  border-radius: .8rem;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(1, 64, 109, .08);
+  transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+}
+
+.search-box:focus-within {
+  border-color: var(--theme-secondary, #01b4ba);
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(1, 180, 186, .12), 0 5px 14px rgba(1, 64, 109, .1);
+}
+
+.search-box input {
+  min-width: 0;
+  color: var(--theme-ink, #123b56);
+  font-size: .9rem;
+}
+
+.search-box input::placeholder {
+  color: #7893a1;
+}
+
+.search-box svg {
+  width: 1.3rem;
+  height: 1.3rem;
+  stroke: var(--theme-primary, #01406d);
+  stroke-width: 2;
+}
+
+@media(max-width:560px) {
+  .search-box {
+    height: 2.65rem;
+    border-radius: .7rem;
+  }
+}
 @media(max-width:370px) {
   .brand span {
     max-width: 235px;
@@ -729,6 +771,32 @@ header.topbar {
   .visit-card {
     break-inside: avoid;
     box-shadow: none;
+  }
+}
+
+/* Keep the history search aligned to the right of the page title. */
+.page-toolbar > .search-box {
+  width: min(440px, 100%);
+  flex: 0 1 440px;
+  margin: 0 0 0 auto;
+}
+
+/* Place the History menu link on the right below the page toolbar. */
+.history-page > .history-back {
+  display: flex !important;
+  width: max-content;
+  margin: 0 0 12px auto !important;
+}
+
+@media(max-width:600px) {
+  .page-toolbar {
+    flex-wrap: wrap;
+  }
+
+  .page-toolbar > .search-box {
+    width: 100%;
+    flex: 1 0 100%;
+    margin: 4px 0 0;
   }
 }
 

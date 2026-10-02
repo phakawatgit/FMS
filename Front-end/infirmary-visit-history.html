@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="./button-animations.css?v=3">
   <link rel="stylesheet" href="./font-kanit.css?v=1">
   <link rel="stylesheet" href="./theme-colors.css?v=3">
-  <link rel="stylesheet" href="./infirmary-visit-history.css?v=14">
+  <link rel="stylesheet" href="./infirmary-visit-history.css?v=15">
   <link rel="stylesheet" href="./dashboard-topbar.css?v=3">
 <script src="./legacy-storage.js?v=3"></script></head>
 <body>
@@ -25,11 +25,11 @@
   </header>
   <section class="page-toolbar" aria-label="เครื่องมือหน้า">
     <h1 data-i18n="pageTitle">Infirmary Visit History</h1>
+    <label class="search-box"><span class="visually-hidden" data-i18n="searchLabel">ค้นหาชื่อหรือรหัสนักศึกษา</span><input id="searchInput" type="search" placeholder="ชื่อ, รหัสนักศึกษา หรือสาขา" autocomplete="off"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg></label>
   </section>
   <main class="history-page">
-    <a class="history-back" href="./system-activity.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8l-4 4 4 4M8 12h8"/></svg><span data-i18n="backMenu">กลับหน้าเมนู History</span></a>
+    <a class="history-back" href="./system-activity.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8l-4 4 4 4M8 12h8"/></svg><span data-i18n="backMenu">กลับไปหน้า History Menu</span></a>
     <div class="section-heading"><h2 data-i18n="listTitle">การเข้าใช้ห้องพยาบาล</h2></div>
-    <label class="search-box"><span class="visually-hidden" data-i18n="searchLabel">ค้นหาชื่อหรือรหัสนักศึกษา</span><input id="searchInput" type="search" placeholder="ชื่อ, รหัสนักศึกษา หรือสาขา" autocomplete="off"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg></label>
     <p id="resultCount" class="result-count" aria-live="polite"></p>
     <section id="visitList" class="visit-list" aria-label="ประวัติการเข้าใช้ห้องพยาบาล"></section>
   </main>
@@ -38,6 +38,6 @@
     <div id="visitDetailFields" class="visit-detail-fields"></div>
   </dialog>
   <aside id="notificationPanel" class="notification-panel" hidden><button id="closeNotification" type="button" aria-label="ปิด">×</button><strong data-i18n="notifications">การแจ้งเตือน</strong><p data-i18n="notificationMessage">มีรายการรอดำเนินการ 6 รายการ</p></aside>
-  <script src="./infirmary-visit-history.js?v=9"></script>
+  <script src="./infirmary-visit-history.js?v=10"></script>
 <script src="./language-toggle.js?v=13"></script><script src="./header-controls.js?v=4"></script></body>
 </html>

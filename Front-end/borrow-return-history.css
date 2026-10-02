@@ -1065,6 +1065,38 @@ body.borrow-detail-open {
   background: #fff;
   box-shadow: 0 2px 8px rgba(18,59,86,.045);
 }
+
+/* Use the same bordered input treatment as the other FMS history pages. */
+.activity-intro .search {
+  height: 44px !important;
+  padding: 0 .55rem 0 1rem;
+  border: 1.5px solid #b9d8df !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+  box-shadow: 0 4px 12px rgba(1,64,109,.08) !important;
+}
+
+.activity-intro .search:focus-within {
+  border-color: #01b4ba !important;
+  box-shadow: 0 0 0 4px rgba(1,180,186,.12), 0 5px 14px rgba(1,64,109,.1) !important;
+}
+
+.activity-intro .search input {
+  padding-left: .15rem;
+  color: #123b56;
+  font-size: 13px;
+}
+
+.activity-intro .search input::placeholder {
+  color: #7893a1;
+}
+
+.activity-intro .search .search-submit {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 8px !important;
+  color: #07517e !important;
+}
 @media(max-width:560px) {
   .activity-intro {
     width: calc(100% - 20px);
@@ -1529,4 +1561,9 @@ body .topbar.dashboard-topbar .menu-button, body .topbar.dashboard-topbar .menu-
   display: inline-flex!important;
   align-items: center!important;
   justify-content: center!important;
+}
+
+/* Align the History menu shortcut to the right, below the page heading. */
+.borrow-history-page > .history-back-wrap {
+  justify-content: flex-end !important;
 }

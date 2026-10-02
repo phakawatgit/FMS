@@ -45,11 +45,26 @@
 }
 .status-readonly {
   grid-column: span 4;
-  padding: .45rem .6rem;
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  padding: .7rem .85rem;
+  border: 1px solid #cfe5d4;
   border-radius: .4rem;
-  background: #fff1cf;
-  color: #9a5c00;
-  font-size: .75rem;
+  background: #effaf1;
+  color: #23713a;
+  font-size: .82rem;
+  font-weight: 600;
+}
+
+.status-readonly::before {
+  content: "";
+  width: .6rem;
+  height: .6rem;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #36a853;
+  box-shadow: 0 0 0 4px rgba(54, 168, 83, .12);
 }
 @media(max-width:650px) {
   .edit-grid {

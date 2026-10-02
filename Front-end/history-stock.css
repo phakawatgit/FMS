@@ -1362,3 +1362,49 @@ body {
 html,body,body * {
   font-family: Kanit,sans-serif!important;
 }
+
+/* Dispensing-history search: match the bordered input style used by the other history pages. */
+.activity-intro .search {
+  width: min(440px, 100%) !important;
+  height: 44px !important;
+  padding: 0 .55rem 0 1rem;
+  border: 1.5px solid #b9d8df !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+  box-shadow: 0 4px 12px rgba(1, 64, 109, .08) !important;
+  transition: border-color .18s ease, box-shadow .18s ease;
+}
+
+.activity-intro .search:focus-within {
+  border-color: #01b4ba !important;
+  box-shadow: 0 0 0 4px rgba(1, 180, 186, .12), 0 5px 14px rgba(1, 64, 109, .1) !important;
+}
+
+.activity-intro .search input {
+  height: 100% !important;
+  padding: 0 .15rem !important;
+  border: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  color: #123b56 !important;
+  font-size: 13px !important;
+}
+
+.activity-intro .search input::placeholder {
+  color: #7893a1 !important;
+}
+
+.activity-intro .search .search-submit {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+  color: #07517e !important;
+}
+
+@media(max-width:560px) {
+  .activity-intro .search {
+    width: 100% !important;
+    height: 42px !important;
+  }
+}

@@ -5,7 +5,7 @@ const list = document.getElementById("orderHistoryList");
 let historyEnglish = false;
 const catalogCopy = {
   back: ["กลับไปหน้า History Menu", "Back to History Menu"],
-  catalog: ["CATALOG", "CATALOG"],
+  catalog: ["คลังสินค้า", "Inventory"],
   noResults: ["ไม่พบประวัติการสั่งซื้อที่ตรงกับคำค้น", "No matching order history found"],
   empty: ["ยังไม่มีประวัติการสั่งซื้อ เมื่อบันทึกคำสั่งซื้อแล้ว รายละเอียดจะแสดงที่นี่", "No order history yet. Details will appear here after an order is saved."],
   order: ["การสั่งซื้อสินค้าครั้งที่", "Order #"],
@@ -194,7 +194,7 @@ function applyCatalogHistoryLanguage(isEnglish) {
   document.querySelector(".activity-intro h1").textContent = isEnglish ? "Tracking & History" : "คลังยาและเวชภัณฑ์";
   document.querySelector(".history-back span").textContent = catalogText("back");
   document.querySelector(".history-back").setAttribute("aria-label", catalogText("back"));
-  document.querySelector(".catalog-label").textContent = catalogText("catalog");
+  document.querySelector(".catalog-label-text").textContent = catalogText("catalog");
   searchInput.placeholder = isEnglish ? "name, date" : "ชื่อสินค้า, วันที่";
   searchInput.setAttribute("aria-label", isEnglish ? "Search order history" : "ค้นหาประวัติการสั่งซื้อ");
   document.querySelector("#notificationPanel strong").textContent = isEnglish ? "Notifications" : "การแจ้งเตือน";
