@@ -9,7 +9,7 @@ Use this skill when the user asks for a QA review, test plan, integration tests,
 
 ## QA workflow
 
-1. Inspect the target API routes, controllers, validation, Prisma schema, package scripts, environment setup, and existing test conventions. FMS has a legacy backend and a newer `apps/api`; establish which service owns the requested behavior.
+1. Inspect the target API routes, controllers, validation, Prisma schema, package scripts, environment setup, and existing test conventions. FMS uses `Back-end/` for the active API and PostgreSQL persistence.
 2. Turn the requested behavior into observable cases: success, invalid input, missing records, business-rule failures, concurrent writes when relevant, and persistence or rollback.
 3. Review data integrity and trust boundaries. For inventory workflows, check whether conditional database updates prevent overselling under concurrent transactions, and whether all related writes share one transaction. Check identity and authorization separately from request validation.
 4. Provide a sequential manual guide with schema/client setup, server startup, realistic requests, expected status codes, and how to verify persisted effects. Use the repository's actual Prisma schema path and commands.

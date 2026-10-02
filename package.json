@@ -1,11 +1,12 @@
 {
   "name": "fms-platform",
   "private": true,
-  "workspaces": ["apps/web", "apps/api", "packages/database"],
+  "workspaces": ["apps/web"],
   "scripts": {
     "dev:web": "npm --workspace apps/web run dev",
-    "dev:api": "npm --workspace apps/api run dev",
-    "db:generate": "npm --workspace packages/database run generate",
-    "db:migrate": "npm --workspace packages/database run migrate"
+    "dev:api": "node --watch Back-end/src/server.js",
+    "dev:stack": "docker compose up --build",
+    "db:generate": "npm --prefix Back-end run prisma:generate",
+    "db:migrate": "npm --prefix Back-end run prisma:migrate --"
   }
 }

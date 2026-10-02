@@ -12,7 +12,8 @@
   }
 
   function write(key, value) {
-    FMSStorage.setItem(key, JSON.stringify(value));
+    try { FMSStorage.setItem(key, JSON.stringify(value)); }
+    catch (error) { console.warn("Audit record could not be saved.", error); }
   }
 
   function log(action, detail = {}) {

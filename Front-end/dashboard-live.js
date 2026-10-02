@@ -4,7 +4,7 @@
   const apiBase = window.FMS_API_URL || `${location.protocol}//${location.hostname}:4000`;
   async function refreshDatabaseDashboard() {
     try {
-      const response = await fetch(`${apiBase}/api/dashboard/data`, { cache: "no-store" });
+      const response = await fetch(`${apiBase}/api/dashboard/data`, { cache: "no-store", credentials: "include" });
       const result = await response.json();
       if (!response.ok || !result.success) throw new Error(result.message || "Dashboard data unavailable");
       databaseDashboard = result.data;

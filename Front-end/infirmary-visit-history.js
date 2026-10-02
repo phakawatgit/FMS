@@ -40,6 +40,13 @@ function formatVisitDate(value) {
   return new Intl.DateTimeFormat(language === "th" ? "th-TH" : "en-US", { dateStyle: "medium", timeStyle: "short" }).format(date);
 }
 
+function formatStaffName(record, kind) {
+  if (kind === "responsible" && !record.responsibleFromDutyShift) return language === "th" ? "ไม่พบข้อมูลเข้าเวร" : "No duty record";
+  const name = kind === "entered" ? record.enteredByName : record.responsibleName;
+  const nickname = kind === "entered" ? record.enteredByNickname : record.responsibleNickname;
+  return name ? `${name}${nickname ? ` (${nickname})` : ""}` : "-";
+}
+
 function populateDetails(record) {
   const t = copy[language];
   const visitorKind = getVisitorKind(record);
@@ -64,7 +71,9 @@ function populateDetails(record) {
     [t.quantity, record.quantity],
     [t.status, status],
     [t.hospital, record.hospitalName],
-    [t.visitedAt, formatVisitDate(record.createdAt)]
+    [t.visitedAt, formatVisitDate(record.createdAt)],
+    [language === "th" ? "ผู้บันทึก" : "Entered by", formatStaffName(record, "entered")],
+    [language === "th" ? "ผู้รับผิดชอบตามเวรในวันนั้น" : "Responsible nurse on duty", formatStaffName(record, "responsible")]
   ];
   document.getElementById("visitDetailTitle").textContent = t.detailTitle;
   detailFields.innerHTML = rows.map(([label, value]) => `<div class="visit-detail-field"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value || "-")}</strong></div>`).join("");
@@ -103,6 +112,8 @@ function render() {
         <p><strong>${t.name}:</strong> ${escapeHtml(name)}</p>
         <p><strong>${t.studentId}:</strong> ${escapeHtml(id)}</p>
         <p><strong>${t.branch}:</strong> ${escapeHtml(record.branch || "-")}</p>
+        <p><strong>${language === "th" ? "ผู้บันทึก" : "Entered by"}:</strong> ${escapeHtml(formatStaffName(record, "entered"))}</p>
+        <p><strong>${language === "th" ? "ผู้รับผิดชอบตามเวร" : "Responsible nurse on duty"}:</strong> ${escapeHtml(formatStaffName(record, "responsible"))}</p>
         ${record.nickname ? `<p><strong>${language === "th" ? "ชื่อเล่น" : "Nickname"}:</strong> ${escapeHtml(record.nickname)}</p>` : ""}
       </div>
       <div class="visit-side">

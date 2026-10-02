@@ -12,33 +12,27 @@ The repository contains a live legacy frontend and a newer application that is s
 |---|---|---|
 | Legacy frontend | `Front-end/` | Static HTML/CSS/JavaScript used by existing workflows. Pages use shared scripts/styles and relative links. |
 | New frontend | `apps/web/` | Next.js 15 App Router and React 19. Some routes are starter screens; several real workflows still open `/legacy/*.html`. |
-| New API | `apps/api/` | Express 5 and TypeScript API foundation, currently including health and duty shift endpoints. |
-| Legacy backend | `Back-end/` | Existing Express backend, Prisma schema, legacy storage API, and Python service. Verify which service owns a requested behavior. |
-| New database package | `packages/database/` | Separate Prisma schema/package used by the newer workspace foundation. Do not assume it is the schema used by every Prisma command. |
-| Reports service | `services/reports/` | FastAPI service for PDF/Excel report generation. |
+| Active backend | `Back-end/` | Express API, Prisma schema, Firebase session auth, and legacy storage routes used by Docker Compose. |
 | Architecture docs | `docs/` | Frontend boundaries and migration guidance. |
 
 ## Data and architecture facts
 
 - The legacy frontend stores some state in browser `localStorage`; shared legacy data may sync through `/api/legacy-storage`.
 - Some pages use Firebase Authentication. Confirm the page's existing auth flow before changing login or access behavior.
-- PostgreSQL is provided for local development through Docker Compose on host port `5434`; the API is exposed on `4000`, the report service on `8000`, and the web app on `3001`.
-- The root `prisma.config.ts` points Prisma CLI to `Back-end/prisma/schema.prisma` and `Back-end/prisma/migrations/`. `packages/database/prisma/schema.prisma` is a different schema. Always inspect the config, package scripts, and consumers before generating a client or changing a schema.
-- The model and enum definitions in both Prisma schemas have been cleared for a fresh setup; only the generator and PostgreSQL datasource configuration remain. Existing API code still references the previous models, so database-backed routes and the legacy backend seed need matching schema/client work before they can run correctly.
-- The legacy frontend and newer API/database are in transition. Preserve current routes and data contracts until all relevant callers have migrated.
+- Run the full local environment with `npm run dev:stack` (Docker Compose): web on host port `3000`, API on `4000`, PostgreSQL on `5434`, and Prisma Studio on `5555`. Inside Compose, services connect by service name and PostgreSQL port `5432`.
+- The root `prisma.config.ts` and root database scripts point to `Back-end/prisma/schema.prisma` and `Back-end/prisma/migrations/`.
+- `Back-end/prisma/schema.prisma` is the only source schema. The running API and Prisma Studio use this schema.
+- The legacy pages are served from the Next.js web container and use the active `Back-end/` API for shared PostgreSQL data.
 
 ## Local development
 
-The root scripts include:
+The single-command full-stack startup is:
 
 ```powershell
-npm install
-docker compose up postgres -d
-npm run db:generate
-npm run db:migrate -- --name <migration-name>
-npm run dev:api
-npm run dev:web
+npm run dev:stack
 ```
+
+For isolated development, `npm run dev:web` and `npm run dev:api` are available.
 
 `npm run db:migrate` writes to the database selected by `DATABASE_URL`; verify the target is a disposable/local development database before running it. Check workspace `package.json` files for other scripts. Do not assume a root lint or backend test script exists.
 

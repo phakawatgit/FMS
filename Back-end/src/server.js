@@ -1,4 +1,4 @@
-require("dotenv").config();
+require("dotenv").config({ path: require("node:path").resolve(__dirname, "../.env") });
 
 const express = require("express");
 const cors = require("cors");
@@ -7,6 +7,7 @@ const morgan = require("morgan");
 const prisma = require("./lib/prisma");
 const healthRouter = require("./routes/health");
 const apiRouter = require("./routes/index");
+const { requireCsrfForUnsafeMethods, requireFirebaseSession } = require("./middleware/firebase-session");
 
 const app = express();
 const port = Number(process.env.PORT || 4000);
@@ -40,6 +41,7 @@ app.use(cors({
     }
     return callback(new Error("CORS origin is not allowed"));
   },
+  credentials: true,
 }));
 app.use(express.json({ limit: "8mb" }));
 app.use(express.urlencoded({ extended: true }));
@@ -50,6 +52,10 @@ app.get("/", (_req, res) => {
 });
 
 app.use("/api/health", healthRouter);
+app.use("/api", (req, res, next) => {
+  if (req.path.startsWith("/auth/") || req.path === "/database/health") return next();
+  return requireFirebaseSession(req, res, () => requireCsrfForUnsafeMethods(req, res, next));
+});
 app.use("/api", apiRouter);
 
 app.use((_req, res) => {

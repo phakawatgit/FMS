@@ -2,6 +2,10 @@ node_modules/
 .next/
 dist/
 .env
+/Back-end/firebase-service-account.json
+/apps/web/coverage/
+/apps/web/playwright-report/
+/apps/web/test-results/
 *.pyc
 __pycache__/
 postgres_data/

@@ -2,19 +2,11 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /nurseColorLocks/{colorId} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null
-        && request.resource.data.uid == request.auth.uid;
-      allow update: if request.auth != null
-        && resource.data.uid == request.auth.uid
-        && request.resource.data.uid == request.auth.uid;
-    }
-
-    match /dutyRecords/{recordId} {
-      allow read: if request.auth != null;
-      allow create, update: if request.auth != null
-        && request.resource.data.uid == request.auth.uid;
+    // FMS no longer accesses Firestore from the browser. Keep any existing
+    // documents intact, but deny client access while records are migrated to
+    // PostgreSQL and the old Firestore contents are reviewed.
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

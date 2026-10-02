@@ -9,29 +9,39 @@ services:
       - "127.0.0.1:5434:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fms -d fms"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
 
   api:
     build:
       context: ./Back-end
       dockerfile: Dockerfile
+    image: fms-api:local
     env_file:
       - ./Back-end/.env
+    volumes:
+      - ./Back-end/firebase-service-account.json:/app/firebase-service-account.json:ro
     environment:
       DATABASE_URL: postgresql://fms:fms_password@postgres:5432/fms?schema=public
+      FIREBASE_SERVICE_ACCOUNT_PATH: /app/firebase-service-account.json
       PORT: 4000
-      FRONTEND_URL: http://localhost:3001
-      PYTHON_SERVICE_URL: http://reports:8000
+      FRONTEND_URL: http://localhost:3000
       NODE_ENV: development
     ports:
       - "4000:4000"
     depends_on:
-      - postgres
-      - reports
-
-  reports:
-    build: ./services/reports
-    ports:
-      - "8000:8000"
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4000/api/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
 
   web:
     build:
@@ -40,11 +50,23 @@ services:
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:4000
     ports:
-      - "3001:3000"
-    volumes:
-      - ./Front-end:/app/apps/web/public/legacy:ro
+      - "3000:3000"
     depends_on:
-      - api
+      api:
+        condition: service_healthy
+
+  studio:
+    image: fms-api:local
+    command: ["npx", "prisma", "studio", "--schema", "prisma/schema.prisma", "--hostname", "0.0.0.0", "--port", "5555", "--browser", "none"]
+    env_file:
+      - ./Back-end/.env
+    environment:
+      DATABASE_URL: postgresql://fms:fms_password@postgres:5432/fms?schema=public
+    ports:
+      - "5555:5555"
+    depends_on:
+      api:
+        condition: service_healthy
 
 volumes:
   postgres_data:

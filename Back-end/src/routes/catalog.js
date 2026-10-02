@@ -1,5 +1,6 @@
 const express = require("express");
 const prisma = require("../lib/prisma");
+const { requireRole } = require("../middleware/firebase-session");
 
 const router = express.Router();
 const legacyKey = "fms-stock-records";
@@ -99,7 +100,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.put("/", async (req, res) => {
+router.put("/", requireRole("ADMIN"), async (req, res) => {
   try {
     const rows = await syncRecords(req.body?.records);
     return res.json({ success: true, data: rows.map((row) => serialize(row, req)) });

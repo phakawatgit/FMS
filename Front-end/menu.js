@@ -1,6 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
-import { collection, doc, getFirestore, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyD6eLRN8rU-e7KJMb1Diw_mFNH81pWpzIg",
@@ -11,15 +10,11 @@ const firebaseConfig = {
   appId: "1:636847349725:web:01eaad241d971a2437a034"
 };
 
-// Keep duty data in this browser while the frontend is being developed.
-// Change this to true only after Firestore rules have been published.
-const USE_FIRESTORE = false;
 const LOCAL_DUTY_STORAGE_KEY = "fms-local-duty-records";
 const DUTY_PROFILE_KEY = "fms-duty-profiles";
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db = getFirestore(app);
 const menuGrid = document.getElementById("menuGrid");
 const languageInputs = document.querySelectorAll("input[name='language']");
 const signOutButton = document.getElementById("signOutButton");
@@ -48,13 +43,11 @@ const yearCalendarTrigger = document.getElementById("yearCalendarTrigger");
 const yearCalendarValue = document.getElementById("yearCalendarValue");
 const yearCalendarOptions = document.getElementById("yearCalendarOptions");
 const ADMIN_SESSION_KEY = "fms-admin-session";
+const API_BASE = window.FMS_API_URL || `${location.protocol}//${location.hostname}:4000`;
+let currentRole = null;
 
 function isAdminSession() {
-  try {
-    return JSON.parse(sessionStorage.getItem(ADMIN_SESSION_KEY) || "null")?.role === "admin";
-  } catch {
-    return false;
-  }
+  return currentRole === "ADMIN";
 }
 
 const colors = Array.from({ length: 50 }, (_, index) => ({
@@ -332,7 +325,7 @@ function renderPalette() {
   const pageColors = colors.slice(currentColorPage * pageSize, (currentColorPage + 1) * pageSize);
   const t = translations[language];
   colorPalette.innerHTML = pageColors.map((color) => {
-    const lock = colorLocks.get(color.id);
+    const lock = Object.values(readDutyProfiles()).find((profile) => profile.colorId === color.id);
     const lockedByOther = lock && lock.uid !== auth.currentUser?.uid;
     const classes = `color-choice${selectedColor === color.id ? " is-selected" : ""}${lockedByOther ? " is-locked" : ""}`;
     return `<button class="${classes}" type="button" data-color="${color.id}" style="background:${color.value}" aria-label="${color.id}" ${lockedByOther ? "disabled" : ""}></button>`;
@@ -363,62 +356,30 @@ function renderLanguage() {
 async function saveDutyRecord(event) {
   event.preventDefault();
   const t = translations[language];
-  const user = auth.currentUser || (isAdminSession() ? { uid: "admin" } : null);
+  const user = auth.currentUser;
   if (!user) return;
   const firstName = document.getElementById("nurseFirstName").value.trim();
   const lastName = document.getElementById("nurseLastName").value.trim();
   if (!selectedColor) { dutyStatus.textContent = t.colorRequired; return; }
   const color = colors.find((item) => item.id === selectedColor);
-  const nurseName = `${firstName} ${lastName}`.trim();
+  const currentProfileKey = String(user.email || user.uid).trim().toLowerCase();
+  const colorAlreadyUsed = Object.entries(readDutyProfiles()).some(([key, profile]) => key !== currentProfileKey && profile.colorId === color.id);
+  if (colorAlreadyUsed) { dutyStatus.textContent = t.colorLocked; return; }
   const date = getDateKey(new Date());
-  const lockRef = doc(db, "nurseColorLocks", color.id);
-  const dutyRef = doc(db, "dutyRecords", `${date}_${user.uid}`);
   const dutyRecord = {
-    uid: user.uid,
-    email: user.email || "",
-    nurseName,
-    firstName,
-    lastName,
-    nickname: document.getElementById("nurseNickname").value.trim(),
-    affiliation: document.getElementById("nurseAffiliation").value.trim(),
-    colorId: color.id,
-    colorValue: color.value,
-    date,
-    updatedAt: new Date().toISOString()
+    uid: user.uid, email: user.email || "", nurseName: `${firstName} ${lastName}`.trim(), firstName, lastName,
+    nickname: document.getElementById("nurseNickname").value.trim(), affiliation: document.getElementById("nurseAffiliation").value.trim(),
+    colorId: color.id, colorValue: color.value, date, updatedAt: new Date().toISOString(),
   };
   dutyStatus.textContent = "...";
-  if (!USE_FIRESTORE) {
+  try {
     const recordsForToday = dutyRecords.get(date) || [];
-    const otherRecords = recordsForToday.filter((record) => record.uid !== user.uid);
-    dutyRecords.set(date, [...otherRecords, dutyRecord]);
+    dutyRecords.set(date, [...recordsForToday.filter((record) => record.uid !== user.uid), dutyRecord]);
     saveLocalDutyRecords();
     saveDutyProfile(dutyRecord, user);
-    renderCalendar();
-    dutyStatus.textContent = t.saved;
-    return;
-  }
-  try {
-    await runTransaction(db, async (transaction) => {
-      const lockSnapshot = await transaction.get(lockRef);
-      const existingLock = lockSnapshot.data();
-      if (existingLock && existingLock.uid !== user.uid) throw new Error("color-locked");
-      transaction.set(lockRef, { uid: user.uid, nurseName, colorId: color.id, updatedAt: new Date().toISOString() });
-      transaction.set(dutyRef, dutyRecord);
-    });
-    const recordsForToday = dutyRecords.get(date) || [];
-    const otherRecords = recordsForToday.filter((record) => record.uid !== user.uid);
-    dutyRecords.set(date, [...otherRecords, dutyRecord]);
-    renderCalendar();
-    dutyStatus.textContent = t.saved;
-  } catch (error) {
-    dutyStatus.textContent = error.message === "color-locked"
-      ? t.colorLocked
-      : error.code === "permission-denied"
-        ? (language === "th" ? "Firestore Rules ยังไม่อนุญาต กรุณา Publish Rules ก่อน" : "Firestore Rules denied access. Publish the Firestore Rules first.")
-        : t.saveError;
-  }
+    renderPalette(); renderCalendar(); dutyStatus.textContent = t.saved;
+  } catch (_error) { dutyStatus.textContent = t.saveError; }
 }
-
 function saveDutyProfile(record, user = getCurrentUser()) {
   const profileKey = String(user?.email || user?.uid || "").trim().toLowerCase();
   if (!profileKey) return;
@@ -470,34 +431,30 @@ document.addEventListener("click", (event) => { if (!event.target.closest("#year
 document.addEventListener("keydown", (event) => { if (event.key === "Escape" && !yearCalendarModal.hidden) hideYearCalendar(); });
 previousColorPage.addEventListener("click", () => { if (currentColorPage > 0) { currentColorPage -= 1; renderPalette(); } });
 nextColorPage.addEventListener("click", () => { if (currentColorPage < Math.ceil(colors.length / 20) - 1) { currentColorPage += 1; renderPalette(); } });
-signOutButton.addEventListener("click", () => {
-  sessionStorage.removeItem(ADMIN_SESSION_KEY);
-  signOut(auth).finally(() => { window.location.href = "./index.html"; });
+signOutButton.addEventListener("click", async () => {
+  const csrf = document.cookie.split(";").map((part) => part.trim()).find((part) => part.startsWith("fms_csrf="))?.slice("fms_csrf=".length) || "";
+  try {
+    await fetch(`${API_BASE}/api/auth/session/logout`, { method: "POST", credentials: "include", headers: { "X-FMS-CSRF": decodeURIComponent(csrf) } });
+  } finally {
+    sessionStorage.removeItem(ADMIN_SESSION_KEY);
+    signOut(auth).finally(() => { window.location.href = "./index.html"; });
+  }
 });
 
-onAuthStateChanged(auth, (user) => {
-  if (isAdminSession()) {
-    loadLocalDutyRecords();
-    restoreDutyProfile();
-    ensureTodayDutyRecord();
-    renderPalette();
-    renderCalendar();
-    return;
-  }
+onAuthStateChanged(auth, async (user) => {
   if (!user) { window.location.href = "./index.html"; return; }
-  if (!USE_FIRESTORE) {
-    loadLocalDutyRecords();
-    restoreDutyProfile(user);
-    ensureTodayDutyRecord(user);
-    renderPalette();
-    renderCalendar();
-    return;
+  try {
+    const response = await fetch(`${API_BASE}/api/auth/session`, { credentials: "include" });
+    const result = await response.json();
+    if (!response.ok || !result.success) throw new Error("No active API session");
+    currentRole = result.data.user.role;
+    sessionStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify({ role: currentRole.toLowerCase() }));
+    renderLanguage();
+  } catch (_error) {
+    await signOut(auth); window.location.href = "./index.html"; return;
   }
-  onSnapshot(collection(db, "nurseColorLocks"), (snapshot) => { colorLocks = new Map(snapshot.docs.map((item) => [item.id, item.data()])); renderPalette(); }, (error) => { if (error.code === "permission-denied") dutyStatus.textContent = language === "th" ? "Firestore Rules ยังไม่อนุญาต กรุณา Publish Rules ก่อน" : "Firestore Rules denied access. Publish the Firestore Rules first."; });
-  onSnapshot(collection(db, "dutyRecords"), (snapshot) => { dutyRecords = new Map(); snapshot.docs.forEach((item) => { const record = item.data(); if (!dutyRecords.has(record.date)) dutyRecords.set(record.date, []); dutyRecords.get(record.date).push(record); }); renderCalendar(); }, (error) => { if (error.code === "permission-denied") dutyStatus.textContent = language === "th" ? "Firestore Rules ยังไม่อนุญาต กรุณา Publish Rules ก่อน" : "Firestore Rules denied access. Publish the Firestore Rules first."; });
-});
-
-loadLocalDutyRecords();
+  loadLocalDutyRecords(); restoreDutyProfile(user); ensureTodayDutyRecord(user); renderPalette(); renderCalendar();
+});loadLocalDutyRecords();
 renderCalendar();
 renderLanguage();
 renderNotifications();

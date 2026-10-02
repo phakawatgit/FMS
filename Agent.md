@@ -14,10 +14,7 @@ FMS ใช้จัดการห้องพยาบาล เวชภัณ
 
 - `Front-end/` — เว็บเดิมแบบ HTML, CSS และ JavaScript เป็นจุดที่ต้องแก้เมื่อคำขอเกี่ยวกับหน้าที่ใช้งานอยู่ในระบบเดิม ระวัง URL, relative path, asset และสคริปต์ที่หน้าอื่นใช้ร่วมกัน
 - `apps/web/` — เว็บใหม่ด้วย Next.js App Router, React, TypeScript และ Tailwind CSS
-- `apps/api/` — REST API ใหม่ด้วย Node.js, Express 5, TypeScript และ Zod
-- `packages/database/` — Prisma client, schema และ migration สำหรับ PostgreSQL
-- `services/reports/` — บริการรายงานด้วย Python และ FastAPI
-- `Back-end/` — backend ชุดเดิม/แยกต่างหาก มี Node.js API และ Python service ให้ตรวจสอบการใช้งานจริงก่อนแก้ อย่าย้ายความรับผิดชอบมาที่ `apps/api/` โดยอัตโนมัติ
+- `Back-end/` — Express API used by Docker Compose, Firebase session auth, Prisma schema, and PostgreSQL routes.
 - `docs/` — เอกสารสถาปัตยกรรมและข้อตกลงของโปรเจกต์
 
 หน้า Next.js บางส่วนยังเป็นโครงเริ่มต้นและอาจเชื่อมไปยังหน้าเดิมผ่าน `/legacy/` การย้ายหน้าจาก `Front-end/` ต้องคงเส้นทางและพฤติกรรมที่ผู้ใช้พึ่งพาไว้ จนกว่าหน้าใหม่จะรองรับครบ
@@ -32,7 +29,7 @@ FMS ใช้จัดการห้องพยาบาล เวชภัณ
 
 ## ข้อตกลงในการพัฒนา
 
-- ใช้ TypeScript สำหรับเว็บและ API ใหม่; รักษารูปแบบ JavaScript เดิมใน `Front-end/` เว้นแต่คำขอจะรวมการปรับโครงสร้าง
+- ใช้ TypeScript สำหรับ `apps/web/` และรักษารูปแบบ JavaScript เดิมใน `Back-end/` กับ `Front-end/` เว้นแต่คำขอจะรวมการปรับโครงสร้าง
 - แบ่ง UI, API, ฐานข้อมูล และรายงานตามขอบเขตที่มีอยู่ หลีกเลี่ยงการเพิ่ม logic ซ้ำในหลายหน้า
 - ตรวจสอบ input ที่ขอบเขต API และส่งข้อผิดพลาดที่เข้าใจได้ ห้ามเชื่อถือข้อมูลจาก browser โดยไม่ตรวจสอบ
 - การเปลี่ยน schema ต้องแก้ Prisma schema และสร้าง migration ที่สอดคล้อง ห้ามแก้ฐานข้อมูลจริงหรือ migration เก่าทิ้งโดยไม่มีเหตุผลชัดเจน

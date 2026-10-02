@@ -39,14 +39,12 @@ app/globals.css         Global Tailwind/CSS
 |---|---|
 | ข้อมูลระบบและ UI state ที่ต้องคงอยู่ | `/api/legacy-storage` -> PostgreSQL |
 | ข้อมูล session ชั่วคราว | Browser `sessionStorage` |
-| Duty Shift รุ่น API ใหม่ | Express + Prisma + PostgreSQL |
+| Duty Shift records | `FMSStorage` → `/api/legacy-storage` → PostgreSQL; nurse directory uses `/api/nurses` |
 | Authentication บางหน้า | Firebase Auth |
 
 ## หลักการแก้ไข
 
 - แก้ UI ของหน้าที่ใช้งานจริงใน `Front-end/`
 - แก้หน้า Next.js ใน `apps/web/`
-- แก้ API ใหม่ใน `apps/api/`
-- แก้ schema และ migration ใน `packages/database/`
-- แก้ระบบรายงานใน `services/reports/`
+- แก้ schema และ migration ใน `Back-end/prisma/`
 - หลีกเลี่ยงการย้ายไฟล์ Legacy โดยไม่ปรับ URL และ relative paths พร้อมกัน

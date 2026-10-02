@@ -1,5 +1,6 @@
 const express = require("express");
 const prisma = require("../lib/prisma");
+const { requireRole } = require("../middleware/firebase-session");
 const router = express.Router();
 
 function legacy(record) {
@@ -17,7 +18,7 @@ router.get("/", async (_req, res) => {
   try { const rows = await prisma.borrowRecord.findMany({ include, orderBy: { borrowedAt: "desc" } }); res.json({ success: true, data: rows.map(legacy) }); }
   catch (error) { console.error("Borrow records read failed:", error.message); res.status(503).json({ success: false, message: "Borrow records could not be read" }); }
 });
-router.post("/", async (req, res) => {
+router.post("/", requireRole("ADMIN", "NURSE"), async (req, res) => {
   const input = req.body || {};
   const name = String(input.fullName || "").trim();
   const dueAt = new Date(`${input.dueDate || ""}T00:00:00.000Z`);
@@ -40,7 +41,7 @@ router.post("/", async (req, res) => {
     res.status(201).json({ success: true, data: legacy(record) });
   } catch (error) { console.error("Borrow save failed:", error.message); res.status(error.httpStatus || 503).json({ success: false, message: error.httpStatus ? error.message : "Borrow record could not be saved" }); }
 });
-router.post("/:id/returns", async (req, res) => {
+router.post("/:id/returns", requireRole("ADMIN", "NURSE"), async (req, res) => {
   const returns = Array.isArray(req.body?.items) ? req.body.items : [];
   if (!returns.length) return res.status(400).json({ success: false, message: "Return items are required" });
   try {

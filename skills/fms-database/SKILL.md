@@ -11,9 +11,8 @@ description: Use when changing, reviewing, migrating, or troubleshooting FMS dat
 
 - เริ่มจากค้นหา schema, migration, Prisma config, caller และเอกสารที่เกี่ยวข้องก่อนแก้ อย่าคาดเดาจากชื่อโฟลเดอร์
 - ตรวจ `git status` ก่อนเริ่ม และรักษาการเปลี่ยนแปลงที่มีอยู่
-- ใน repository นี้มี Prisma schema มากกว่าหนึ่งชุด:
-  - `Back-end/prisma/schema.prisma` และ `Back-end/prisma/migrations/` เป็น target ที่ `prisma.config.ts` ระบุไว้สำหรับ Prisma CLI ที่รันจาก root
-  - `packages/database/prisma/schema.prisma` เป็น schema แยก ให้ตรวจ caller และ package config ก่อนแก้
+- This repository has one source schema: `Back-end/prisma/schema.prisma`.
+- Root Prisma configuration and the API/Studio runtime use `Back-end/prisma/schema.prisma`.
 - ตรวจ `prisma.config.ts`, `package.json` และตำแหน่งที่เรียกใช้ Prisma ทุกครั้งก่อนสร้าง migration หรือ generate client การมี schema อยู่ในโฟลเดอร์หนึ่งไม่ได้แปลว่าคำสั่งจะใช้ schema นั้น
 - ห้ามอ่าน แสดง คัดลอก หรือ commit ค่า secret จาก `.env` ใช้ชื่อตัวแปรจาก `.env.example` และเก็บค่าจริงไว้ใน environment
 - ห้ามชี้คำสั่งที่แก้ข้อมูลไปยัง production หรือฐานข้อมูลที่ไม่ทราบเจ้าของ หาก target ไม่ชัด ให้หยุดก่อนคำสั่งที่เขียนข้อมูลและชี้แจงความไม่แน่นอน

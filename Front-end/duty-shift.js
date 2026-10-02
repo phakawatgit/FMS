@@ -279,9 +279,10 @@ function renderLanguage() {
 }
 
 function saveLocalRecord(record) {
-  records = records.filter((item) => !(belongsToUser(item, currentUser) && item.date === record.date));
-  records.push(record);
-  FMSStorage.setItem(DUTY_KEY, JSON.stringify(records));
+  const nextRecords = records.filter((item) => !(belongsToUser(item, currentUser) && item.date === record.date));
+  nextRecords.push(record);
+  FMSStorage.setItem(DUTY_KEY, JSON.stringify(nextRecords));
+  records = readRecords();
 
   const profileKey = String(currentUser?.email || getUserKey(currentUser) || "").trim().toLowerCase();
   if (profileKey) {
@@ -297,7 +298,8 @@ function saveLocalRecord(record) {
       affiliation: record.affiliation,
       updatedAt: record.updatedAt,
     };
-    FMSStorage.setItem(DUTY_PROFILE_KEY, JSON.stringify(profiles));
+    try { FMSStorage.setItem(DUTY_PROFILE_KEY, JSON.stringify(profiles)); }
+    catch (error) { console.error("Duty profile sync failed:", error); }
   }
 }
 
@@ -323,9 +325,13 @@ async function saveDuty(event) {
   };
   let savedToDatabase = false;
   try {
+    saveLocalRecord(record);
+    savedToDatabase = true;
+    const csrf = document.cookie.split(";").map((part) => part.trim()).find((part) => part.startsWith("fms_csrf="))?.slice("fms_csrf=".length) || "";
     const response = await fetch(`${API_BASE}/api/nurses`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      headers: { "Content-Type": "application/json", "X-FMS-CSRF": decodeURIComponent(csrf) },
       body: JSON.stringify({
         firstName: record.firstName,
         lastName: record.lastName,
@@ -334,11 +340,9 @@ async function saveDuty(event) {
       }),
     });
     if (!response.ok) throw new Error("Nurse data could not be saved");
-    savedToDatabase = true;
   } catch (error) {
     console.error("Nurse data sync failed:", error);
   }
-  saveLocalRecord(record);
   dutyStatus.textContent = savedToDatabase
     ? `${copy[language].saved} · ${formatDate(record.date)}`
     : `${copy[language].saved} · ${language === "th" ? "บันทึกข้อมูลในฐานข้อมูลไม่สำเร็จ" : "Database sync failed"}`;
