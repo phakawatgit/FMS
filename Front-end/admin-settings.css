@@ -370,6 +370,13 @@ code {
 .deleted-menu-badge.is-other {
   background: #f0edf0;
 }
+.users-message { min-height: 1.5rem; margin: 0 0 .5rem; color: #16823b; font-size: .82rem; }
+.users-message.is-error { color: #b42318; }
+.users-table { min-width: 620px; }
+.role-controls { display: flex; gap: .5rem; align-items: center; }
+.role-controls select, .role-controls button { min-height: 2.35rem; border: 1px solid #b7e1e2; border-radius: .5rem; padding: .35rem .65rem; color: var(--deep-blue); background: #fff; font: 500 .8rem "Kanit",sans-serif; }
+.role-controls button { border: 0; background: var(--orange); color: #fff; font-weight: 700; cursor: pointer; }
+.role-controls button:disabled { opacity: .55; cursor: wait; }
 .option-form {
   display: grid;
   grid-template-columns: 10rem minmax(12rem,24rem) auto;

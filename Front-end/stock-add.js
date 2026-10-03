@@ -1,5 +1,6 @@
 const form = document.getElementById("medicineForm");
 const imageInput = document.getElementById("imageInput");
+const imageFileInput = document.getElementById("imageFileInput");
 const preview = document.getElementById("imagePreview");
 const message = document.getElementById("message");
 const nameInput = form.elements.name;
@@ -26,6 +27,13 @@ let selectedImageData = "";
 function previewImage(value) {
   const raw = String(value || "").trim();
   if (!raw) { preview.textContent = "รูปภาพยา"; return; }
+  if (/^data:image\/(?:jpeg|png|webp);base64,/i.test(raw)) {
+    const image = document.createElement("img");
+    image.alt = "ตัวอย่างรูปยา";
+    image.src = raw;
+    preview.replaceChildren(image);
+    return;
+  }
   try {
     const url = new URL(raw);
     if (!["http:", "https:"].includes(url.protocol)) throw new Error("invalid protocol");
@@ -40,10 +48,38 @@ function previewImage(value) {
 }
 
 imageInput.type = "url";
-imageInput.addEventListener("input", () => { selectedImageData = imageInput.value.trim(); previewImage(selectedImageData); });
+imageInput.addEventListener("input", () => {
+  selectedImageData = "";
+  if (imageFileInput) imageFileInput.value = "";
+  previewImage(imageInput.value.trim());
+});
+imageFileInput?.addEventListener("change", () => {
+  const file = imageFileInput.files?.[0];
+  if (!file) return;
+  if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 5 * 1024 * 1024) {
+    imageFileInput.value = "";
+    message.textContent = "กรุณาเลือกรูป JPG, PNG หรือ WebP ขนาดไม่เกิน 5 MB";
+    message.style.color = "#c43a3a";
+    return;
+  }
+  const reader = new FileReader();
+  reader.addEventListener("load", () => {
+    selectedImageData = String(reader.result || "");
+    imageInput.value = "";
+    previewImage(selectedImageData);
+    message.textContent = "เลือกไฟล์รูปแล้ว";
+    message.style.color = "#16823b";
+  });
+  reader.addEventListener("error", () => {
+    message.textContent = "อ่านไฟล์รูปไม่สำเร็จ กรุณาลองอีกครั้ง";
+    message.style.color = "#c43a3a";
+  });
+  reader.readAsDataURL(file);
+});
 form.addEventListener("reset", () => setTimeout(() => {
   selectedImageData = "";
   imageInput.value = "";
+  if (imageFileInput) imageFileInput.value = "";
   preview.textContent = "รูปภาพยา";
   message.textContent = "";
 }, 0));

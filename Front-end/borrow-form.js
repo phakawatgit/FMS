@@ -78,7 +78,7 @@ facultyBranchScript.src = "./borrow-form-faculty-branch.js?v=2";
 document.body.appendChild(facultyBranchScript);
 const facultyBranchStyles = document.createElement("link");
 facultyBranchStyles.rel = "stylesheet";
-facultyBranchStyles.href = "./borrow-form-faculty-branch.css?v=1";
+facultyBranchStyles.href = "./borrow-form-faculty-branch.css?v=2";
 document.head.appendChild(facultyBranchStyles);
 
 // Remove selections for products that no longer exist in the current stock list,

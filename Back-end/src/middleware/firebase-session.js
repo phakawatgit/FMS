@@ -66,6 +66,7 @@ async function upsertFirebaseUser(firebaseUser) {
 
   const adminEmails = new Set(String(process.env.FMS_ADMIN_EMAILS || "")
     .split(",").map((value) => value.trim().toLowerCase()).filter(Boolean));
+  // The environment list initializes new accounts; saved admin role changes are authoritative afterward.
   const isConfiguredAdmin = adminEmails.has(email);
   const existing = await prisma.user.findFirst({
     where: { OR: [{ firebaseUid: firebaseUser.uid }, { email }] },
@@ -83,7 +84,6 @@ async function upsertFirebaseUser(firebaseUser) {
       data: {
         firebaseUid: firebaseUser.uid,
         name: firebaseUser.displayName || existing.name,
-        ...(isConfiguredAdmin ? { role: "ADMIN" } : {}),
       },
     });
     return restoreProfileFromDutyShift(user);

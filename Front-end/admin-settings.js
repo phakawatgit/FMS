@@ -144,7 +144,54 @@ $("#optionsGrid").addEventListener("click", (event) => {
 document.querySelectorAll("[data-panel]").forEach((button) => button.addEventListener("click", () => {
   document.querySelectorAll("[data-panel]").forEach((item) => item.classList.toggle("is-active", item === button));
   document.querySelectorAll(".admin-panel").forEach((panel) => panel.hidden = panel.id !== button.dataset.panel);
+  if (button.dataset.panel === "usersPanel") loadUsers();
 }));
+
+const apiBase = window.FMS_API_URL || `${location.protocol}//${location.hostname}:4000`;
+const csrfCookie = () => document.cookie.split(";").map((part) => part.trim()).find((part) => part.startsWith("fms_csrf="))?.slice("fms_csrf=".length) || "";
+async function adminApi(path, options = {}) {
+  const headers = { "Content-Type": "application/json", ...(options.headers || {}) };
+  if (options.method && !["GET", "HEAD"].includes(options.method)) headers["X-FMS-CSRF"] = decodeURIComponent(csrfCookie());
+  const response = await fetch(`${apiBase}${path}`, { ...options, headers, credentials: "include" });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok || !result.success) throw new Error(result.message || "ไม่สามารถดำเนินการได้");
+  return result.data;
+}
+
+async function loadUsers() {
+  const rows = $("#userRows");
+  const message = $("#usersMessage");
+  rows.innerHTML = `<tr><td colspan="4" class="empty-table">กำลังโหลดบัญชีผู้ใช้...</td></tr>`;
+  message.textContent = "";
+  try {
+    const users = await adminApi("/api/users");
+    rows.innerHTML = users.length ? users.map((user) => `<tr data-user-id="${escapeHtml(user.id)}"><td>${escapeHtml(user.name || "-")}</td><td>${escapeHtml(user.email)}</td><td>${user.role === "ADMIN" ? "Admin" : "Nurse"}</td><td><div class="role-controls"><select aria-label="สิทธิ์ของ ${escapeHtml(user.email)}"><option value="NURSE" ${user.role === "NURSE" ? "selected" : ""}>Nurse</option><option value="ADMIN" ${user.role === "ADMIN" ? "selected" : ""}>Admin</option></select><button type="button" data-save-role>บันทึก</button></div></td></tr>`).join("") : `<tr><td colspan="4" class="empty-table">ยังไม่มีบัญชีผู้ใช้</td></tr>`;
+  } catch (error) {
+    rows.innerHTML = `<tr><td colspan="4" class="empty-table">โหลดบัญชีผู้ใช้ไม่สำเร็จ</td></tr>`;
+    message.textContent = error.message;
+    message.classList.add("is-error");
+  }
+}
+
+$("#userRows").addEventListener("click", async (event) => {
+  const button = event.target.closest("[data-save-role]");
+  if (!button) return;
+  const row = button.closest("tr[data-user-id]");
+  const role = row.querySelector("select").value;
+  const message = $("#usersMessage");
+  button.disabled = true;
+  message.classList.remove("is-error");
+  try {
+    await adminApi(`/api/users/${encodeURIComponent(row.dataset.userId)}/role`, { method: "PATCH", body: JSON.stringify({ role }) });
+    message.textContent = "บันทึกสิทธิ์ผู้ใช้เรียบร้อยแล้ว";
+    await loadUsers();
+  } catch (error) {
+    message.textContent = error.message;
+    message.classList.add("is-error");
+  } finally {
+    button.disabled = false;
+  }
+});
 document.querySelectorAll("[data-deleted-category]").forEach((button) => button.addEventListener("click", () => {
   deletedCategory = button.dataset.deletedCategory;
   document.querySelectorAll("[data-deleted-category]").forEach((item) => item.classList.toggle("is-active", item === button));

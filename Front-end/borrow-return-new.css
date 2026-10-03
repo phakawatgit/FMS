@@ -898,6 +898,9 @@ body.is-return-view .topbar {
 }
 .borrow-page.is-return-view .page-heading {
   border: 0;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
 }
 .borrow-page.is-return-view .page-heading h1 {
   color: #10164a;
@@ -982,8 +985,11 @@ body.is-return-view .topbar {
 }
 body.is-return-view .return-backbar {
   display: flex;
-  max-width: 1250px;
-  margin: .4rem auto 0;
+  width: auto;
+  max-width: none;
+  justify-content: flex-end;
+  flex: 0 0 auto;
+  margin: 0;
 }
 .return-backbar button {
   display: inline-flex;
@@ -1584,6 +1590,19 @@ body.is-return-view .return-backbar {
   color: #123b56;
   font-size: .94rem;
   overflow-wrap: anywhere;
+}
+.return-detail-info.has-extension > div:nth-child(4) strong::after {
+  content: "↻ ต่อเวลาแล้ว";
+  display: block;
+  width: max-content;
+  max-width: 100%;
+  margin-top: .35rem;
+  padding: .12rem .48rem;
+  border-radius: 999px;
+  background: #fff3df;
+  color: #a85a00;
+  font-size: .68rem;
+  font-weight: 600;
 }
 .return-detail-products {
   overflow: hidden;

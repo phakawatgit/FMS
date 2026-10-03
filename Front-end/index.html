@@ -7,7 +7,8 @@
     <link rel="icon" type="image/png" href="./assets/fms.png" />
     <link rel="apple-touch-icon" href="./assets/fms.png" />
     <link rel="stylesheet" href="./style.css?v=5" />
-  <link rel="stylesheet" href="./button-animations.css?v=3"><link rel="stylesheet" href="./font-kanit.css?v=1"><link rel="stylesheet" href="./theme-colors.css?v=2"><script src="./legacy-storage.js?v=3"></script></head>
+    <style>#fms-storage-error{display:none!important}</style>
+  <link rel="stylesheet" href="./button-animations.css?v=3"><link rel="stylesheet" href="./font-kanit.css?v=1"><link rel="stylesheet" href="./theme-colors.css?v=2"><script src="./legacy-storage.js?v=4"></script><link rel="stylesheet" href="./responsive.css?v=3"></head>
   <body>
     <main class="site-shell">
       <section class="brand-panel" aria-label="FMS introduction">
@@ -93,10 +94,10 @@
           <button id="signupOtpBack" class="reset-back" type="button"><span>กลับไปสร้างบัญชี</span></button>
           <p class="auth-kicker">EMAIL VERIFICATION</p>
           <h2 id="signupOtpTitle">ยืนยันอีเมล</h2>
-          <p id="signupOtpDescription" class="reset-description">กรอกรหัส OTP ที่ส่งไปยังอีเมลของคุณ</p>
+          <p id="signupOtpDescription" class="reset-description">กรอกรหัส OTP 6 หลักที่ส่งไปยังอีเมลของคุณ</p>
           <p id="signupOtpEmail" class="signup-otp-email"></p>
           <form id="signupOtpForm" class="auth-form">
-            <div class="field"><label for="signupOtp">รหัส OTP</label><input id="signupOtp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="กรอกรหัส 6 หลัก" required /></div>
+            <div class="field"><label for="signupOtp">รหัส OTP</label><input id="signupOtp" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" minlength="6" maxlength="6" placeholder="กรอกรหัส 6 หลัก" required /></div>
             <button id="signupOtpSubmit" class="primary-button" type="submit">ยืนยันอีเมล</button>
             <button id="signupOtpResend" class="otp-resend" type="button">ส่ง OTP อีกครั้ง</button>
           </form>
@@ -126,7 +127,7 @@
           <form id="resetOtpForm" class="auth-form" hidden>
             <div class="field">
               <label for="resetOtp">รหัส OTP</label>
-              <input id="resetOtp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="กรอกรหัส 6 หลัก" required />
+              <input id="resetOtp" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" minlength="6" maxlength="6" placeholder="กรอกรหัส 6 หลัก" required />
             </div>
             <button class="primary-button" type="submit">ยืนยัน OTP</button>
           </form>

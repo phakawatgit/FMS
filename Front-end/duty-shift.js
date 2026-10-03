@@ -48,6 +48,18 @@ let selectedColor = null;
 let colorPage = 0;
 let selectedDate = new Date();
 let records = readRecords();
+let editingDutyKey = null;
+let editingDutyColor = null;
+
+const dutyDetailModal = document.createElement("div");
+dutyDetailModal.className = "duty-detail-modal";
+dutyDetailModal.hidden = true;
+dutyDetailModal.innerHTML = `<section class="duty-detail-dialog" role="dialog" aria-modal="true" aria-labelledby="dutyDetailName"><button class="duty-detail-close" type="button" aria-label="ปิด">×</button><p class="duty-detail-eyebrow">รายละเอียดการเข้าเวร</p><h2 id="dutyDetailName"></h2><p id="dutyDetailAffiliation" class="duty-detail-affiliation"></p><form id="dutyDetailForm"><label class="duty-detail-date-label" for="dutyDetailDate">วันเข้าเวร</label><input id="dutyDetailDate" type="date" required><span class="duty-detail-color-label">เลือกสี</span><div id="dutyDetailPalette" class="duty-detail-palette"></div><p id="dutyDetailStatus" class="duty-detail-status" aria-live="polite"></p><div class="duty-detail-actions"><button class="duty-detail-cancel" type="button">ยกเลิก</button><button class="duty-detail-save" type="submit">บันทึกการแก้ไข</button></div></form></section>`;
+document.body.append(dutyDetailModal);
+const dutyDetailForm = document.getElementById("dutyDetailForm");
+const dutyDetailDate = document.getElementById("dutyDetailDate");
+const dutyDetailPalette = document.getElementById("dutyDetailPalette");
+const dutyDetailStatus = document.getElementById("dutyDetailStatus");
 
 function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[character]));
@@ -234,6 +246,42 @@ function renderPalette() {
   document.getElementById("selectedColorPreview").style.background = colors.find((color) => color.id === selectedColor)?.value || "#dce8f6";
 }
 
+function getDutyRecordKey(record) {
+  return record.id ? `id:${record.id}` : `legacy:${record.uid || record.email || record.userEmail || record.nurseName || ""}:${record.date}`;
+}
+
+function renderDutyDetailPalette(record, canEdit) {
+  const targetDate = dutyDetailDate.value;
+  dutyDetailPalette.innerHTML = colors.map((color) => {
+    const taken = records.some((item) => getDutyRecordKey(item) !== getDutyRecordKey(record) && item.date === targetDate && item.colorId === color.id);
+    return `<button class="duty-detail-color${editingDutyColor === color.id ? " is-selected" : ""}" type="button" data-detail-color="${color.id}" style="background:${color.value}" aria-label="${color.id}" title="${color.id}" ${!canEdit || taken ? "disabled" : ""}></button>`;
+  }).join("");
+}
+
+function openDutyDetail(record) {
+  editingDutyKey = getDutyRecordKey(record);
+  editingDutyColor = record.colorId || null;
+  const canEdit = (hasAdminSession() || belongsToUser(record)) && Boolean(record.id);
+  document.getElementById("dutyDetailName").textContent = `${record.nurseName || "—"}${record.nickname ? ` (${record.nickname})` : ""}`;
+  document.getElementById("dutyDetailAffiliation").textContent = record.affiliation || "";
+  dutyDetailDate.value = record.date;
+  dutyDetailDate.disabled = !canEdit;
+  dutyDetailModal.querySelector(".duty-detail-color-label").hidden = !canEdit;
+  dutyDetailPalette.hidden = !canEdit;
+  dutyDetailModal.querySelector(".duty-detail-save").hidden = !canEdit;
+  dutyDetailModal.querySelector(".duty-detail-cancel").textContent = canEdit ? (language === "th" ? "ยกเลิก" : "Cancel") : (language === "th" ? "ปิด" : "Close");
+  dutyDetailStatus.textContent = canEdit ? "" : (record.id ? (language === "th" ? "แก้ไขได้เฉพาะรายการเวรของคุณ" : "You can only edit your own shifts") : (language === "th" ? "รายการนี้ยังแก้ไขไม่ได้ กรุณาบันทึกเวรใหม่" : "This legacy entry cannot be edited yet"));
+  renderDutyDetailPalette(record, canEdit);
+  dutyDetailModal.hidden = false;
+  dutyDetailModal.querySelector(".duty-detail-close").focus();
+}
+
+function closeDutyDetail() {
+  dutyDetailModal.hidden = true;
+  editingDutyKey = null;
+  editingDutyColor = null;
+}
+
 function renderRecords() {
   const query = recordSearch.value.trim().toLocaleLowerCase();
   const visibleRecords = [...records].sort((a, b) => b.date.localeCompare(a.date) || String(b.updatedAt || "").localeCompare(String(a.updatedAt || ""))).filter((record) => {
@@ -246,7 +294,7 @@ function renderRecords() {
     const time = record.updatedAt && !Number.isNaN(new Date(record.updatedAt).getTime())
       ? new Intl.DateTimeFormat(language === "th" ? "th-TH" : "en-US", { hour: "2-digit", minute: "2-digit" }).format(new Date(record.updatedAt))
       : "—";
-    return `<article class="duty-record-card"><time datetime="${escapeHtml(record.date)}">${escapeHtml(formatDate(record.date))}</time><div class="duty-record-main"><span class="duty-record-person"><i style="background:${escapeHtml(record.colorValue || "#315dd4")}"></i><span><strong>${escapeHtml(record.nurseName || "—")}</strong>${record.nickname ? ` (${escapeHtml(record.nickname)})` : ""}${record.affiliation ? ` · ${escapeHtml(record.affiliation)}` : ""}</span></span><span class="duty-record-time">${language === "th" ? "เข้าเวร" : "On duty"} ${escapeHtml(time)}${language === "th" ? " น." : ""}</span></div></article>`;
+    return `<article class="duty-record-card" data-duty-detail="${escapeHtml(getDutyRecordKey(record))}" tabindex="0" role="button" aria-label="View duty shift details"><time datetime="${escapeHtml(record.date)}">${escapeHtml(formatDate(record.date))}</time><div class="duty-record-main"><span class="duty-record-person"><i style="background:${escapeHtml(record.colorValue || "#315dd4")}"></i><span><strong>${escapeHtml(record.nurseName || "—")}</strong>${record.nickname ? ` (${escapeHtml(record.nickname)})` : ""}${record.affiliation ? ` · ${escapeHtml(record.affiliation)}` : ""}</span></span><span class="duty-record-time">${language === "th" ? "เข้าเวร" : "On duty"} ${escapeHtml(time)}${language === "th" ? " น." : ""}</span></div></article>`;
   }).join("") : "";
   if (!visibleRecords.length && query) recordList.innerHTML = `<p class="duty-record-empty">${language === "th" ? "ไม่พบรายการที่ค้นหา" : "No matching records found"}</p>`;
 }
@@ -374,6 +422,64 @@ document.getElementById("previousColorPage").addEventListener("click", () => { i
 document.getElementById("nextColorPage").addEventListener("click", () => { if (colorPage < 2) { colorPage += 1; renderPalette(); } });
 dutyForm.addEventListener("submit", saveDuty);
 recordSearch.addEventListener("input", renderRecords);
+recordList.addEventListener("click", (event) => {
+  const card = event.target.closest("[data-duty-detail]");
+  if (!card) return;
+  const record = records.find((item) => getDutyRecordKey(item) === card.dataset.dutyDetail);
+  if (record) openDutyDetail(record);
+});
+recordList.addEventListener("keydown", (event) => {
+  if (!event.target.matches("[data-duty-detail]") || !["Enter", " "].includes(event.key)) return;
+  event.preventDefault();
+  const record = records.find((item) => getDutyRecordKey(item) === event.target.dataset.dutyDetail);
+  if (record) openDutyDetail(record);
+});
+dutyDetailPalette.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-detail-color]");
+  if (!button || button.disabled) return;
+  editingDutyColor = button.dataset.detailColor;
+  const record = records.find((item) => getDutyRecordKey(item) === editingDutyKey);
+  if (record) renderDutyDetailPalette(record, true);
+});
+dutyDetailDate.addEventListener("change", () => {
+  const record = records.find((item) => getDutyRecordKey(item) === editingDutyKey);
+  if (record) renderDutyDetailPalette(record, true);
+});
+dutyDetailModal.querySelector(".duty-detail-close").addEventListener("click", closeDutyDetail);
+dutyDetailModal.querySelector(".duty-detail-cancel").addEventListener("click", closeDutyDetail);
+dutyDetailModal.addEventListener("click", (event) => { if (event.target === dutyDetailModal) closeDutyDetail(); });
+document.addEventListener("keydown", (event) => { if (event.key === "Escape" && !dutyDetailModal.hidden) closeDutyDetail(); });
+dutyDetailForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const record = records.find((item) => getDutyRecordKey(item) === editingDutyKey);
+  if (!record?.id || !editingDutyColor || !dutyDetailDate.value) return;
+  const saveButton = dutyDetailModal.querySelector(".duty-detail-save");
+  saveButton.disabled = true;
+  dutyDetailStatus.textContent = language === "th" ? "กำลังบันทึก..." : "Saving...";
+  try {
+    await FMSStorage.updateDutyShift(record.id, { date: dutyDetailDate.value, colorId: editingDutyColor });
+    records = readRecords();
+    const updatedDate = parseDateKey(dutyDetailDate.value);
+    selectedDate = new Date(updatedDate.getFullYear(), updatedDate.getMonth(), 1);
+    monthSelect.value = String(updatedDate.getMonth() + 1);
+    yearSelect.value = String(updatedDate.getFullYear());
+    const firstYear = Math.min(new Date().getFullYear(), updatedDate.getFullYear());
+    const lastYear = Math.max(new Date().getFullYear() + 9, updatedDate.getFullYear());
+    renderCustomPicker("month", getMonthOptions(), monthSelect.value);
+    renderCustomPicker("year", Array.from({ length: lastYear - firstYear + 1 }, (_, index) => {
+      const value = String(firstYear + index);
+      return { value, label: value };
+    }), yearSelect.value);
+    renderCalendar();
+    renderPalette();
+    renderRecords();
+    closeDutyDetail();
+  } catch (error) {
+    dutyDetailStatus.textContent = error.message || (language === "th" ? "บันทึกไม่สำเร็จ กรุณาลองอีกครั้ง" : "Could not save changes. Please try again.");
+  } finally {
+    saveButton.disabled = false;
+  }
+});
 document.getElementById("exportExcel").addEventListener("click", exportExcel);
 document.getElementById("exportPdf").addEventListener("click", () => window.print());
 document.getElementById("languageButton").addEventListener("click", () => { language = language === "th" ? "en" : "th"; renderLanguage(); });

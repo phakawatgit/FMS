@@ -1,7 +1,7 @@
 const STORAGE_KEY = "fms-borrow-return-records";
 const STOCK_KEY = "fms-stock-records";
 let historyEnglish = false;
-const historyCopy = { borrow: ["รายการยืม", "Borrowing Records"], returned: ["รายการคืน", "Return Records"], empty: ["ยังไม่มีประวัติการยืม–คืนยาและเวชภัณฑ์", "No borrowing or return history yet"], noResults: ["ไม่พบประวัติที่ตรงกับคำค้น", "No matching history found"], borrowWord: ["การยืม", "Borrowing"], returnWord: ["การคืน", "Return"], returnedStatus: ["คืนแล้ว", "Returned"], overdue: ["เกินกำหนด", "Overdue"], complete: ["คืนครบแล้ว", "Completed"], borrowing: ["กำลังยืม", "Borrowed"], details: ["ดูรายละเอียด", "View details"] };
+const historyCopy = { borrow: ["รายการยืม", "Borrowing Records"], returned: ["รายการคืน", "Return Records"], combined: ["รายการยืม–คืน", "Borrow & Return History"], empty: ["ยังไม่มีประวัติการยืม–คืนยาและเวชภัณฑ์", "No borrowing or return history yet"], noResults: ["ไม่พบประวัติที่ตรงกับคำค้น", "No matching history found"], borrowWord: ["การยืม", "Borrowing"], returnWord: ["การคืน", "Return"], returnedStatus: ["คืนแล้ว", "Returned"], overdue: ["เกินกำหนด", "Overdue"], complete: ["คืนครบแล้ว", "Completed"], borrowing: ["กำลังยืม", "Borrowed"], details: ["ดูรายละเอียด", "View details"] };
 const historyText = (key) => historyCopy[key]?.[historyEnglish ? 1 : 0] || key;
 const content = document.getElementById("historyContent");
 const searchInput = document.getElementById("searchInput");
@@ -55,11 +55,13 @@ function buildHistoryEvents() {
       record
     });
 
+    const parentId = `borrow-${id}`;
     const returns = Array.isArray(record.returnHistory) ? record.returnHistory : [];
     if (returns.length) {
       returns.forEach((entry, returnIndex) => events.push({
         type: "return",
         id: `return-${id}-${returnIndex}`,
+        parentId,
         borrower,
         role: record.role || (Array.isArray(record.roles) ? record.roles.join("、") : "") || record.department || record.branch || "",
         borrowTypes: getBorrowTypes(record),
@@ -74,7 +76,7 @@ function buildHistoryEvents() {
         })) : []
       }));
     } else if (record.returnedDate) {
-      events.push({ type: "return", id: `return-${id}`, borrower, role: record.role || record.borrowerType || "", date: record.returnedDate, items: normalizeItems(record), record });
+      events.push({ type: "return", id: `return-${id}`, parentId, borrower, role: record.role || record.borrowerType || "", date: record.returnedDate, items: normalizeItems(record), record });
     }
   });
   return events;
@@ -103,9 +105,11 @@ function statusLabel(event) {
 function eventMarkup(event,index) {
   const status=statusLabel(event),kind=event.type==="borrow"?(historyEnglish?"Borrowing":"ยืม"):(historyEnglish?"Return":"คืน"),panelId=`borrow-event-${String(event.id).replace(/[^a-zA-Z0-9_-]/g,"-")}`;
   const items=event.items.length?event.items.map(item=>{const current=currentStockRecord(item)||item,image=current.image||current.imageUrl||item.image||"",name=current.name||current.productName||item.name,code=current.code||item.code,unit=current.unit||"หน่วย";return `<p>${image?`<img class="history-item-image" src="${escapeHtml(image)}" alt="">`:""}<span class="history-item-copy">${escapeHtml(name)} <span>รหัส ${escapeHtml(code)} · ${escapeHtml(item.quantity)} ${escapeHtml(unit)}</span></span></p>`}).join(""):"<p>ไม่มีรายละเอียดรายการยา</p>";
+  const returnMarkup=(event.returnEvents||[]).map(returnEvent=>`<article class="nested-return-record"><div><strong>คืนเมื่อ ${escapeHtml(displayDate(returnEvent.date))}</strong><span>${returnEvent.items.map(item=>`${escapeHtml(item.name)} × ${escapeHtml(item.quantity)}`).join(" · ")}</span></div><button type="button" class="detail-button" data-detail-event-id="${escapeHtml(returnEvent.id)}">ดูรายละเอียดคืน <span aria-hidden="true">›</span></button></article>`).join("");
+  const returnsSection=returnMarkup?`<section class="nested-return-history"><h4>ประวัติการคืน (${event.returnEvents.length})</h4>${returnMarkup}</section>`:"";
   const typeBadges=(event.borrowTypes||[]).map(type=>`<span class="borrow-kind-badge ${type==="ส่วนบุคคล"?"is-personal":"is-kit"}">${escapeHtml(type)}</span>`).join("");
   const icon=event.type==="borrow"&&event.borrowTypes?.length?loanTypeIcon(event.borrowTypes[0]):eventIconFallback();
-  return `<article class="history-record"><button class="borrow-history-toggle" type="button" aria-expanded="false" aria-controls="${escapeHtml(panelId)}" data-borrow-event-toggle="${escapeHtml(panelId)}"><span>${event.type==="borrow"?"การยืม":"การคืน"}ครั้งที่ ${index+1}</span>${event.type==="return"?`<small class="history-toggle-date">วันที่คืน: ${escapeHtml(displayDate(event.date))}</small>`:""}<span class="order-chevron" aria-hidden="true"></span></button><div class="borrow-history-event-detail" id="${escapeHtml(panelId)}" hidden><div class="history-record-head"><span class="history-record-icon ${event.borrowTypes?.[0]==="ส่วนบุคคล"?"is-personal":"is-kit"}" aria-hidden="true">${icon}</span><div><h3>${kind} · ${escapeHtml(event.borrower)}</h3><p class="borrower">${escapeHtml(event.role||"ผู้ยืม")}</p>${typeBadges?`<div class="borrow-type-badges">${typeBadges}</div>`:""}</div><time>${escapeHtml(displayDate(event.date))}</time></div><span class="history-status ${status.className}">${status.label}</span><div class="history-items">${items}</div><div class="history-record-actions"><button type="button" class="detail-button" data-detail-event-id="${escapeHtml(event.id)}">ดูรายละเอียด <span aria-hidden="true">›</span></button></div></div></article>`;
+  return `<article class="history-record ${event.type === "borrow" ? "is-borrow-event" : "is-return-event"}"><button class="borrow-history-toggle" type="button" aria-expanded="false" aria-controls="${escapeHtml(panelId)}" data-borrow-event-toggle="${escapeHtml(panelId)}"><span>${event.type==="borrow"?"การยืม":"การคืน"}ครั้งที่ ${index}</span>${event.type==="return"?`<small class="history-toggle-date">วันที่คืน: ${escapeHtml(displayDate(event.date))}</small>`:""}<span class="order-chevron" aria-hidden="true"></span></button><div class="borrow-history-event-detail" id="${escapeHtml(panelId)}" hidden><div class="history-record-head"><span class="history-record-icon ${event.borrowTypes?.[0]==="ส่วนบุคคล"?"is-personal":"is-kit"}" aria-hidden="true">${icon}</span><div><h3>${kind} · ${escapeHtml(event.borrower)}</h3><p class="borrower">${escapeHtml(event.role||"ผู้ยืม")}</p>${typeBadges?`<div class="borrow-type-badges">${typeBadges}</div>`:""}</div><time>${escapeHtml(displayDate(event.date))}</time></div><span class="history-status ${status.className}">${status.label}</span><div class="history-items">${items}</div>${returnsSection}<div class="history-record-actions"><button type="button" class="detail-button" data-detail-event-id="${escapeHtml(event.id)}">ดูรายละเอียด <span aria-hidden="true">›</span></button></div></div></article>`;
 }
 const detailModal = document.getElementById("borrowDetailModal");
 const detailContent = document.getElementById("borrowDetailContent");
@@ -157,12 +161,18 @@ detailModal.addEventListener("click",event=>{const button=event.target.closest("
 
 function render() {
   const query = normalize(searchInput.value);
-  const events = buildHistoryEvents().filter((event) => normalize(`${event.type === "borrow" ? "ยืม borrow" : "คืน return"} ${event.borrower} ${event.role} ${dateText(event.date)} ${event.items.map((item) => `${item.name} ${item.code} ${item.quantity}`).join(" ")} ${statusLabel(event).label}`).includes(query));
-  const borrowed = events.filter((event) => event.type === "borrow");
-  const returned = events.filter((event) => event.type === "return");
-  const markup = `${borrowed.length ? `<section class="history-group"><h2>${historyText("borrow")}</h2>${borrowed.map((event,index)=>eventMarkup(event,index)).join("")}</section>` : ""}${returned.length ? `<section class="history-group"><h2>${historyText("returned")}</h2>${returned.map((event,index)=>eventMarkup(event,index)).join("")}</section>` : ""}`;
-  const hasRecords = borrowed.length + returned.length > 0;
-  content.innerHTML = markup || `<p class="empty-state">${query ? historyText("noResults") : historyText("empty")}</p>`;
+  const allEvents = buildHistoryEvents();
+  const returnEvents = allEvents.filter((event) => event.type === "return");
+  const matches = (event) => normalize(`${event.type === "borrow" ? "ยืม borrow" : "คืน return"} ${event.borrower} ${event.role} ${dateText(event.date)} ${event.items.map((item) => `${item.name} ${item.code} ${item.quantity}`).join(" ")} ${statusLabel(event).label}`).includes(query);
+  const events = allEvents.filter((event) => event.type === "borrow").map((event) => ({
+    ...event,
+    returnEvents: returnEvents.filter((entry) => entry.parentId === event.id),
+  })).filter((event) => !query || matches(event) || event.returnEvents.some(matches)).sort((a, b) => {
+    const timeA = new Date(a.date).getTime(), timeB = new Date(b.date).getTime();
+    return (Number.isNaN(timeB) ? 0 : timeB) - (Number.isNaN(timeA) ? 0 : timeA);
+  });
+  const rows = events.map((event, index) => eventMarkup(event, index + 1)).join("");
+  content.innerHTML = rows ? `<section class="history-group"><h2>${historyText("combined")}</h2>${rows}</section>` : `<p class="empty-state">${query ? historyText("noResults") : historyText("empty")}</p>`;
 }
 
 searchInput.addEventListener("input", () => {

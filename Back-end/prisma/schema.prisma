@@ -192,6 +192,8 @@ model BorrowRecord {
   reason       String?      @db.Text
   borrowedAt   DateTime     @default(now()) @map("borrowed_at") @db.Timestamptz(6)
   dueAt        DateTime     @map("due_at") @db.Date
+  originalDueAt DateTime?   @map("original_due_at") @db.Date
+  extendedAt   DateTime?    @map("extended_at") @db.Timestamptz(6)
   returnedAt   DateTime?    @map("returned_at") @db.Timestamptz(6)
   status       BorrowStatus @default(BORROWED)
   createdAt    DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)

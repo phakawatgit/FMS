@@ -711,3 +711,205 @@ body .topbar .language::after {
   max-height: 100% !important;
   object-fit: contain !important;
 }
+
+/* Keep the medicine detail view compact on desktop and fluid on small screens. */
+.detail-page {
+  width: min(100%, 82rem) !important;
+  margin-inline: auto !important;
+  padding: clamp(.75rem, 2vw, 1.5rem) !important;
+}
+.detail-card {
+  grid-template-columns: minmax(14rem, .72fr) minmax(0, 1fr) !important;
+  gap: 1rem !important;
+  padding: clamp(.9rem, 1.5vw, 1.4rem) !important;
+  border-width: 1px !important;
+  border-radius: 1rem !important;
+}
+.detail-card h1 {
+  padding-bottom: .65rem !important;
+  font-size: clamp(1.45rem, 2.2vw, 2.1rem) !important;
+}
+.detail-image {
+  height: clamp(13rem, 25vw, 19rem) !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: .65rem !important;
+  border-width: 1px !important;
+  border-radius: .8rem !important;
+}
+.details {
+  padding: .85rem 1rem !important;
+  font-size: .9rem !important;
+  line-height: 1.45 !important;
+}
+.details p {
+  margin: .25rem 0 !important;
+}
+.details p:first-child {
+  font-size: 1.05rem !important;
+}
+.detail-card > h2 {
+  font-size: 1.1rem !important;
+}
+.inventory {
+  gap: .6rem !important;
+}
+.inventory > div {
+  min-height: 4.5rem !important;
+  padding: .4rem !important;
+  border-radius: .75rem !important;
+}
+.inventory label {
+  font-size: .85rem !important;
+}
+.inventory strong {
+  font-size: clamp(1.6rem, 3vw, 2.5rem) !important;
+}
+.inventory .quantity {
+  width: 1.7rem !important;
+  height: 1.7rem !important;
+  font-size: 1rem !important;
+}
+.detail-actions button {
+  min-width: 6.5rem !important;
+  padding: .4rem .8rem !important;
+  font-size: .85rem !important;
+}
+@media (max-width: 800px) {
+  .detail-card {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  .detail-card h1,
+  .detail-image,
+  .details,
+  .detail-card > h2,
+  .inventory,
+  .detail-actions {
+    grid-column: 1 !important;
+  }
+  .detail-image {
+    width: 100% !important;
+    height: clamp(12rem, 42vw, 19rem) !important;
+  }
+}
+@media (max-width: 520px) {
+  .detail-page {
+    padding: .65rem !important;
+  }
+  .detail-card {
+    gap: .75rem !important;
+    padding: .8rem !important;
+    border-radius: .8rem !important;
+  }
+  .detail-card h1 {
+    font-size: 1.4rem !important;
+  }
+  .details {
+    padding: .7rem !important;
+    font-size: .84rem !important;
+  }
+  .inventory {
+    grid-template-columns: 1fr !important;
+  }
+  .inventory > div {
+    min-height: 3.8rem !important;
+  }
+  .detail-actions {
+    flex-wrap: wrap;
+  }
+  .detail-actions button {
+    flex: 1 1 8rem;
+  }
+}
+
+/* Fit the complete detail and stock summary in one desktop viewport. */
+@media (min-width: 801px) {
+  .detail-page {
+    width: min(100%, 76rem) !important;
+    padding-block: .75rem !important;
+  }
+  .back-link {
+    margin-bottom: .55rem !important;
+    padding: .3rem .7rem !important;
+  }
+  .detail-card {
+    grid-template-columns: minmax(12rem, .62fr) minmax(0, 1fr) !important;
+    gap: .65rem .85rem !important;
+    padding: .85rem !important;
+  }
+  .detail-card h1 {
+    padding-bottom: .45rem !important;
+    font-size: clamp(1.3rem, 2vw, 1.8rem) !important;
+    line-height: 1.1 !important;
+  }
+  .detail-image {
+    height: clamp(11rem, 26vh, 14rem) !important;
+    padding: .5rem !important;
+  }
+  .details {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    align-content: start !important;
+    column-gap: .8rem !important;
+    row-gap: .1rem !important;
+    padding: .6rem .75rem !important;
+    font-size: .8rem !important;
+    line-height: 1.3 !important;
+  }
+  .details p,
+  .details p:first-child {
+    min-width: 0;
+    margin: 0 !important;
+    padding: .08rem 0 !important;
+    border: 0 !important;
+    font-size: inherit !important;
+  }
+  .details p:first-child {
+    grid-column: 1 / -1;
+    padding-bottom: .25rem !important;
+    margin-bottom: .15rem !important;
+    border-bottom: 1px solid #c4cee2 !important;
+    font-size: .95rem !important;
+  }
+  .detail-card > h2 {
+    margin: 0 !important;
+    font-size: .95rem !important;
+  }
+  .inventory {
+    gap: .45rem !important;
+  }
+  .inventory > div {
+    min-height: 3.3rem !important;
+    padding: .25rem !important;
+  }
+  .inventory label {
+    font-size: .72rem !important;
+  }
+  .inventory strong {
+    font-size: 1.45rem !important;
+  }
+  .detail-actions {
+    margin-top: 0 !important;
+  }
+  .detail-actions button {
+    min-width: 5.5rem !important;
+    padding: .25rem .65rem !important;
+    font-size: .78rem !important;
+  }
+}
+@media (min-width: 801px) and (max-height: 700px) {
+  .detail-page {
+    padding-block: .4rem !important;
+  }
+  .detail-card {
+    gap: .45rem .7rem !important;
+    padding: .6rem !important;
+  }
+  .detail-image {
+    height: 10rem !important;
+  }
+  .details {
+    font-size: .74rem !important;
+    padding: .45rem .6rem !important;
+  }
+}

@@ -83,7 +83,7 @@
     if (!rows.length) return;
     rows.forEach((row) => {
       const item = document.createElement("li"), swatch = document.createElement("i"), label = document.createElement("span");
-      swatch.style.cssText = `display:inline-block;width:9px;height:9px;border-radius:50%;background:${row.color};margin-right:7px`;
+      swatch.style.cssText = `display:block;flex:0 0 9px;width:9px;min-width:9px;height:9px;min-height:9px;aspect-ratio:1;box-sizing:border-box;border-radius:50%;background:${row.color};margin-right:7px`;
       label.textContent = `${row.name} · ${row.count}`;
       item.replaceChildren(swatch, label);
       list.append(item);
@@ -210,8 +210,21 @@
     document.getElementById("medicineUsedStock").textContent = Number(item.used) || 0;
     document.getElementById("medicineRemainingStock").textContent = item.remaining;
     document.getElementById("medicineExpiryAlert").classList.toggle("is-expired", modalStatus === "expired");
-    const visual = document.getElementById("medicineDetailImage"); visual.replaceChildren();
-    if (item.image) { const image = document.createElement("img"); image.src = item.image; image.alt = item.name; visual.append(image); } else visual.textContent = "💊";
+    const visual = document.getElementById("medicineDetailImage"), imageSource = String(item.image || "");
+    if (!imageSource) {
+      if (visual.dataset.imageSource || visual.textContent !== "💊") visual.replaceChildren(document.createTextNode("💊"));
+      visual.dataset.imageSource = "";
+    } else if (visual.dataset.imageSource !== imageSource) {
+      visual.dataset.imageSource = imageSource;
+      visual.replaceChildren();
+      const image = document.createElement("img");
+      image.alt = "";
+      image.onerror = () => {
+        if (visual.dataset.imageSource === imageSource) visual.replaceChildren(document.createTextNode("💊"));
+      };
+      image.src = imageSource;
+      visual.append(image);
+    }
   };
   document.addEventListener("click", (event) => {
     const button = event.target.closest(".stock-detail-button");

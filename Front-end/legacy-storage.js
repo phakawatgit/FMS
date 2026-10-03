@@ -3,7 +3,8 @@
 
   const apiBase = window.FMS_API_URL || `${location.protocol}//${location.hostname}:4000`;
   const endpoint = `${apiBase}/api/legacy-storage`;
-  const isLoginPage = location.pathname.endsWith("/index.html") || location.pathname === "/";
+  const normalizedPath = location.pathname.replace(/\/+$/, "").toLowerCase();
+  const isLoginPage = normalizedPath === "" || normalizedPath === "/" || normalizedPath.endsWith("/index.html") || normalizedPath.endsWith("/front-end");
   const values = new Map();
   let storageReady = false;
 
@@ -31,6 +32,7 @@
   }
 
   function showStorageError(error) {
+    if (error?.status === 401) return;
     let notice = document.getElementById("fms-storage-error");
     if (!notice) {
       notice = document.createElement("div");
@@ -40,8 +42,13 @@
         position: "fixed", zIndex: "99999", inset: "0 0 auto", padding: "12px 18px",
         color: "#fff", background: "#a32323", textAlign: "center", font: "16px sans-serif"
       });
-      document.addEventListener("DOMContentLoaded", () => document.body.prepend(notice), { once: true });
-      if (document.body) document.body.prepend(notice);
+      const attachNotice = () => {
+        document.body.prepend(notice);
+        const topbar = document.querySelector("header.topbar");
+        if (topbar) requestAnimationFrame(() => { notice.style.top = `${topbar.getBoundingClientRect().height}px`; });
+      };
+      document.addEventListener("DOMContentLoaded", attachNotice, { once: true });
+      if (document.body) attachNotice();
     }
     notice.textContent = error?.status === 401
       ? "กรุณาเข้าสู่ระบบใหม่ก่อนใช้งานข้อมูลส่วนกลาง"
@@ -141,6 +148,15 @@
       dispatchChange("fms-borrow-return-records");
       return result.data;
     },
+    async extendBorrowRecord(id, dueDate) {
+      const response = await fetch(`${apiBase}/api/borrow-records/${encodeURIComponent(id)}/extensions`, { method: "POST", credentials: "include", headers: { "Content-Type": "application/json", "X-FMS-CSRF": csrfToken() }, body: JSON.stringify({ dueDate }) });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.message || `Borrow extension save failed (${response.status}).`);
+      const records = values.get("fms-borrow-return-records") || [];
+      values.set("fms-borrow-return-records", [result.data, ...records.filter((item) => String(item.id) !== String(result.data.id))]);
+      dispatchChange("fms-borrow-return-records");
+      return result.data;
+    },
     async returnBorrowRecord(id, items) {
       const response = await fetch(`${apiBase}/api/borrow-records/${encodeURIComponent(id)}/returns`, { method: "POST", credentials: "include", headers: { "Content-Type": "application/json", "X-FMS-CSRF": csrfToken() }, body: JSON.stringify({ items }) });
       const result = await response.json();
@@ -149,6 +165,17 @@
       values.set("fms-borrow-return-records", [result.data, ...records.filter((item) => String(item.id) !== String(result.data.id))]);
       dispatchChange("fms-borrow-return-records");
       return result.data;
+    },
+    async updateDutyShift(id, updates) {
+      const response = await fetch(`${apiBase}/api/duty-shifts/${encodeURIComponent(id)}`, { method: "PUT", credentials: "include", headers: { "Content-Type": "application/json", "X-FMS-CSRF": csrfToken() }, body: JSON.stringify(updates) });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.message || `Duty shift update failed (${response.status}).`);
+      const records = values.get("fms-local-duty-records") || [];
+      const old = records.find((record) => String(record.id) === String(id));
+      const updated = { ...old, ...result.data };
+      values.set("fms-local-duty-records", [updated, ...records.filter((record) => String(record.id) !== String(id))]);
+      dispatchChange("fms-local-duty-records");
+      return updated;
     },
     setItem(key, rawValue) {
       if (!storageReady) {

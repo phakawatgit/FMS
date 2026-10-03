@@ -61,6 +61,32 @@
 .detail-form-grid .half {
   grid-column: span 2;
 }
+.detail-staff {
+  min-width: 0;
+  grid-column: span 2;
+  display: grid;
+  align-content: start;
+  gap: .2rem;
+  padding: .75rem .85rem;
+  border: 1px solid #d5e7eb;
+  border-left: 3px solid #01a6ad;
+  border-radius: .65rem;
+  background: linear-gradient(135deg,#f4fbfc,#fff 72%);
+  color: #28485a;
+  font-size: clamp(.88rem,1vw,1rem);
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+.detail-staff strong {
+  color: #617987;
+  font-size: .76em;
+  font-weight: 600;
+}
+.detail-staff span {
+  color: #123b56;
+  font-size: 1em;
+  font-weight: 600;
+}
 .detail-vitals {
   grid-column: span 4;
   display: grid;

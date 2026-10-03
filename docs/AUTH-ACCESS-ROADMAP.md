@@ -52,4 +52,4 @@ This is a proposed starting point based on the existing screens. Confirm the int
 
 ## Local configuration still needed
 
-The backend must receive Firebase Admin credentials (`FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, and `FIREBASE_PRIVATE_KEY`) to verify ID tokens and issue sessions. These values belong in the ignored `Back-end/.env`; the initial administrator email allowlist is set there. Signup email verification and password resets now use Firebase's client SDK, so an SMTP server is not needed. The submitted password was not copied into the repository or environment files.
+The backend must receive Firebase Admin credentials (`FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, and `FIREBASE_PRIVATE_KEY`) to verify ID tokens and issue sessions. These values belong in the ignored `Back-end/.env`; the initial administrator email allowlist is set there. Signup verification and password resets use six-digit OTPs sent through SMTP, so configure `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, and `SMTP_PASS` in `Back-end/.env`. The submitted password was not copied into the repository or environment files.

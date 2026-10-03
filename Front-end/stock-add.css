@@ -934,3 +934,7 @@ body .form-actions {
     padding: 16px !important;
 }
 }
+.image-upload-tools { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: .6rem; }
+.image-browse-button { display: inline-flex; min-height: 2.7rem; align-items: center; justify-content: center; border: 1px solid #b7e1e2; border-radius: .55rem; padding: .55rem .8rem; background: #fff; color: #01406d; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.image-browse-button:hover { border-color: #01b4ba; background: #f0ffff; }
+@media(max-width: 540px) { .image-upload-tools { grid-template-columns: minmax(0, 1fr); } .image-browse-button { width: 100%; } }

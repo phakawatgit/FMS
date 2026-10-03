@@ -475,10 +475,13 @@ body .medicine-chart .pie-medicine, body .symptom-chart .pie-symptom {
   clip-path: none !important;
 }
 body .symptom-chart .pie-symptom {
-  background: conic-gradient(#32a6c0 0 15%, #8678cd 15% 32%, #43b7a4 32% 53%, #e5a15b 53% 75%, #64b6d0 75% 100%) !important;
+  background: transparent !important;
 }
 body .medicine-chart .pie-medicine {
-  background: conic-gradient(#087f8c 0 30%, #43b7a4 30% 52%, #77c8bb 52% 68%, #9bdbd0 68% 83%, #c2e9e3 83% 100%) !important;
+  background: transparent !important;
+}
+body .medicine-chart .pie-medicine, body .symptom-chart .pie-symptom {
+  background: transparent !important;
 }
 body .medicine-legend, body .symptom-legend {
   display: grid !important;
@@ -736,6 +739,12 @@ footer {
 }
 
 /* Dashboard topbar: only the real Earth SVG should be visible. */
+/* The chart renderer adds a colored swatch to each legend row; hide the
+   older CSS-generated swatch so each item shows one dot only. */
+body .medicine-legend li::before, body .symptom-legend li::before {
+  content: none !important;
+  display: none !important;
+}
 body .topbar .language-switcher::before, body .topbar .language-switcher::after, body .topbar .language-switcher span::before, body .topbar .language-switcher span::after {
   content: none !important;
   display: none !important;

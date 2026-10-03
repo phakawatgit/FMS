@@ -451,6 +451,17 @@ body,body button,body input,body select,body textarea {
   border-color: #4f91e8;
   box-shadow: 0 0 0 3px rgba(79, 145, 232, .14);
 }
+.medicine-picker-label select option {
+  padding: .55rem .75rem;
+  background: #fff;
+  color: #173e72;
+  font: 500 .82rem/1.4 "IBM Plex Sans Thai", sans-serif;
+}
+.medicine-picker-label select option:checked {
+  background: #e7f7fa;
+  color: #075b70;
+  font-weight: 700;
+}
 .medicine-modal-head {
   gap: 1.1rem;
   min-height: 6rem;
@@ -484,6 +495,10 @@ body,body button,body input,body select,body textarea {
   color: #123b74;
   font-size: 1.45rem;
   line-height: 1.2;
+}
+.medicine-modal-head > div:last-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .medicine-code {
   margin-top: .3rem;

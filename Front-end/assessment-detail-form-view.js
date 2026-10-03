@@ -21,8 +21,8 @@ if (record) {
       ${field("symptom", "อาการ", "wide")}
       <div class="detail-vitals"><strong>ผลการวัดความดัน</strong>${field("sys", "SYS")}${field("dia", "DIA")}${field("pr", "PR")}</div>
       ${field("medicine", "ยาที่ได้รับ", "half")}${field("quantity", "จำนวนยา / หน่วย", "half")}
-      <div class="detail-staff"><strong>ผู้บันทึก:</strong> ${escapeHtml(staffName("entered"))}</div>
-      <div class="detail-staff"><strong>ผู้รับผิดชอบตามเวรในวันนั้น:</strong> ${escapeHtml(staffName("responsible"))}</div>
+      <div class="detail-staff"><strong>ผู้บันทึก</strong><span>${escapeHtml(staffName("entered"))}</span></div>
+      <div class="detail-staff"><strong>ผู้รับผิดชอบตามเวรในวันนั้น</strong><span>${escapeHtml(staffName("responsible"))}</span></div>
       <div class="detail-status">สถานะ: ${status}${record.hospitalName ? ` · ${escapeHtml(record.hospitalName)}` : ""}</div>
     </div>`;
 }

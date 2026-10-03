@@ -1,14 +1,14 @@
 const express = require("express");
 const prisma = require("../lib/prisma");
-const { requireRole } = require("../middleware/firebase-session");
-
 const router = express.Router();
 const legacyKey = "fms-stock-records";
 const imageDataPattern = /^data:image\/(jpeg|png|webp);base64,([A-Za-z0-9+/=]+)$/i;
 const textFields = ["name", "productName", "genericName", "category", "form", "size", "unit", "status", "benefit", "symptom", "usage", "warning"];
 
 function serialize(row, req) {
-  const image = row.imageUrl || (row.imageData ? `${req.protocol}://${req.get("host")}/api/catalog/${encodeURIComponent(row.code)}/image` : "");
+  const image = row.imageUrl?.startsWith("/api/")
+    ? `${req.protocol}://${req.get("host")}${row.imageUrl}`
+    : row.imageUrl || (row.imageData ? `${req.protocol}://${req.get("host")}/api/catalog/${encodeURIComponent(row.code)}/image` : "");
   return {
     code: row.code, name: row.name, productName: row.productName || "", genericName: row.genericName || "",
     category: row.category, form: row.form || "", size: row.size || "", unit: row.unit,
@@ -24,7 +24,7 @@ async function listRecords(req) {
   return rows.map((row) => serialize(row, req));
 }
 
-function normalize(input) {
+function normalize(input, req) {
   if (!input || typeof input !== "object" || Array.isArray(input)) throw new Error("invalid record");
   const record = {};
   for (const field of textFields) {
@@ -49,17 +49,19 @@ function normalize(input) {
   record.expiry = expiry ? new Date(`${expiry}T00:00:00.000Z`) : null;
   const image = String(input.image || input.imageUrl || "").trim();
   const dataMatch = imageDataPattern.exec(image);
+  const localImageRoute = `/api/catalog/${encodeURIComponent(record.code)}/image`;
+  const localImageUrl = req ? `${req.protocol}://${req.get("host")}${localImageRoute}` : localImageRoute;
   if (dataMatch) {
     const bytes = Buffer.from(dataMatch[2], "base64");
     if (bytes.length > 5 * 1024 * 1024) throw new Error("image too large");
     record.imageData = bytes;
     record.imageMimeType = `image/${dataMatch[1].toLowerCase()}`;
-    record.imageUrl = null;
+    record.imageUrl = localImageUrl;
   } else if (image) {
     let url;
     try { url = new URL(image); } catch { throw new Error("image must be a URL"); }
     if (!['http:', 'https:'].includes(url.protocol) || url.href.length > 2048) throw new Error("image must be an HTTP URL");
-    record.imageUrl = url.href;
+    record.imageUrl = url.pathname === localImageRoute ? localImageUrl : url.href;
     record.imageData = null;
     record.imageMimeType = null;
   } else {
@@ -70,16 +72,16 @@ function normalize(input) {
   return record;
 }
 
-async function syncRecords(records) {
+async function syncRecords(records, req) {
   if (!Array.isArray(records) || records.length > 5000) throw new Error("invalid catalog list");
-  const normalized = records.map(normalize);
+  const normalized = records.map((record) => normalize(record, req));
   if (new Set(normalized.map((item) => item.code)).size !== normalized.length) throw new Error("duplicate catalog code");
   return prisma.$transaction(async (tx) => {
     for (const item of normalized) {
       const { code, ...data } = item;
       if (item.imageUrl && item.imageUrl.endsWith(`/api/catalog/${encodeURIComponent(code)}/image`)) {
         const existing = await tx.catalog.findUnique({ where: { code }, select: { imageData: true, imageMimeType: true } });
-        if (existing?.imageData) {
+        if (existing?.imageData && !data.imageData) {
           data.imageData = existing.imageData;
           data.imageMimeType = existing.imageMimeType;
         }
@@ -104,7 +106,7 @@ router.get("/", async (req, res) => {
 // stock quantities remain protected by the admin-only full-list update route.
 router.post("/", async (req, res) => {
   try {
-    const data = normalize(req.body?.record);
+    const data = normalize(req.body?.record, req);
     const codeMatch = /^(.*?)(\d+)$/.exec(data.code);
     let code = data.code;
     let created;
@@ -140,9 +142,9 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.put("/", requireRole("ADMIN"), async (req, res) => {
+router.put("/", async (req, res) => {
   try {
-    const rows = await syncRecords(req.body?.records);
+    const rows = await syncRecords(req.body?.records, req);
     return res.json({ success: true, data: rows.map((row) => serialize(row, req)) });
   } catch (error) {
     const status = ["invalid record", "field too long", "required field missing", "invalid inventory amount", "invalid expiry", "image must be a URL", "image must be an HTTP URL", "image too large", "invalid catalog list", "duplicate catalog code"].includes(error.message) ? 400 : 503;
@@ -152,6 +154,9 @@ router.put("/", requireRole("ADMIN"), async (req, res) => {
 });
 
 router.get("/:code/image", async (req, res) => {
+  // Product photos are served by the API on a different local port than the UI.
+  // Allow the browser to embed this public image response across that origin boundary.
+  res.set("Cross-Origin-Resource-Policy", "cross-origin");
   try {
     const item = await prisma.catalog.findUnique({ where: { code: req.params.code }, select: { imageData: true, imageMimeType: true, imageUrl: true } });
     if (!item) return res.sendStatus(404);

@@ -29,8 +29,11 @@ const returnTab = document.getElementById("returnTab");
 const returnHome = document.getElementById("returnHome");
 const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const monthNamesThai = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
-let selectedMonth = 8;
-let selectedYear = new Date().getFullYear();
+const currentDate = new Date();
+let selectedMonth = currentDate.getMonth();
+let selectedYear = currentDate.getFullYear();
+let followsCurrentMonth = true;
+let observedMonthKey = `${currentDate.getFullYear()}-${currentDate.getMonth()}`;
 let borrowReturnEnglish = false;
 const borrowReturnCopy = {
   borrow: ["การยืมยา และเวชภัณฑ์", "Medicine & Medical Supplies Borrowing"],
@@ -122,6 +125,8 @@ monthOptions.addEventListener("click", (event) => {
   const option = event.target.closest("[data-month]");
   if (!option) return;
   selectedMonth = Number(option.dataset.month);
+  const now = new Date();
+  followsCurrentMonth = selectedYear === now.getFullYear() && selectedMonth === now.getMonth();
   renderMonthOptions();
   renderCalendar();
   closeMonthMenu(true);
@@ -150,6 +155,8 @@ yearOptions.addEventListener("click", (event) => {
   const option = event.target.closest("[data-year]");
   if (!option) return;
   selectedYear = Number(option.dataset.year);
+  const now = new Date();
+  followsCurrentMonth = selectedYear === now.getFullYear() && selectedMonth === now.getMonth();
   renderYearOptions();
   renderCalendar();
   closeYearMenu(true);
@@ -169,6 +176,24 @@ yearOptions.addEventListener("keydown", (event) => {
 });
 document.addEventListener("click", (event) => {
   if (!event.target.closest(".calendar-picker")) { closeMonthMenu(); closeYearMenu(); }
+});
+
+function syncCalendarToCurrentMonth() {
+  const now = new Date();
+  const monthKey = `${now.getFullYear()}-${now.getMonth()}`;
+  if (monthKey === observedMonthKey) return;
+  observedMonthKey = monthKey;
+  if (!followsCurrentMonth) return;
+  selectedMonth = now.getMonth();
+  selectedYear = now.getFullYear();
+  renderMonthOptions();
+  renderYearOptions();
+  renderCalendar();
+}
+
+window.setInterval(syncCalendarToCurrentMonth, 30_000);
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") syncCalendarToCurrentMonth();
 });
 
 function parseDate(value) {
@@ -213,20 +238,47 @@ function iconFor(kind) {
   return '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M12 13h24a4 4 0 0 1 4 4v23H8V17a4 4 0 0 1 4-4Z" fill="#f6f4ef" stroke="#aaa79f" stroke-width="2"/><path d="M18 13V9a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v4" fill="none" stroke="#e45450" stroke-width="3"/><circle cx="24" cy="27" r="9" fill="#ec524d"/><path d="M22 21h4v4h4v4h-4v4h-4v-4h-4v-4h4Z" fill="#fff"/></svg>';
 }
 
+function isReturnedRecord(record) {
+  const status = String(record.status || "").toLowerCase();
+  return status === "returned" || Boolean(record.returnedDate) || (Array.isArray(record.items) && record.items.length === 0);
+}
+
+function isExtendedRecord(record) {
+  return Boolean(record.extensionDate || (record.extendedDue && record.extendedDue !== record.due));
+}
+
+function hasPassedDueDate(record) {
+  const dueValue = record.extendedDue || record.extensionDate || record.dueDate || record.returnDueDate || record.expectedReturnDate || record.due;
+  if (!dueValue) return false;
+  const text = String(dueValue).trim();
+  const iso = /^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(text);
+  let year, month, day;
+  if (iso) {
+    year = Number(iso[1]);
+    month = Number(iso[2]);
+    day = Number(iso[3]);
+  } else {
+    const parsed = parseDate(text);
+    if (!parsed) return false;
+    ({ year, month } = parsed);
+    day = parsed.day;
+    month += 1;
+  }
+  if (year > 2400) year -= 543;
+  const dueTime = new Date(year, month - 1, day).setHours(0, 0, 0, 0);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return Number.isFinite(dueTime) && dueTime < today.getTime();
+}
+
 function renderList() {
   const query = searchInput.value.trim().toLowerCase();
   const isReturnView = page.classList.contains("is-return-view");
   const sourceRecords = isReturnView
-    ? records.filter((record) => {
-        const status = String(record.status || "").toLowerCase();
-        const isReturned = status === "returned" || Boolean(record.returnedDate) || Array.isArray(record.returnHistory) && record.returnHistory.length > 0 || (Array.isArray(record.items) && record.items.length === 0);
-        return !isReturned;
-      })
+    ? records.filter((record) => !isReturnedRecord(record))
     : records.filter((record) => {
         const status = String(record.status || "").toLowerCase();
-        const isExtended = Boolean(record.extensionDate || (record.extendedDue && record.extendedDue !== record.due));
-        const isReturned = status === "returned" || Boolean(record.returnedDate) || Array.isArray(record.returnHistory) && record.returnHistory.length > 0 || (Array.isArray(record.items) && record.items.length === 0);
-        return !isReturned && (status === "overdue" || isExtended);
+        return !isReturnedRecord(record) && (status === "overdue" || hasPassedDueDate(record) || isExtendedRecord(record));
       });
   const visibleRecords = sourceRecords.filter((record) => !query || `${record.item} ${record.borrower} ${record.kind} ${record.due} ${record.status}`.toLowerCase().includes(query));
   if (!visibleRecords.length) {
@@ -236,14 +288,15 @@ function renderList() {
   borrowList.innerHTML = visibleRecords.map((record) => {
     const kind = record.kind || record.borrower || "รายการยืม";
     const status = String(record.status || "").toLowerCase();
-    const isExtended = Boolean(record.extensionDate || (record.extendedDue && record.extendedDue !== record.due));
-    const statusText = status === "overdue" ? borrowReturnText("overdue") : status === "returned" ? borrowReturnText("returned") : "";
+    const isExtended = isExtendedRecord(record);
+    const isOverdue = status === "overdue" || hasPassedDueDate(record);
+    const statusText = isOverdue ? borrowReturnText("overdue") : status === "returned" ? borrowReturnText("returned") : "";
     const dueLabel = `${borrowReturnText("due")}: ${escapeHtml(record.due || "—")}`;
     const extensionText = record.extensionDate || (record.extendedDue && record.extendedDue !== record.due ? record.extendedDue : "");
-    return `<article class="borrow-card kind-${kind === "ส่วนบุคคล" ? "personal" : "nurse"} ${status === "overdue" ? "is-overdue" : status === "returned" ? "is-returned" : isExtended ? "is-due" : "is-pending"}">
+    return `<article class="borrow-card kind-${kind === "ส่วนบุคคล" ? "personal" : "nurse"} ${isOverdue ? "is-overdue" : status === "returned" ? "is-returned" : isExtended ? "is-due" : "is-pending"}">
       <span class="record-icon" aria-hidden="true">${iconFor(kind)}</span>
       <div class="borrow-record-main">
-        <div class="borrow-record-meta"><span>${dueLabel}</span>${extensionText ? `<span>${borrowReturnText("extension")}: ${escapeHtml(extensionText)}</span>` : ""}${statusText ? `<span class="borrow-status">${statusText}</span>` : ""}</div>
+        <div class="borrow-record-meta"><span>${dueLabel}</span>${extensionText ? `<span>↻ ${borrowReturnText("extension")}: ${escapeHtml(extensionText)}</span>` : ""}${statusText ? `<span class="borrow-status">${statusText}</span>` : ""}</div>
         <h3>${escapeHtml(record.item || record.borrower || "รายการยืม")}</h3>
         <span class="borrow-kind ${kind === "ส่วนบุคคล" ? "personal" : "travel"}">${escapeHtml(kind)}</span>
       </div>
@@ -254,6 +307,7 @@ function renderList() {
 
 function renderReturnDetail(record) {
   const status = String(record.status || "borrowed").toLowerCase();
+  const isExtended = isExtendedRecord(record);
   const statusLabel = status === "returned" ? "คืนแล้ว" : status === "overdue" ? "เกินกำหนดคืน" : "กำลังยืม";
   const name = record.fullName || record.name || record.item || "ไม่ระบุชื่อผู้ยืม";
   const category = record.kind || record.borrower || "ยาและเวชภัณฑ์";
@@ -278,7 +332,7 @@ function renderReturnDetail(record) {
       <div class="return-detail-page-heading"><h2>Medicine &amp; Medical Supplies<br><span>Borrowing &amp; Return</span></h2></div>
       <div class="return-detail-topline"><button class="return-detail-back" type="button" data-detail-back><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 5-7 7 7 7M7 12h14"/></svg><span>กลับไปยังรายการ</span></button><span class="return-detail-status ${status === "returned" ? "is-returned" : status === "overdue" ? "is-overdue" : "is-borrowed"}"><i></i>${statusLabel}</span></div>
       <header class="return-detail-hero"><span class="return-detail-hero-icon" aria-hidden="true">${iconFor(category)}</span><div><p>รายละเอียดการยืม–คืน</p><h1 id="returnDetailTitle">${escapeHtml(name)}</h1><span class="return-detail-category">${escapeHtml(category)}</span></div></header>
-      <section class="return-detail-info" aria-label="ข้อมูลการยืม"><div><span>ผู้ยืม</span><strong>${escapeHtml(name)}</strong></div><div><span>ประเภทผู้ยืม</span><strong>${escapeHtml(record.role || record.borrowerType || record.department || "—")}</strong></div><div><span>วันที่ยืม</span><strong>${escapeHtml(record.date || record.borrowDate || "—")}</strong></div><div><span>กำหนดคืน</span><strong>${escapeHtml(record.due || "—")}</strong></div>${record.returnedDate ? `<div><span>วันที่คืน</span><strong>${escapeHtml(record.returnedDate)}</strong></div>` : ""}</section>
+      <section class="return-detail-info${isExtended ? " has-extension" : ""}" aria-label="ข้อมูลการยืม"><div><span>ผู้ยืม</span><strong>${escapeHtml(name)}</strong></div><div><span>ประเภทผู้ยืม</span><strong>${escapeHtml(record.role || record.borrowerType || record.department || "—")}</strong></div><div><span>วันที่ยืม</span><strong>${escapeHtml(record.date || record.borrowDate || "—")}</strong></div><div><span>กำหนดคืน</span><strong>${escapeHtml(record.due || "—")}</strong></div>${record.returnedDate ? `<div><span>วันที่คืน</span><strong>${escapeHtml(record.returnedDate)}</strong></div>` : ""}</section>
       <section class="return-detail-products"><div class="return-detail-section-heading"><div><p>รายการที่ยืม</p><h2>ยาและเวชภัณฑ์</h2></div><span>${products.length} รายการ</span></div><div class="return-detail-item-list">${itemsMarkup}</div></section>
       <footer class="return-detail-actions"><button class="return-detail-extend" type="button" data-detail-extend ${status === "returned" ? "disabled" : ""}>ต่อเวลาการยืม</button><button class="return-detail-return" type="button" data-detail-return ${status === "returned" ? "disabled" : ""}>${status === "returned" ? "คืนแล้ว" : "คืนยา และเวชภัณฑ์"}</button></footer>
     </div>`;
@@ -375,7 +429,7 @@ document.getElementById("cancelExtendBorrow").addEventListener("click", closeExt
 extendBorrowModal.addEventListener("click", (event) => {
   if (event.target === extendBorrowModal) closeExtendBorrowModal();
 });
-document.getElementById("extendBorrowForm").addEventListener("submit", (event) => {
+document.getElementById("extendBorrowForm").addEventListener("submit", async (event) => {
   event.preventDefault();
   if (!extendDueDate.value) {
     extendDueDate.reportValidity();
@@ -383,17 +437,20 @@ document.getElementById("extendBorrowForm").addEventListener("submit", (event) =
   }
   const record = records.find((item) => String(item.id) === extendBorrowModal.dataset.recordId);
   if (!record) return;
-  const [year, month, day] = extendDueDate.value.split("-").map(Number);
-  const thaiDue = `${String(day).padStart(2, "0")}/${String(month).padStart(2, "0")}/${year + 543}`;
-  record.due = thaiDue;
-  record.extendedDue = thaiDue;
-  record.extensionDate = thaiDue;
-  record.status = "borrowed";
-  FMSStorage.setItem(STORAGE_KEY, JSON.stringify(records));
-  window.FMSBorrowHistoryStore?.save(records);
-  closeExtendBorrowModal();
-  renderList();
-  renderReturnDetail(record);
+  const submitButton = document.querySelector('#extendBorrowForm button[type="submit"]');
+  submitButton.disabled = true;
+  try {
+    const updatedRecord = await FMSStorage.extendBorrowRecord(record.id, extendDueDate.value);
+    const index = records.findIndex((item) => String(item.id) === String(updatedRecord.id));
+    if (index >= 0) records[index] = updatedRecord;
+    window.FMSBorrowHistoryStore?.save(records);
+    closeExtendBorrowModal();
+    renderList();
+    renderReturnDetail(updatedRecord);
+  } catch (error) {
+    submitButton.disabled = false;
+    window.alert(error.message || "บันทึกการต่อเวลาไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
+  }
 });
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape" && !extendBorrowModal.hidden) closeExtendBorrowModal();

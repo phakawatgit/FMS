@@ -1108,6 +1108,7 @@ body {
     transition: none;
   }
 }
+
 .history-section h2.is-expired,.history-section h2.is-out,.history-section h2.is-low,.history-section h2.is-near-expiry {
   display: inline-flex;
   align-items: center;
@@ -1407,4 +1408,61 @@ html,body,body * {
     width: 100% !important;
     height: 42px !important;
   }
+}
+/* Center the original detail dialog within the viewport. */
+.detail-modal {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  max-height: none !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 20px !important;
+  overflow: hidden !important;
+}
+.detail-modal[hidden] { display: none !important; }
+.detail-backdrop {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 0 !important;
+  background: rgba(1, 64, 109, .48) !important;
+  backdrop-filter: blur(3px) !important;
+}
+.detail-dialog {
+  position: relative !important;
+  z-index: 1001 !important;
+  top: auto !important;
+  left: auto !important;
+  transform: none !important;
+  translate: none !important;
+  animation: none !important;
+  flex: 0 1 auto !important;
+  width: min(520px, calc(100vw - 32px)) !important;
+  max-height: calc(100vh - 40px) !important;
+  max-height: calc(100dvh - 40px) !important;
+  margin: auto !important;
+  overflow-y: auto !important;
+}
+@media (max-width: 560px) {
+  .detail-modal { padding: 13px !important; }
+  .detail-dialog {
+    width: calc(100vw - 26px) !important;
+    max-height: calc(100vh - 26px) !important;
+    max-height: calc(100dvh - 26px) !important;
+  }
+}
+
+/* Do not show the blue focus frame around the history search field. */
+.activity-intro .search:focus-within {
+  border-color: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
 }

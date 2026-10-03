@@ -37,7 +37,7 @@ router.get("/dashboard/data", async (req, res) => {
         for (const entry of history) {
           const visitId = String(entry.createdAt || entry.visitDate || entry.date || "");
           const medicines = medsByVisit.get(visitId) || entry.medicines || [];
-          visits.push({ ...entry, patientId: patient.id, faculty: entry.faculty || patient.faculty || "", branch: entry.branch || patient.branch || "", gender: entry.gender || patient.gender || "", symptom: entry.symptom || patient.symptom || "", status: entry.status || patient.status || "", hospitalName: entry.hospitalName || patient.hospitalName || "", createdAt: entry.createdAt || entry.visitDate || patient.visitedAt?.toISOString() || "", medicines, medicine: medicines.map((item) => item.name).join(", "), quantity: medicines.reduce((sum, item) => sum + item.quantity, 0) });
+          visits.push({ ...entry, patientId: patient.id, faculty: entry.faculty || patient.faculty || "", branch: entry.branch || patient.branch || "", gender: entry.gender || patient.gender || "", symptom: entry.symptom || patient.symptom || "", status: entry.createdAt && patient.visitedAt && new Date(entry.createdAt).getTime() === patient.visitedAt.getTime() ? patient.status || entry.status || "" : entry.status || patient.status || "", hospitalName: entry.hospitalName || patient.hospitalName || "", createdAt: entry.createdAt || entry.visitDate || patient.visitedAt?.toISOString() || "", medicines, medicine: medicines.map((item) => item.name).join(", "), quantity: medicines.reduce((sum, item) => sum + item.quantity, 0) });
         }
       } else if (patient.visitedAt) {
         const visitId = patient.visitedAt.toISOString();
@@ -85,6 +85,50 @@ router.get("/nurses", async (_req, res) => {
   } catch (error) {
     console.error("Nurse list read failed:", error.message);
     return res.status(503).json({ success: false, message: "อ่านรายชื่อพยาบาลไม่สำเร็จ" });
+  }
+});
+
+router.get("/users", requireRole("ADMIN"), async (_req, res) => {
+  try {
+    const users = await prisma.user.findMany({
+      select: { id: true, email: true, name: true, role: true, isActive: true, createdAt: true },
+      orderBy: [{ name: "asc" }, { email: "asc" }],
+    });
+    return res.json({ success: true, data: users });
+  } catch (error) {
+    console.error("User list read failed:", error.message);
+    return res.status(503).json({ success: false, message: "Could not load user accounts" });
+  }
+});
+
+router.patch("/users/:id/role", requireRole("ADMIN"), async (req, res) => {
+  const role = String(req.body?.role || "").toUpperCase();
+  if (!["ADMIN", "NURSE"].includes(role)) {
+    return res.status(400).json({ success: false, message: "Role must be ADMIN or NURSE" });
+  }
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+      // Serialize role changes so two admins cannot concurrently remove the last active admin.
+      await tx.$queryRaw`SELECT pg_advisory_xact_lock(70824119)`;
+      const existing = await tx.user.findUnique({ where: { id: req.params.id }, select: { id: true, role: true, isActive: true } });
+      if (!existing) return { status: 404 };
+      if (existing.role === "ADMIN" && existing.isActive && role !== "ADMIN") {
+        const adminCount = await tx.user.count({ where: { role: "ADMIN", isActive: true } });
+        if (adminCount <= 1) return { status: 409 };
+      }
+      const user = await tx.user.update({
+        where: { id: existing.id },
+        data: { role },
+        select: { id: true, email: true, name: true, role: true, isActive: true, createdAt: true },
+      });
+      return { user };
+    });
+    if (result.status === 404) return res.status(404).json({ success: false, message: "User account not found" });
+    if (result.status === 409) return res.status(409).json({ success: false, message: "At least one active administrator must remain" });
+    return res.json({ success: true, data: result.user });
+  } catch (error) {
+    console.error("User role update failed:", error.message);
+    return res.status(503).json({ success: false, message: "Could not update user role" });
   }
 });
 
@@ -157,6 +201,55 @@ async function attachDutyResponsibility(records) {
       responsibleFromDutyShift: Boolean(shift),
     };
   });
+}
+
+async function attachCurrentPatientStatuses(records) {
+  if (!Array.isArray(records) || records.length === 0) return records;
+  const patients = await prisma.patient.findMany({
+    where: { visitedAt: { not: null } },
+    select: { visitedAt: true, status: true, hospitalName: true },
+  });
+  const currentByVisit = new Map(patients.map((patient) => [patient.visitedAt.toISOString(), patient]));
+  return records.map((record) => {
+    const visitDate = new Date(record?.createdAt || "");
+    const current = Number.isNaN(visitDate.getTime()) ? null : currentByVisit.get(visitDate.toISOString());
+    return current ? { ...record, status: current.status || record.status, hospitalName: current.hospitalName || record.hospitalName || "" } : record;
+  });
+}
+
+async function syncPatientStatusesFromVisits(tx, records) {
+  const incomingByVisit = new Map(records
+    .filter((record) => record && ["normal", "observe", "refer"].includes(record.status) && record.createdAt)
+    .map((record) => [String(record.createdAt), record]));
+  if (!incomingByVisit.size) return;
+  const patients = await tx.patient.findMany({ select: { id: true, visitedAt: true, infirmaryHistory: true } });
+  for (const patient of patients) {
+    const history = Array.isArray(patient.infirmaryHistory) ? patient.infirmaryHistory : [];
+    let changed = false;
+    const nextHistory = history.map((entry) => {
+      const incoming = incomingByVisit.get(String(entry?.createdAt || entry?.visitDate || ""));
+      if (!incoming) return entry;
+      changed = true;
+      return { ...entry, ...incoming };
+    });
+    if (!changed) continue;
+    const latest = nextHistory.reduce((current, entry) => {
+      const date = new Date(entry?.createdAt || entry?.visitDate || "");
+      if (Number.isNaN(date.getTime())) return current;
+      return !current || date > current.date ? { date, entry } : current;
+    }, null);
+    const data = { infirmaryHistory: nextHistory };
+    if (latest && (!patient.visitedAt || latest.date >= patient.visitedAt)) {
+      data.visitedAt = latest.date;
+      data.status = latest.entry.status || null;
+      data.hospitalName = latest.entry.hospitalName || null;
+      data.symptom = latest.entry.symptom || null;
+      data.sys = latest.entry.sys || null;
+      data.dia = latest.entry.dia || null;
+      data.pr = latest.entry.pr || null;
+    }
+    await tx.patient.update({ where: { id: patient.id }, data });
+  }
 }
 
 function belongsToAuthenticatedUser(record, req) {
@@ -242,7 +335,7 @@ router.post("/duty-shifts", requireRole("ADMIN", "NURSE"), async (req, res) => {
       const legacy = await tx.legacyStorage.findUnique({ where: { key: "fms-local-duty-records" }, select: { value: true } });
       if (Array.isArray(legacy?.value)) {
         const remaining = legacy.value.filter((record) => !belongsToAuthenticatedUser(record, req));
-        await tx.legacyStorage.update({ where: { key: "fms-local-duty-records" }, data: { value: remaining } });
+        await tx.legacyStorage.upsert({ where: { key: "fms-local-duty-records" }, create: { key: "fms-local-duty-records", value: remaining }, update: { value: remaining } });
       }
       return tx.dutyShift.findMany({ include: { user: { select: { email: true } } }, orderBy: [{ date: "desc" }, { createdAt: "desc" }] });
     }, { maxWait: 10_000, timeout: 30_000 });
@@ -252,6 +345,43 @@ router.post("/duty-shifts", requireRole("ADMIN", "NURSE"), async (req, res) => {
     if (error.httpStatus === 409 || error.code === "P2002") return res.status(409).json({ success: false, message: "This color or duty date is already assigned" });
     console.error("Duty shift save failed:", error.message);
     return res.status(503).json({ success: false, message: "Duty shift could not be saved" });
+  }
+});
+
+router.put("/duty-shifts/:id", requireRole("ADMIN", "NURSE"), async (req, res) => {
+  const date = parseDutyDate(req.body?.date);
+  const color = String(req.body?.colorId || "");
+  if (!date || !/^color-(?:[1-9]|[1-4]\d|50)$/.test(color)) {
+    return res.status(400).json({ success: false, message: "Duty date or color is invalid" });
+  }
+  try {
+    const updated = await prisma.$transaction(async (tx) => {
+      const current = await tx.dutyShift.findUnique({ where: { id: req.params.id }, include: { user: { select: { email: true } } } });
+      if (!current) throw Object.assign(new Error("Duty shift not found"), { httpStatus: 404 });
+      if (req.auth.role !== "ADMIN" && current.userId !== req.auth.userId) {
+        throw Object.assign(new Error("You can only edit your own duty shifts"), { httpStatus: 403 });
+      }
+      const record = await tx.dutyShift.update({ where: { id: current.id }, data: { date, color }, include: { user: { select: { email: true } } } });
+      const legacy = await tx.legacyStorage.findUnique({ where: { key: "fms-local-duty-records" }, select: { value: true } });
+      if (Array.isArray(legacy?.value)) {
+        const oldDate = current.date.toISOString().slice(0, 10);
+        const ownerEmail = String(current.user?.email || "").trim().toLowerCase();
+        const remaining = legacy.value.filter((item) => {
+          if (item?.date !== oldDate) return true;
+          const itemUid = String(item?.uid || "");
+          const itemEmail = String(item?.email || item?.userEmail || item?.accountEmail || "").trim().toLowerCase();
+          return itemUid !== current.userId && (!ownerEmail || itemEmail !== ownerEmail);
+        });
+        await tx.legacyStorage.upsert({ where: { key: "fms-local-duty-records" }, create: { key: "fms-local-duty-records", value: remaining }, update: { value: remaining } });
+      }
+      return record;
+    }, { maxWait: 10_000, timeout: 20_000 });
+    return res.json({ success: true, data: serializeDutyShift(updated) });
+  } catch (error) {
+    if (error.httpStatus) return res.status(error.httpStatus).json({ success: false, message: error.message });
+    if (error.code === "P2002") return res.status(409).json({ success: false, message: "This nurse already has a shift or this color is taken on that date" });
+    console.error("Duty shift update failed:", error.message);
+    return res.status(503).json({ success: false, message: "Duty shift could not be updated" });
   }
 });
 
@@ -555,14 +685,25 @@ router.post("/infirmary-visits", requireRole("ADMIN", "NURSE"), async (req, res)
 router.get("/legacy-storage", async (req, res) => {
   try {
     const rows = await prisma.legacyStorage.findMany();
-    const nurseReadableKeys = new Set(["fms-infirmary-visits", "fms-infirmary-history", "fms-local-duty-records", "fms-duty-profiles"]);
+    const nurseReadableKeys = new Set(["fms-infirmary-visits", "fms-infirmary-history", "fms-local-duty-records", "fms-duty-profiles", "fms-catalog-cart", "fms-history-catalog-orders", "fms-order-title", "fms-borrow-products", "fms-borrow-form", "fms-borrow-return-records", "fms-history-borrow-return", "fms-borrow-return-old-data-cleared-v2"]);
     const data = Object.fromEntries(rows
       .filter((row) => row.key !== "fms-stock-records" && (req.auth.role === "ADMIN" || nurseReadableKeys.has(row.key)))
       .map((row) => [row.key, row.value]));
-    data["fms-infirmary-visits"] = await attachDutyResponsibility(data["fms-infirmary-visits"]);
+    data["fms-infirmary-visits"] = await attachDutyResponsibility(await attachCurrentPatientStatuses(data["fms-infirmary-visits"]));
     data["fms-stock-records"] = await catalogRouter.listRecords(req);
+    const savedBorrowRecords = Array.isArray(data["fms-borrow-return-records"]) ? data["fms-borrow-return-records"] : [];
     const borrowRows = await prisma.borrowRecord.findMany({ include: { items: { include: { returns: { orderBy: { returnedAt: "asc" } } } } }, orderBy: { borrowedAt: "desc" } });
-    data["fms-borrow-return-records"] = borrowRows.map(borrowRouter.legacy);
+    data["fms-borrow-return-records"] = borrowRows.map((row) => {
+      const record = borrowRouter.legacy(row);
+      const saved = savedBorrowRecords.find((item) => String(item.id) === String(record.id));
+      if (saved && !record.extensionDate && (saved.extensionDate || saved.extendedDue)) {
+        record.due = saved.due || record.due;
+        record.originalDue = saved.originalDue || record.due;
+        record.extendedDue = saved.extendedDue || saved.due || "";
+        record.extensionDate = saved.extensionDate || saved.extendedDue || "";
+      }
+      return record;
+    });
     res.json({ success: true, data });
   } catch (error) {
     console.error("Legacy storage read failed:", error.message);
@@ -593,7 +734,7 @@ router.post("/legacy-storage/bulk", requireRole("ADMIN"), async (req, res) => {
       }
     });
     const stockEntry = entries.find(([key]) => key === "fms-stock-records");
-    if (stockEntry) await catalogRouter.syncRecords(stockEntry[1]);
+    if (stockEntry) await catalogRouter.syncRecords(stockEntry[1], req);
     res.json({ success: true, count: entries.length });
   } catch (error) {
     console.error("Legacy storage bulk write failed:", error.message);
@@ -603,7 +744,7 @@ router.post("/legacy-storage/bulk", requireRole("ADMIN"), async (req, res) => {
 
 router.put("/legacy-storage/:key", async (req, res) => {
   const key = String(req.params.key || "").trim();
-  if (req.auth.role !== "ADMIN" && !["fms-infirmary-visits", "fms-infirmary-history", "fms-local-duty-records", "fms-duty-profiles"].includes(key)) {
+  if (req.auth.role !== "ADMIN" && !["fms-infirmary-visits", "fms-infirmary-history", "fms-local-duty-records", "fms-duty-profiles", "fms-catalog-cart", "fms-history-catalog-orders", "fms-order-title", "fms-stock-records", "fms-borrow-products", "fms-borrow-form", "fms-borrow-return-records", "fms-history-borrow-return", "fms-borrow-return-old-data-cleared-v2"].includes(key)) {
     return res.status(403).json({ success: false, message: "Insufficient permission" });
   }
   if (!key || key.length > 120) return res.status(400).json({ success: false, message: "คีย์ไม่ถูกต้อง" });
@@ -629,8 +770,21 @@ router.put("/legacy-storage/:key", async (req, res) => {
       value = [...stableRows(saved), ...value.filter((record) => record?.uid === req.auth.uid)];
     }
     if (key === "fms-stock-records") {
-      const rows = await catalogRouter.syncRecords(value);
+      const rows = await catalogRouter.syncRecords(value, req);
       return res.json({ success: true, data: rows.map((row) => catalogRouter.serialize(row, req)) });
+    }
+    if (key === "fms-infirmary-visits") {
+      if (!Array.isArray(value)) return res.status(400).json({ success: false, message: "Infirmary visits must be a list" });
+      const row = await prisma.$transaction(async (tx) => {
+        const saved = await tx.legacyStorage.upsert({
+          where: { key },
+          create: { key, value },
+          update: { value },
+        });
+        await syncPatientStatusesFromVisits(tx, value);
+        return saved;
+      });
+      return res.json({ success: true, data: row });
     }
     const row = await prisma.legacyStorage.upsert({
       where: { key },
@@ -645,8 +799,9 @@ router.put("/legacy-storage/:key", async (req, res) => {
 });
 
 router.delete("/legacy-storage/:key", async (req, res) => {
-  const key = String(req.params.key || "");
-  if (req.auth.role !== "ADMIN") {
+  const key = String(req.params.key || "").trim();
+  const staffDeletableKeys = new Set(["fms-borrow-products", "fms-borrow-return-records", "fms-history-borrow-return", "fms-borrow-return-old-data-cleared-v2"]);
+  if (req.auth.role !== "ADMIN" && !staffDeletableKeys.has(key)) {
     return res.status(403).json({ success: false, message: "Insufficient permission" });
   }
   if (key === "fms-stock-records") {

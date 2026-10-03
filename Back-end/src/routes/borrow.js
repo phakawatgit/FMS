@@ -11,7 +11,34 @@ function legacy(record) {
   const items = record.items.map((item) => ({ name: item.itemName, productName: item.itemName, code: item.catalogCode, quantity: item.quantityBorrowed - item.quantityReturned }));
   const borrowedItems = record.items.map((item) => ({ name: item.itemName, productName: item.itemName, code: item.catalogCode, quantity: item.quantityBorrowed }));
   const fmt = (date) => date.toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok", day: "2-digit", month: "2-digit", year: "numeric" });
-  return { id: record.id, item: record.borrowerName, fullName: record.borrowerName, borrower: record.borrowTypes[0] || "", kind: record.borrowTypes[0] || "", borrowerType: record.borrowTypes.join("、"), date: fmt(record.borrowedAt), due: fmt(record.dueAt), status: record.status === "RETURNED" ? "returned" : record.status === "PARTIALLY_RETURNED" ? "borrowed" : "borrowed", role: record.roles.join("、"), roles: record.roles, department: record.branch || "", branch: record.branch || "", nickname: record.nickname || "", studentId: record.studentId || "", phone: record.phone || "", activity: record.activity || "", reason: record.reason || "", items, borrowedItems, returnHistory: returns, returnedDate: record.returnedAt ? fmt(record.returnedAt) : "", stockCommitted: true };
+  return {
+    id: record.id,
+    item: record.borrowerName,
+    fullName: record.borrowerName,
+    borrower: record.borrowTypes[0] || "",
+    kind: record.borrowTypes[0] || "",
+    borrowerType: record.borrowTypes.join(", "),
+    date: fmt(record.borrowedAt),
+    due: fmt(record.dueAt),
+    originalDue: record.originalDueAt ? fmt(record.originalDueAt) : "",
+    extendedDue: record.extendedAt ? fmt(record.dueAt) : "",
+    extensionDate: record.extendedAt ? fmt(record.extendedAt) : "",
+    status: record.status === "RETURNED" ? "returned" : "borrowed",
+    role: record.roles.join(", "),
+    roles: record.roles,
+    department: record.branch || "",
+    branch: record.branch || "",
+    nickname: record.nickname || "",
+    studentId: record.studentId || "",
+    phone: record.phone || "",
+    activity: record.activity || "",
+    reason: record.reason || "",
+    items,
+    borrowedItems,
+    returnHistory: returns,
+    returnedDate: record.returnedAt ? fmt(record.returnedAt) : "",
+    stockCommitted: true,
+  };
 }
 const include = { items: { include: { returns: { orderBy: { returnedAt: "asc" } } } } };
 router.get("/", async (_req, res) => {
@@ -41,6 +68,30 @@ router.post("/", requireRole("ADMIN", "NURSE"), async (req, res) => {
     res.status(201).json({ success: true, data: legacy(record) });
   } catch (error) { console.error("Borrow save failed:", error.message); res.status(error.httpStatus || 503).json({ success: false, message: error.httpStatus ? error.message : "Borrow record could not be saved" }); }
 });
+router.post("/:id/extensions", requireRole("ADMIN", "NURSE"), async (req, res) => {
+  const dueDate = String(req.body?.dueDate || "");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dueDate)) return res.status(400).json({ success: false, message: "A valid due date is required" });
+  const dueAt = new Date(`${dueDate}T00:00:00.000Z`);
+  if (Number.isNaN(dueAt.getTime()) || dueAt.toISOString().slice(0, 10) !== dueDate) return res.status(400).json({ success: false, message: "A valid due date is required" });
+  try {
+    const record = await prisma.$transaction(async (tx) => {
+      const current = await tx.borrowRecord.findUnique({ where: { id: req.params.id }, include });
+      if (!current) throw Object.assign(new Error("Borrow record not found"), { httpStatus: 404 });
+      if (current.status === "RETURNED") throw Object.assign(new Error("Returned records cannot be extended"), { httpStatus: 409 });
+      if (dueAt <= current.dueAt) throw Object.assign(new Error("The extended due date must be later than the current due date"), { httpStatus: 400 });
+      return tx.borrowRecord.update({
+        where: { id: current.id },
+        data: { dueAt, originalDueAt: current.originalDueAt || current.dueAt, extendedAt: new Date() },
+        include,
+      });
+    }, { maxWait: 10000, timeout: 20000 });
+    res.json({ success: true, data: legacy(record) });
+  } catch (error) {
+    console.error("Borrow extension save failed:", error.message);
+    res.status(error.httpStatus || 503).json({ success: false, message: error.httpStatus ? error.message : "Borrow extension could not be saved" });
+  }
+});
+
 router.post("/:id/returns", requireRole("ADMIN", "NURSE"), async (req, res) => {
   const returns = Array.isArray(req.body?.items) ? req.body.items : [];
   if (!returns.length) return res.status(400).json({ success: false, message: "Return items are required" });

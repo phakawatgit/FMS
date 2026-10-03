@@ -1,0 +1,3 @@
+ALTER TABLE "catalog"
+  ADD COLUMN IF NOT EXISTS "image_data" BYTEA,
+  ADD COLUMN IF NOT EXISTS "image_mime_type" VARCHAR(80);

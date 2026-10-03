@@ -113,7 +113,8 @@ router.post("/signup/otp/request", async (req, res) => {
     return res.json({ success: true, message: "OTP sent" });
   } catch (error) {
     console.error("Signup OTP request failed:", error.message);
-    return res.status(error.status || 503).json({ success: false, message: "ส่ง OTP ไม่สำเร็จ กรุณาลองใหม่" });
+    const message = error.message === "SMTP is not configured" ? "ระบบยังไม่ได้ตั้งค่า SMTP สำหรับส่ง OTP" : "ส่ง OTP ไม่สำเร็จ กรุณาลองใหม่";
+    return res.status(error.status || 503).json({ success: false, message });
   }
 });
 
@@ -146,7 +147,8 @@ router.post("/password-reset/otp/request", async (req, res) => {
     return res.json({ success: true, message: "OTP sent" });
   } catch (error) {
     console.error("Password reset OTP request failed:", error.message);
-    return res.status(error.status || 503).json({ success: false, message: "ส่ง OTP ไม่สำเร็จ กรุณาลองใหม่" });
+    const message = error.message === "SMTP is not configured" ? "ระบบยังไม่ได้ตั้งค่า SMTP สำหรับส่ง OTP" : "ส่ง OTP ไม่สำเร็จ กรุณาลองใหม่";
+    return res.status(error.status || 503).json({ success: false, message });
   }
 });
 

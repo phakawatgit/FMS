@@ -577,10 +577,12 @@ h1, h2 {
 .calendar-duty-dot {
   position: relative;
   display: block;
+  flex: 0 0 0.65rem;
   width: 0.65rem;
   height: 0.65rem;
   border: 1px solid rgba(1, 2, 44, 0.24);
-  border-radius: 0.16rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
   cursor: help;
 }
 .calendar-duty-dot::after, .mini-dots i::after {
@@ -1129,7 +1131,8 @@ html, body, body * {
 }
   body .topbar-actions {
     display: grid !important;
-    grid-template-columns: 42px minmax(100px, 1fr) minmax(126px, 1.25fr) !important;
+    grid-template-columns: 36px minmax(68px, 1fr) max-content !important;
+    grid-auto-flow: column !important;
     align-items: center !important;
     width: 100% !important;
     min-width: 0 !important;
@@ -1152,26 +1155,32 @@ html, body, body * {
     height: 23px !important;
 }
   body .topbar-actions > .language-switcher,   body .topbar-actions > .sign-out {
-    width: 100% !important;
+    width: auto !important;
     min-width: 0 !important;
-    height: 42px !important;
-    min-height: 42px !important;
+    height: 34px !important;
+    min-height: 34px !important;
     margin: 0 !important;
     border-radius: 12px !important;
 }
   body .topbar-actions > .language-switcher {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    width: 100% !important;
     padding: 0 8px !important;
     overflow: hidden !important;
 }
   body .topbar-actions > .sign-out {
+    grid-column: 3 !important;
+    grid-row: 1 !important;
+    justify-self: end !important;
     justify-content: center !important;
-    gap: 7px !important;
-    padding: 0 10px !important;
-    font-size: 13px !important;
+    gap: 5px !important;
+    padding: 0 9px !important;
+    font-size: 11px !important;
 }
   body .topbar-actions > .sign-out .sign-out-icon {
-    width: 22px !important;
-    height: 22px !important;
+    width: 17px !important;
+    height: 17px !important;
 }
   body .topbar-actions > .notification-panel {
     position: absolute !important;
@@ -1182,22 +1191,50 @@ html, body, body * {
 }
 @media (max-width: 350px) {
   body .topbar-actions {
-    grid-template-columns: 36px minmax(82px, 1fr) minmax(108px, 1.2fr) !important;
+    grid-template-columns: 32px minmax(58px, 1fr) max-content !important;
     gap: 5px !important;
 }
+
   body .topbar-actions > .icon-button {
     width: 36px !important;
     height: 36px !important;
     min-height: 36px !important;
 }
   body .topbar-actions > .language-switcher,   body .topbar-actions > .sign-out {
-    height: 36px !important;
-    min-height: 36px !important;
+    height: 32px !important;
+    min-height: 32px !important;
 }
   body .topbar-actions > .sign-out {
-    font-size: 11px !important;
+    padding-inline: 7px !important;
+    font-size: 10px !important;
 }
 }
+@media (max-width: 600px) {
+  body .year-calendar-modal {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: none;
+    height: 100vh;
+    height: 100dvh;
+    max-height: none;
+    padding: max(.6rem, env(safe-area-inset-top)) .6rem max(.6rem, env(safe-area-inset-bottom));
+    overflow: hidden;
+  }
+
+  body .year-calendar-dialog {
+    width: 100%;
+    max-height: 100%;
+    min-height: 0;
+    margin: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+}
+
 .topbar .icon-button {
   position: relative!important;
   display: grid!important;

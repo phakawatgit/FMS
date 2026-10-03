@@ -1,8 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
 import {
     createUserWithEmailAndPassword,
-    sendEmailVerification,
-    sendPasswordResetEmail,
     getAuth,
     GoogleAuthProvider,
     signInWithEmailAndPassword,
@@ -76,7 +74,7 @@ async function apiRequest(path, options = {}) {
         headers: { "Content-Type": "application/json", ...(options.headers || {}) },
     });
     const result = await response.json().catch(() => ({}));
-    if (!response.ok || !result.success) throw new Error(result.message || "เชื่อมต่อระบบไม่สำเร็จ");
+    if (!response.ok || !result.success) throw new Error(result.message || "Could not complete the request");
     return result;
 }
 
@@ -277,11 +275,12 @@ function renderLanguage() {
     setText(signupOtpBack.querySelector("span"), currentLanguage === "th" ? "กลับไปสร้างบัญชี" : "Back to create account");
     setText(signupOtpFlow.querySelector(".auth-kicker"), currentLanguage === "th" ? "ยืนยันอีเมล" : "EMAIL VERIFICATION");
     setText(document.getElementById("signupOtpTitle"), currentLanguage === "th" ? "ยืนยันอีเมล" : "Verify your email");
-    setText(document.getElementById("signupOtpDescription"), currentLanguage === "th" ? "กรอกรหัส OTP ที่ส่งไปยังอีเมลของคุณ" : "Enter the OTP sent to your email");
-    setText(signupOtpForm.querySelector("label"), currentLanguage === "th" ? "รหัส OTP" : "OTP code");
-    setText(signupOtpForm.querySelector("button"), currentLanguage === "th" ? "ยืนยันอีเมล" : "Verify email");
+    setText(document.getElementById("signupOtpDescription"), currentLanguage === "th" ? "กรอกรหัส OTP 6 หลักที่ส่งไปยังอีเมลของคุณ" : "Enter the 6-digit OTP sent to your email.");
+    setText(signupOtpForm.querySelector("label"), t.otpLabel);
+    setText(signupOtpForm.querySelector("button[type=submit]"), currentLanguage === "th" ? "ยืนยันอีเมล" : "Verify email");
+    signupOtpForm.hidden = false;
     setText(signupOtpResend, currentLanguage === "th" ? "ส่ง OTP อีกครั้ง" : "Resend OTP");
-    signupOtpInput.placeholder = currentLanguage === "th" ? "กรอกรหัส 6 หลัก" : "Enter 6-digit code";
+    signupOtpInput.placeholder = t.otpPlaceholder;
 }
 
 function setMode(mode) {
@@ -332,8 +331,6 @@ authForm.addEventListener("submit", async (event) => {
         try {
             const { user } = await createUserWithEmailAndPassword(firebaseAuth, email, password);
             if (fullName) await updateProfile(user, { displayName: fullName });
-            const idToken = await user.getIdToken();
-            await apiRequest("/api/auth/signup/otp/request", { method: "POST", headers: { Authorization: `Bearer ${idToken}` } });
             pendingSignupUser = user;
             authForm.hidden = true;
             document.querySelector(".divider").hidden = true;
@@ -341,24 +338,34 @@ authForm.addEventListener("submit", async (event) => {
             terms.hidden = true;
             signupOtpFlow.hidden = false;
             signupOtpEmail.textContent = email;
-            signupOtpStatus.textContent = currentLanguage === "th" ? "ส่ง OTP ไปยังอีเมลแล้ว" : "OTP sent to your email.";
-            signupOtpInput.focus();
+            const idToken = await user.getIdToken();
+            await apiRequest("/api/auth/signup/otp/request", { method: "POST", headers: { Authorization: `Bearer ${idToken}` } });
+            signupOtpStatus.textContent = currentLanguage === "th" ? "ส่ง OTP 6 หลักไปยังอีเมลแล้ว" : "6-digit OTP sent to your email.";
         } catch (error) {
-            showFirebaseError(error);
+            if (pendingSignupUser) signupOtpStatus.textContent = error.message;
+            else showFirebaseError(error);
         } finally {
             submitButton.disabled = false;
         }
         return;
     }
-    const authTask = currentMode === "signup"
-        ? createUserWithEmailAndPassword(firebaseAuth, email, password).then(async ({ user }) => {
-            if (fullName) await updateProfile(user, { displayName: fullName });
-            return user;
-        })
-        : signInWithEmailAndPassword(firebaseAuth, email, password);
-    authTask.then(async ({ user }) => {
+    signInWithEmailAndPassword(firebaseAuth, email, password).then(async ({ user }) => {
+        await user.reload();
+        if (!user.emailVerified) {
+            const idToken = await user.getIdToken();
+            await apiRequest("/api/auth/signup/otp/request", { method: "POST", headers: { Authorization: `Bearer ${idToken}` } });
+            pendingSignupUser = user;
+            signupOtpEmail.textContent = user.email || email;
+            signupOtpStatus.textContent = currentLanguage === "th" ? "ส่ง OTP 6 หลักไปยังอีเมลแล้ว" : "6-digit OTP sent to your email.";
+            authForm.hidden = true;
+            document.querySelector(".divider").hidden = true;
+            googleButton.hidden = true;
+            terms.hidden = true;
+            signupOtpFlow.hidden = false;
+            return;
+        }
         await establishApiSession(user);
-        window.FMSAdminAudit?.log(currentMode === "signup" ? "create-account" : "login", { provider: "email", email: user.email || email });
+        window.FMSAdminAudit?.log("login", { provider: "email", email: user.email || email });
         showSignedInMessage(user);
     }).catch(showFirebaseError);
 });
@@ -414,7 +421,7 @@ signupOtpBack.addEventListener("click", async () => {
 });
 
 async function requestSignupOtp() {
-    if (!pendingSignupUser) return;
+    if (!pendingSignupUser) throw new Error("Sign in or create an account again to request an OTP.");
     const idToken = await pendingSignupUser.getIdToken();
     await apiRequest("/api/auth/signup/otp/request", { method: "POST", headers: { Authorization: `Bearer ${idToken}` } });
 }
@@ -453,10 +460,10 @@ resetEmailForm.addEventListener("submit", async (event) => {
         resetEmail = email;
         resetEmailForm.hidden = true;
         resetOtpForm.hidden = false;
-        resetStatus.textContent = currentLanguage === "th" ? "ส่ง OTP ไปยังอีเมลแล้ว" : "OTP sent to your email.";
+        resetStatus.textContent = currentLanguage === "th" ? "ส่ง OTP 6 หลักไปยังอีเมลแล้ว" : "6-digit OTP sent to your email.";
         resetOtpInput.focus();
     } catch (error) {
-        showFirebaseError(error);
+        resetStatus.textContent = error.message;
     } finally {
         button.disabled = false;
     }

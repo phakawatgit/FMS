@@ -459,6 +459,14 @@ body {
   border-radius: 11px;
   background: #fff;
   box-shadow: 0 2px 7px #253e5c0c;
+  cursor: pointer;
+  transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease;
+}
+.duty-record-card:hover,.duty-record-card:focus-visible {
+  border-color: #55bbc1;
+  box-shadow: 0 5px 15px #164d6b18;
+  outline: 0;
+  transform: translateY(-1px);
 }
 .duty-record-card time {
   font-size: 14px;
@@ -690,6 +698,60 @@ body {
   .duty-record-time {
     margin-left: 23px;
   }
+}
+
+.duty-detail-modal[hidden] { display: none; }
+.duty-detail-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgb(8 35 57 / 48%);
+  backdrop-filter: blur(3px);
+}
+.duty-detail-dialog {
+  position: relative;
+  width: min(100%, 520px);
+  padding: 26px;
+  border: 1px solid #c8e5ed;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 22px 70px rgb(10 45 67 / 22%);
+}
+.duty-detail-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 50%;
+  background: #eff8fa;
+  color: #28556d;
+  font-size: 24px;
+  cursor: pointer;
+}
+.duty-detail-eyebrow { margin: 0 42px 5px 0; color: #138f9a; font-size: 14px; font-weight: 600; }
+.duty-detail-dialog h2 { margin: 0; color: #103b5c; font-size: 23px; }
+.duty-detail-affiliation { margin: 2px 0 20px; color: #668094; font-size: 14px; }
+.duty-detail-date-label,.duty-detail-color-label { display: block; margin: 15px 0 7px; color: #234b63; font-size: 14px; font-weight: 600; }
+.duty-detail-dialog input[type="date"] { width: 100%; min-height: 44px; padding: 8px 12px; border: 1px solid #c7e1ea; border-radius: 10px; background: #fbfeff; color: #183e59; font: inherit; }
+.duty-detail-dialog input:disabled { color: #587185; }
+.duty-detail-palette { display: grid; grid-template-columns: repeat(10, minmax(22px, 1fr)); gap: 9px; }
+.duty-detail-color { aspect-ratio: 1; min-width: 22px; border: 2px solid #fff; border-radius: 50%; box-shadow: 0 0 0 1px #c8dce3; cursor: pointer; }
+.duty-detail-color:hover:not(:disabled) { transform: scale(1.1); }
+.duty-detail-color.is-selected { box-shadow: 0 0 0 3px #087c89; }
+.duty-detail-color:disabled { opacity: .32; cursor: not-allowed; }
+.duty-detail-status { min-height: 22px; margin: 12px 0 0; color: #b2493f; font-size: 13px; }
+.duty-detail-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 10px; }
+.duty-detail-actions button { min-height: 40px; padding: 0 16px; border: 1px solid #cbdfe6; border-radius: 9px; background: #fff; color: #28556d; font: inherit; cursor: pointer; }
+.duty-detail-actions .duty-detail-save { border-color: #087f8c; background: #087f8c; color: #fff; font-weight: 600; }
+.duty-detail-actions button:disabled { opacity: .6; cursor: wait; }
+@media(max-width:480px) {
+  .duty-detail-dialog { padding: 22px 18px; }
+  .duty-detail-palette { grid-template-columns: repeat(8, minmax(22px, 1fr)); gap: 8px; }
 }
 
 /* Make the recent-duty search match the bordered controls used on other pages. */

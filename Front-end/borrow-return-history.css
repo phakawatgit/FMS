@@ -340,7 +340,7 @@
   .topbar {
     min-height: 4rem!important;
   }
-  .topbar .topbar-inner {
+  body header.topbar .topbar-inner {
     min-height: 4rem;
     padding: .4rem .6rem;
     gap: .4rem;
@@ -352,7 +352,7 @@
     width: 34px;
     height: 34px;
   }
-  .topbar .actions {
+  body header.topbar .topbar-inner > .actions {
     gap: 4px;
   }
   .activity-intro {
@@ -1469,6 +1469,8 @@ body.borrow-detail-open {
   overflow: hidden;
   border-radius: 13px;
 }
+.borrow-history-page .history-record.is-borrow-event { border-left: 4px solid #08a8aa; }
+.borrow-history-page .history-record.is-return-event { border-left: 4px solid #53b987; }
 .borrow-history-page .borrow-history-toggle {
   width: 100%;
   min-height: 68px;
@@ -1534,6 +1536,28 @@ body.borrow-detail-open {
 .borrow-history-event-detail .history-record-actions {
   margin: 10px 0 0 48px;
 }
+.nested-return-history {
+  display: grid;
+  gap: 8px;
+  margin: 14px 0 0 48px;
+  padding-top: 11px;
+  border-top: 1px solid #dfeded;
+}
+.nested-return-history h4 { margin: 0; color: #19764f; font-size: 14px; }
+.nested-return-record {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 11px;
+  border: 1px solid #d8eee2;
+  border-radius: 9px;
+  background: #f6fcf8;
+}
+.nested-return-record > div { display: grid; gap: 2px; min-width: 0; }
+.nested-return-record strong { color: #276e50; font-size: 13px; }
+.nested-return-record > div > span { overflow-wrap: anywhere; color: #607a6c; font-size: 12px; }
+.nested-return-record .detail-button { flex: none; }
 @media(max-width:560px) {
   .borrow-history-page .borrow-history-toggle {
     min-height: 60px;
@@ -1554,6 +1578,8 @@ body.borrow-detail-open {
   .borrow-history-event-detail .history-status,.borrow-history-event-detail .history-items,.borrow-history-event-detail .history-record-actions {
     margin-left: 48px;
   }
+  .nested-return-history { margin-left: 0; }
+  .nested-return-record { align-items: flex-start; flex-direction: column; }
 }
 
 /* Keep the menu shortcut on borrow/return history. */
@@ -1566,4 +1592,207 @@ body .topbar.dashboard-topbar .menu-button, body .topbar.dashboard-topbar .menu-
 /* Align the History menu shortcut to the right, below the page heading. */
 .borrow-history-page > .history-back-wrap {
   justify-content: flex-end !important;
+}
+
+/* Keep the nested history-page header independent from global header wrapping rules. */
+body header.topbar {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+body header.topbar .topbar-inner {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: nowrap !important;
+  width: min(100%, 90rem);
+  min-width: 0;
+  margin-inline: auto;
+  box-sizing: border-box;
+}
+body header.topbar .topbar-inner > .brand {
+  display: flex !important;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+body header.topbar .topbar-inner > .brand span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+body header.topbar .topbar-inner > .actions {
+  display: flex !important;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 0 0 auto;
+  flex-wrap: nowrap !important;
+  min-width: 0;
+  gap: 7px;
+}
+
+@media (max-width: 560px) {
+  html, body {
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: hidden;
+  }
+  .topbar {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+  body header.topbar .topbar-inner {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr);
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    padding: 8px 12px !important;
+    gap: 8px;
+    box-sizing: border-box;
+  }
+  .topbar .brand {
+    display: flex !important;
+    width: 100%;
+    max-width: 100%;
+    gap: 8px !important;
+  }
+  .topbar .brand img {
+    width: 32px !important;
+    height: 32px !important;
+    flex: 0 0 32px;
+  }
+  .topbar .brand span {
+    font-size: 12px !important;
+  }
+  body header.topbar .topbar-inner > .actions {
+    display: grid !important;
+    grid-template-columns: 36px minmax(48px, 1fr) minmax(48px, 1fr) 36px 72px;
+    width: 100%;
+    min-width: 0;
+    gap: 5px !important;
+  }
+  .topbar .actions > * {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+  }
+  body header.topbar .topbar-inner .actions .menu-button,
+  body header.topbar .topbar-inner .actions .export,
+  body header.topbar .topbar-inner .actions .bell,
+  body header.topbar .topbar-inner .actions .language {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    flex: 0 1 auto !important;
+    box-sizing: border-box;
+  }
+  body header.topbar .topbar-inner .actions .menu-button,
+  body header.topbar .topbar-inner .actions .export,
+  body header.topbar .topbar-inner .actions .bell,
+  body header.topbar .topbar-inner .actions .language {
+    height: 36px !important;
+    min-height: 36px !important;
+  }
+  body header.topbar .topbar-inner .actions .export {
+    padding: 0 5px !important;
+    font-size: 11px !important;
+  }
+  .activity-intro {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    width: calc(100% - 24px);
+    min-width: 0;
+    min-height: 0;
+    gap: 9px;
+    margin: 12px auto;
+  }
+  .activity-intro > div { min-width: 0; }
+  .activity-intro h1 {
+    max-width: 100%;
+    font-size: clamp(22px, 6vw, 26px);
+    overflow-wrap: anywhere;
+  }
+  .activity-intro .search {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    height: 42px;
+    margin: 0;
+    flex: none;
+    box-sizing: border-box;
+  }
+  .borrow-history-page {
+    width: calc(100% - 24px);
+    max-width: none;
+    min-width: 0;
+    margin: 0 auto 28px;
+    box-sizing: border-box;
+  }
+  .history-back-wrap { max-width: 100%; }
+  .history-back {
+    max-width: 100%;
+    box-sizing: border-box;
+    white-space: normal;
+  }
+  .catalog-label { box-sizing: border-box; }
+  .history-group, .history-record { min-width: 0; max-width: 100%; box-sizing: border-box; }
+  .borrow-history-page .borrow-history-toggle {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    justify-content: initial;
+    gap: 4px 9px;
+    min-width: 0;
+    padding: 12px;
+    box-sizing: border-box;
+  }
+  .borrow-history-page .borrow-history-toggle > span:first-child {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .borrow-history-page .borrow-history-toggle .history-toggle-date {
+    grid-column: 1;
+    grid-row: 2;
+    margin: 0;
+    white-space: normal;
+    font-size: 11px;
+  }
+  .borrow-history-page .borrow-history-toggle .order-chevron {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    align-self: center;
+  }
+  .borrow-history-event-detail { min-width: 0; padding: 12px; }
+  .borrow-history-event-detail .history-record-head { min-width: 0; }
+  .borrow-history-event-detail .history-record-head > div { min-width: 0; }
+  .borrow-history-event-detail .history-record-head time { margin-left: 48px; white-space: normal; }
+  .borrow-history-event-detail .history-status,
+  .borrow-history-event-detail .history-items,
+  .borrow-history-event-detail .history-record-actions { margin-left: 0; }
+  .history-items p { min-width: 0; }
+  .nested-return-history { margin-left: 0; }
+  .nested-return-record { align-items: flex-start; flex-direction: column; }
+  .borrow-detail-modal { padding: 10px; }
+  .borrow-detail-dialog {
+    width: 100%;
+    max-width: 100%;
+    max-height: calc(100dvh - 20px);
+    padding: 18px 14px;
+    border-radius: 16px;
+    box-sizing: border-box;
+  }
+  .detail-facts { grid-template-columns: minmax(0, 1fr); padding: 9px; }
+  .detail-modal-footer { align-items: flex-start; flex-direction: column; }
+  .detail-export-actions { width: 100%; justify-content: flex-start; }
+}
+
+@media (max-width: 360px) {
+  body header.topbar .topbar-inner { padding-inline: 8px !important; }
+  body header.topbar .topbar-inner .actions {
+    grid-template-columns: 32px minmax(42px, 1fr) minmax(42px, 1fr) 32px 68px;
+    gap: 4px !important;
+  }
 }

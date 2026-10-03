@@ -8,8 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./admin-settings.css?v=1" />
-<script src="./legacy-storage.js?v=3"></script></head>
+  <link rel="stylesheet" href="./admin-settings.css?v=2" />
+<script src="./legacy-storage.js?v=3"></script><link rel="stylesheet" href="./responsive.css?v=3"></head>
 <body>
   <header class="admin-topbar">
     <a class="admin-brand" href="./menu.html"><img src="./assets/fms.png" alt="" /> <span>First Aid &amp; Medicine Management System</span></a>
@@ -40,7 +40,13 @@
       <button type="button" data-panel="optionsPanel">ตัวเลือก Dropdown</button>
       <button type="button" data-panel="activityPanel">กิจกรรมผู้ใช้</button>
       <button type="button" data-panel="deletedPanel">ข้อมูลที่ถูกลบ</button>
+      <button type="button" data-panel="usersPanel">บัญชีผู้ใช้</button>
     </nav>
+    <section id="usersPanel" class="admin-panel" hidden>
+      <div class="panel-heading"><div><p class="eyebrow">บัญชีผู้ใช้</p><h2>จัดการสิทธิ์ Admin และ Nurse</h2></div><span class="panel-note">เลือกได้จากบัญชีที่ลงทะเบียนในระบบเท่านั้น</span></div>
+      <p id="usersMessage" class="users-message" role="status" aria-live="polite"></p>
+      <div class="table-wrap"><table class="users-table"><thead><tr><th>ชื่อ</th><th>อีเมล</th><th>สิทธิ์ปัจจุบัน</th><th>ปรับสิทธิ์</th></tr></thead><tbody id="userRows"><tr><td colspan="4" class="empty-table">กำลังโหลดบัญชีผู้ใช้...</td></tr></tbody></table></div>
+    </section>
     <section id="databasePanel" class="admin-panel">
       <div class="panel-heading"><div><p class="eyebrow">ฐานข้อมูล</p><h2>ข้อมูลในระบบ</h2></div><span class="panel-note">ข้อมูลที่ระบบเก็บอยู่ใน Browser Database</span></div>
       <div class="table-wrap"><table><thead><tr><th>ชุดข้อมูล</th><th>คีย์จัดเก็บข้อมูล</th><th>จำนวน</th><th>อัปเดตล่าสุด</th></tr></thead><tbody id="databaseRows"></tbody></table></div>
@@ -61,7 +67,7 @@
   </main>
   <script src="./admin-audit.js?v=1"></script>
   <script src="./notification-utils.js?v=1"></script>
-  <script src="./admin-settings.js?v=4"></script>
+  <script src="./admin-settings.js?v=5"></script>
   <script src="./language-toggle.js?v=15"></script>
 <script src="./header-controls.js?v=3"></script></body>
 </html>

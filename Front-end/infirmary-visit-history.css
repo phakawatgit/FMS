@@ -982,6 +982,35 @@ header.topbar .language svg {
 
 /* Final mobile reference override (must remain after legacy responsive rules). */
 @media (max-width: 600px) {
+  main.history-page {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: none;
+    padding-inline: 12px;
+  }
+  .visit-list {
+    width: 100%;
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .visit-card {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .visit-details {
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .visit-side {
+    min-width: 0;
+    align-self: stretch;
+  }
+  .visit-side .visit-type {
+    box-sizing: border-box;
+    align-self: stretch;
+  }
   header.topbar {
     min-height: 68px !important;
     height: 68px !important;

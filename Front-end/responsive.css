@@ -1,0 +1,624 @@
+/* Shared responsive safeguards for the legacy FMS pages. */
+:root {
+  --fms-page-gutter: clamp(.75rem, 2.5vw, 2rem);
+}
+
+html {
+  width: 100%;
+  min-width: 320px;
+  overflow-x: clip;
+  scroll-padding-top: 1rem;
+}
+
+body {
+  width: 100%;
+  min-width: 320px;
+  min-height: 100vh;
+  overflow-x: clip;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+main,
+section,
+article,
+form,
+fieldset,
+figure {
+  min-width: 0;
+}
+
+img,
+picture,
+video,
+canvas,
+svg {
+  max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  max-width: 100%;
+}
+
+input,
+select,
+textarea {
+  min-width: 0;
+}
+
+table {
+  max-width: 100%;
+}
+
+pre,
+code {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+main.page,
+main.admin-page,
+main.site-shell,
+main.page-content,
+main.borrow-page,
+main.borrow-form-page,
+main.selected-page,
+main.order-page,
+main.cart-page,
+main.detail-page,
+main.return-page,
+main.history-page,
+main.history-catalog-page,
+main.borrow-history-page,
+main.activity-page,
+main.duty-page {
+  width: min(100%, 88rem);
+  margin-inline: auto;
+  padding-inline: var(--fms-page-gutter);
+}
+
+/* The sign-in split layout owns its own viewport and should reach the frame edges. */
+main.site-shell {
+  width: 100%;
+  max-width: none;
+  min-height: 100svh;
+  margin: 0;
+  padding: 0;
+}
+
+.topbar,
+.admin-topbar,
+.dashboard-topbar {
+  width: 100%;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+
+.topbar .brand,
+.admin-topbar .admin-brand,
+.dashboard-topbar .brand {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.topbar .brand span,
+.admin-topbar .admin-brand span,
+.dashboard-topbar .brand span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.topbar .actions,
+.topbar .top-actions,
+.topbar .page-tools,
+.topbar .topbar-actions,
+.admin-topbar .admin-topbar-actions {
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.page-heading,
+.section-heading,
+.stock-toolbar,
+.catalog-tools,
+.cart-heading,
+.order-heading,
+.form-actions,
+.form-buttons,
+.history-toolbar,
+.activity-toolbar {
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: .75rem;
+}
+
+.page-heading > *,
+.section-heading > *,
+.stock-toolbar > *,
+.catalog-tools > *,
+.cart-heading > *,
+.order-heading > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.catalog-grid,
+.stock-grid,
+.menu-grid,
+#menuGrid,
+.activity-grid,
+.history-grid,
+.history-list,
+.product-grid,
+.assessment-grid,
+.pending-grid,
+.cards-grid {
+  min-width: 0;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+}
+
+.catalog-card,
+.stock-card,
+.menu-card,
+.product-card,
+.assessment-card,
+.history-card {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.catalog-card img,
+.stock-card img,
+.product-card img,
+.history-card img {
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.form-grid,
+.form-layout,
+.form-row,
+.form-sections,
+.detail-grid,
+.summary-grid,
+.info-grid,
+.borrower-grid,
+.assessment-fields,
+.visit-form-grid,
+.return-form-grid {
+  min-width: 0;
+}
+
+.form-grid > *,
+.form-layout > *,
+.form-row > *,
+.detail-grid > *,
+.summary-grid > *,
+.info-grid > *,
+.borrower-grid > *,
+.assessment-fields > *,
+.visit-form-grid > *,
+.return-form-grid > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.table-wrap,
+.table-responsive,
+.table-scroll,
+.history-table-wrap,
+.records-table-wrap,
+.data-table-wrap,
+.calendar-scroll,
+.year-calendar-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.modal-backdrop,
+.export-modal-backdrop,
+.quantity-modal-backdrop,
+.order-notice-modal,
+.notification-panel,
+.admin-notification-panel {
+  max-width: 100vw;
+}
+
+[role="dialog"],
+.modal,
+.confirm-modal,
+.export-modal,
+.quantity-modal,
+.order-notice-dialog {
+  min-width: 0;
+  max-width: min(calc(100% - 1.5rem), 48rem);
+  max-height: min(90dvh, 56rem);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.calendar-grid,
+.year-calendar-grid,
+.calendar-days {
+  min-width: 0;
+}
+
+@media (max-width: 1024px) {
+  .form-grid,
+  .form-layout,
+  .form-row,
+  .form-sections,
+  .detail-grid,
+  .summary-grid,
+  .info-grid,
+  .borrower-grid,
+  .assessment-fields,
+  .visit-form-grid,
+  .return-form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .topbar,
+  .admin-topbar,
+  .dashboard-topbar {
+    padding-inline: .75rem !important;
+  }
+
+  .topbar .brand span,
+  .admin-topbar .admin-brand span,
+  .dashboard-topbar .brand span {
+    max-width: 54vw;
+    font-size: clamp(.68rem, 2.1vw, .88rem);
+    line-height: 1.25;
+  }
+
+  main.page,
+  main.admin-page,
+  main.site-shell,
+  main.page-content,
+  main.borrow-page,
+  main.borrow-form-page,
+  main.selected-page,
+  main.order-page,
+  main.cart-page,
+  main.detail-page,
+  main.return-page,
+  main.history-page,
+  main.history-catalog-page,
+  main.borrow-history-page,
+  main.activity-page,
+  main.duty-page {
+    width: 100%;
+    padding-inline: .875rem;
+  }
+
+  .page-heading h1,
+  .section-heading h1,
+  .page > h1,
+  .order-page > h1,
+  .borrow-form-page > h1 {
+    max-width: 100%;
+    font-size: clamp(1.35rem, 4.4vw, 2rem);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+
+  .catalog-grid,
+  .stock-grid,
+  .menu-grid,
+  #menuGrid,
+  .activity-grid,
+  .history-grid,
+  .product-grid,
+  .assessment-grid,
+  .pending-grid,
+  .cards-grid {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  }
+
+  .form-grid,
+  .form-layout,
+  .form-row,
+  .form-sections,
+  .detail-grid,
+  .summary-grid,
+  .info-grid,
+  .borrower-grid,
+  .assessment-fields,
+  .visit-form-grid,
+  .return-form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .form-grid input,
+  .form-grid select,
+  .form-grid textarea,
+  .form-layout input,
+  .form-layout select,
+  .form-layout textarea,
+  form input,
+  form select,
+  form textarea {
+    max-width: 100%;
+  }
+
+  .table-wrap > table,
+  .table-responsive > table,
+  .table-scroll > table,
+  .history-table-wrap > table,
+  .records-table-wrap > table,
+  .data-table-wrap > table {
+    min-width: 38rem;
+  }
+
+  .cart-footer,
+  .order-footer,
+  .form-actions,
+  .form-buttons,
+  .borrow-order-footer,
+  .return-actions {
+    flex-wrap: wrap;
+    gap: .5rem;
+  }
+
+  .cart-footer button,
+  .order-footer button,
+  .form-actions button,
+  .form-buttons button,
+  .borrow-order-footer button,
+  .return-actions button {
+    min-height: 2.65rem;
+  }
+
+  .notification-panel,
+  .admin-notification-panel {
+    width: min(24rem, calc(100vw - 1.5rem));
+    max-height: 70dvh;
+    overflow: auto;
+  }
+}
+
+@media (max-width: 520px) {
+  .topbar,
+  .admin-topbar,
+  .dashboard-topbar {
+    align-items: center;
+  }
+
+  .topbar .brand,
+  .admin-topbar .admin-brand,
+  .dashboard-topbar .brand {
+    flex: 1 1 auto;
+  }
+
+  .topbar .brand img,
+  .admin-topbar .admin-brand img,
+  .dashboard-topbar .brand img {
+    flex: 0 0 auto;
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .topbar .brand span,
+  .admin-topbar .admin-brand span,
+  .dashboard-topbar .brand span {
+    max-width: calc(100vw - 5.5rem);
+    font-size: .72rem;
+  }
+
+  .topbar .actions,
+  .topbar .top-actions,
+  .topbar .page-tools,
+  .topbar .topbar-actions,
+  .admin-topbar .admin-topbar-actions {
+    flex: 1 1 100%;
+    justify-content: flex-end;
+    gap: .35rem !important;
+  }
+
+  main.page,
+  main.admin-page,
+  main.site-shell,
+  main.page-content,
+  main.borrow-page,
+  main.borrow-form-page,
+  main.selected-page,
+  main.order-page,
+  main.cart-page,
+  main.detail-page,
+  main.return-page,
+  main.history-page,
+  main.history-catalog-page,
+  main.borrow-history-page,
+  main.activity-page,
+  main.duty-page {
+    padding-inline: .7rem;
+  }
+
+  .form-grid,
+  .form-layout,
+  .form-row,
+  .form-sections,
+  .detail-grid,
+  .summary-grid,
+  .info-grid,
+  .borrower-grid,
+  .assessment-fields,
+  .visit-form-grid,
+  .return-form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .catalog-grid,
+  .stock-grid,
+  .menu-grid,
+  #menuGrid,
+  .activity-grid,
+  .history-grid,
+  .product-grid,
+  .assessment-grid,
+  .pending-grid,
+  .cards-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .cart-row,
+  .selected-item,
+  .order-item,
+  .order-history-card,
+  .assessment-card,
+  .history-card {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .cart-footer,
+  .order-footer {
+    padding-bottom: max(.75rem, env(safe-area-inset-bottom));
+  }
+
+  .cart-footer > *,
+  .order-footer > * {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  [role="dialog"],
+  .modal,
+  .confirm-modal,
+  .export-modal,
+  .quantity-modal,
+  .order-notice-dialog {
+    width: calc(100vw - 1.25rem);
+    max-width: calc(100vw - 1.25rem);
+    max-height: 88dvh;
+    padding: clamp(.85rem, 4vw, 1.25rem);
+  }
+
+  .calendar-grid,
+  .year-calendar-grid,
+  .calendar-days {
+    gap: .2rem;
+  }
+
+  .calendar-grid button,
+  .year-calendar-grid button,
+  .calendar-days button {
+    min-width: 0;
+    padding-inline: .15rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .topbar .export,
+  .topbar .tool-button,
+  .topbar .language,
+  .topbar .language-switcher {
+    min-width: 2rem !important;
+    padding-inline: .35rem !important;
+    font-size: .64rem !important;
+  }
+
+  .page-heading h1,
+  .section-heading h1,
+  .page > h1 {
+    font-size: 1.28rem;
+  }
+}
+
+/* Keep the sign-in frame flush to both viewport edges at every breakpoint. */
+html body main.site-shell {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+@media (max-width: 900px) {
+  html:has(main.site-shell),
+  body:has(main.site-shell) {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  html body main.site-shell {
+    height: 100vh;
+    height: 100svh;
+    min-height: 0;
+    grid-template-rows: minmax(14rem, 40svh) minmax(0, 1fr);
+    overflow: hidden;
+  }
+
+  .site-shell > .brand-panel {
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .site-shell > .auth-panel {
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}
+
+/* Keep each page's topbar tools consistently grouped at the right edge. */
+header.topbar,
+header.admin-topbar,
+header.dashboard-topbar {
+  box-sizing: border-box;
+}
+
+header.topbar > .actions,
+header.topbar > .top-actions,
+header.topbar > .page-tools,
+header.topbar > .topbar-actions,
+header.topbar .topbar-inner > .actions,
+header.topbar .topbar-inner > .top-actions,
+header.topbar .topbar-inner > .page-tools,
+header.topbar .topbar-inner > .topbar-actions,
+header.admin-topbar > .admin-topbar-actions {
+  margin-left: auto !important;
+  justify-content: flex-end !important;
+}
+
+header.topbar .topbar-inner,
+header.admin-topbar .admin-topbar-inner {
+  width: 100%;
+}
+
+@media (max-width: 760px) {
+  header.topbar > .actions,
+  header.topbar > .top-actions,
+  header.topbar > .page-tools,
+  header.topbar > .topbar-actions,
+  header.topbar .topbar-inner > .actions,
+  header.topbar .topbar-inner > .top-actions,
+  header.topbar .topbar-inner > .page-tools,
+  header.topbar .topbar-inner > .topbar-actions,
+  header.admin-topbar > .admin-topbar-actions {
+    margin-left: auto !important;
+    justify-content: flex-end !important;
+  }
+}

@@ -67,6 +67,9 @@ body {
   .detail-form-grid .wide,.detail-vitals,.detail-status {
     grid-column: span 2!important;
   }
+  .detail-form-grid .detail-staff {
+    grid-column: span 2!important;
+  }
   .detail-vitals strong {
     grid-column: span 2!important;
   }
@@ -93,7 +96,7 @@ body {
   .detail-form-grid {
     grid-template-columns: 1fr!important;
   }
-  .detail-form-grid .wide,.detail-form-grid .half,.detail-vitals,.detail-status {
+  .detail-form-grid .wide,.detail-form-grid .half,.detail-vitals,.detail-status,.detail-form-grid .detail-staff {
     grid-column: auto!important;
   }
   .detail-vitals {

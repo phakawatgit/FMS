@@ -1,48 +1,25 @@
-.borrow-form-page .borrow-faculty-field, .borrow-form-page .form-grid > label:has(select[name="branch"]) {
-  min-width: 0;
-  grid-column: auto !important;
+.borrow-form-page .form-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  column-gap: .75rem !important;
 }
-.borrow-form-page .borrow-faculty-field {
-  width: min(18rem, 100%);
-  max-width: 18rem;
-  justify-self: start;
+
+.borrow-form-page .form-grid > label:first-child {
+  grid-column: auto;
 }
-.borrow-form-page .borrow-faculty-field select {
-  width: 100%;
-}
+
+.borrow-form-page .borrow-faculty-field,
+.borrow-form-page .form-grid > label:has(select[name="branch"]),
 .borrow-form-page .form-grid > label:has(input[name="phone"]) {
   min-width: 0;
+  width: 100%;
+  max-width: none;
+  grid-column: auto;
+  position: static;
 }
-@media (min-width: 701px) {
-  .borrow-form-page .borrow-faculty-field {
-    grid-column: 1;
-}
-  .borrow-form-page .form-grid > label:has(select[name="branch"]) {
-    grid-column: 2;
-    position: relative;
-    left: -14.4rem;
-}
-  .borrow-form-page .form-grid > label:has(input[name="phone"]) {
-    grid-column: 3;
-    position: relative;
-    left: -14.4rem;
-}
-}
-@media (max-width: 700px) {
-  .borrow-form-page .form-grid {
-    column-gap: .25rem !important;
-}
-  .borrow-form-page .borrow-faculty-field {
-    grid-column: 1 / -1;
-}
-  .borrow-form-page .form-grid > label:has(select[name="branch"]) {
-    grid-column: 1;
-}
-  .borrow-form-page .form-grid > label:has(input[name="phone"]) {
-    grid-column: 2;
-}
-}
-.borrow-form-page .borrow-faculty-field select, .borrow-form-page .form-grid select[name="branch"] {
+
+.borrow-form-page .borrow-faculty-field select,
+.borrow-form-page .form-grid select[name="branch"] {
+  width: 100%;
   height: 2rem;
   min-height: 2rem;
   padding: .35rem .55rem;
@@ -53,7 +30,20 @@
   outline: none;
   transition: border-color .16s ease, box-shadow .16s ease;
 }
-.borrow-form-page .borrow-faculty-field select:focus, .borrow-form-page .form-grid select[name="branch"]:focus {
+
+.borrow-form-page .borrow-faculty-field select:focus,
+.borrow-form-page .form-grid select[name="branch"]:focus {
   border-color: #06b3bd;
   box-shadow: 0 0 0 3px rgba(6, 179, 189, .12);
+}
+
+@media (max-width: 700px) {
+  .borrow-form-page .form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    column-gap: .5rem !important;
+  }
+
+  .borrow-form-page .form-grid > label:first-child {
+    grid-column: 1 / -1;
+  }
 }

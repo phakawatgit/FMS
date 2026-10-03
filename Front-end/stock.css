@@ -1629,3 +1629,54 @@ body[data-category] .topbar .actions {
     width: 100%;
   }
 }
+
+/* Keep inventory cards compact on computer screens and avoid oversized photos. */
+.stock-grid {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 24rem)) !important;
+  justify-content: start !important;
+  align-items: stretch !important;
+  gap: 1rem !important;
+  padding: .35rem !important;
+}
+.medicine-card {
+  min-height: 0 !important;
+}
+.medicine-image {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  height: clamp(10rem, 13vw, 12rem) !important;
+  min-height: 0 !important;
+  aspect-ratio: auto !important;
+  padding: .65rem !important;
+}
+.medicine-image img {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  object-fit: contain !important;
+}
+.medicine-info {
+  flex: 1 1 auto !important;
+  padding: .7rem !important;
+}
+@media(max-width: 760px) {
+  .stock-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: .7rem !important;
+  }
+  .medicine-image {
+    height: 9rem !important;
+  }
+  .medicine-info {
+    padding: .6rem !important;
+  }
+}
+@media(max-width: 480px) {
+  .stock-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  .medicine-image {
+    height: clamp(9rem, 58vw, 13rem) !important;
+  }
+}
