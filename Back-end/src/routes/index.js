@@ -13,21 +13,65 @@ router.use("/auth", authRouter);
 router.use("/catalog", catalogRouter);
 router.use("/borrow-records", borrowRouter);
 
+router.get("/admin/settings-bootstrap", requireRole("ADMIN"), async (_req, res) => {
+  try {
+    const [settingsRows, collectionCounts, legacyRows, catalog, borrowRecords, dutyShifts, stockNames] = await Promise.all([
+      prisma.legacyStorage.findMany({
+        where: { key: { in: ["fms-admin-options", "fms-admin-audit-log", "fms-admin-deleted-records"] } },
+        select: { key: true, value: true },
+      }),
+      prisma.$queryRaw`SELECT "key", CASE WHEN jsonb_typeof("value") = 'array' THEN jsonb_array_length("value") ELSE 0 END AS count FROM "LegacyStorage" WHERE "key" IN ('fms-infirmary-visits', 'fms-infirmary-history', 'fms-history-borrow-return', 'fms-history-catalog-orders')`,
+      prisma.legacyStorage.findMany({
+        where: { key: { in: ["fms-infirmary-visits", "fms-infirmary-history", "fms-history-borrow-return", "fms-history-catalog-orders"] } },
+        select: { key: true, updatedAt: true },
+      }),
+      prisma.catalog.aggregate({ _count: { _all: true }, _max: { updatedAt: true } }),
+      prisma.borrowRecord.aggregate({ _count: { _all: true }, _max: { updatedAt: true } }),
+      prisma.dutyShift.aggregate({ _count: { _all: true }, _max: { updatedAt: true } }),
+      prisma.catalog.findMany({ select: { name: true, productName: true, genericName: true } }),
+    ]);
+    const countsByKey = new Map(collectionCounts.map((row) => [row.key, Number(row.count)]));
+    const updatedByKey = new Map(legacyRows.map((row) => [row.key, row.updatedAt.toISOString()]));
+    const normalizedSummary = (result) => ({ count: result._count._all, latestAt: result._max.updatedAt?.toISOString() || "" });
+    const summaries = {
+      "fms-stock-records": normalizedSummary(catalog),
+      "fms-infirmary-visits": { count: countsByKey.get("fms-infirmary-visits") || 0, latestAt: updatedByKey.get("fms-infirmary-visits") || "" },
+      "fms-infirmary-history": { count: countsByKey.get("fms-infirmary-history") || 0, latestAt: updatedByKey.get("fms-infirmary-history") || "" },
+      "fms-borrow-return-records": normalizedSummary(borrowRecords),
+      "fms-history-borrow-return": { count: countsByKey.get("fms-history-borrow-return") || 0, latestAt: updatedByKey.get("fms-history-borrow-return") || "" },
+      "fms-history-catalog-orders": { count: countsByKey.get("fms-history-catalog-orders") || 0, latestAt: updatedByKey.get("fms-history-catalog-orders") || "" },
+      "fms-local-duty-records": normalizedSummary(dutyShifts),
+    };
+    const data = Object.fromEntries(settingsRows.map((row) => [row.key, row.value]));
+    const names = [...new Set(stockNames.flatMap((item) => [item.name, item.productName, item.genericName]).filter(Boolean))];
+    return res.json({
+      success: true,
+      data,
+      summaries,
+      stockNames: names,
+      totalRecords: Object.values(summaries).reduce((sum, summary) => sum + summary.count, 0),
+    });
+  } catch (error) {
+    console.error("Settings bootstrap failed:", error.message);
+    return res.status(503).json({ success: false, message: "Settings data could not be loaded" });
+  }
+});
+
 // Dashboard data is read from the normalized tables; purchase history remains
 // in LegacyStorage because the current purchase workflow stores it as a JSON document.
 router.get("/dashboard/data", async (req, res) => {
   try {
     const [patients, medicationRows, stock, borrowRows, purchaseHistory] = await Promise.all([
-      prisma.patient.findMany({ select: { id: true, name: true, firstName: true, lastName: true, branch: true, faculty: true, gender: true, symptom: true, status: true, hospitalName: true, visitedAt: true, infirmaryHistory: true } }),
-      prisma.patientMedication.findMany({ orderBy: { dispensedAt: "asc" } }),
+      prisma.patient.findMany({ select: { id: true, name: true, firstName: true, lastName: true, branch: true, faculty: true, gender: true, symptom: true, status: true, hospitalName: true, visitedAt: true, updatedAt: true, infirmaryHistory: true }, orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }] }),
+      prisma.patientMedication.findMany({ orderBy: [{ dispensedAt: "desc" }, { id: "desc" }] }),
       catalogRouter.listRecords(req),
-      prisma.borrowRecord.findMany({ include: { items: { include: { returns: { orderBy: { returnedAt: "asc" } } } } }, orderBy: { borrowedAt: "desc" } }),
+      prisma.borrowRecord.findMany({ include: { items: { orderBy: { createdAt: "desc" }, include: { returns: { orderBy: { returnedAt: "desc" } } } } }, orderBy: [{ updatedAt: "desc" }, { borrowedAt: "desc" }] }),
       prisma.legacyStorage.findUnique({ where: { key: "fms-history-catalog-orders" }, select: { value: true } }),
     ]);
     const medsByVisit = new Map();
     for (const medication of medicationRows) {
       const rows = medsByVisit.get(medication.visitId) || [];
-      rows.push({ code: medication.catalogCode, name: medication.medicineName, quantity: medication.quantity });
+      rows.push({ code: medication.catalogCode, name: medication.medicineName, quantity: medication.quantity, storageLocation: medication.storageLocation || "" });
       medsByVisit.set(medication.visitId, rows);
     }
     const visits = [];
@@ -37,7 +81,7 @@ router.get("/dashboard/data", async (req, res) => {
         for (const entry of history) {
           const visitId = String(entry.createdAt || entry.visitDate || entry.date || "");
           const medicines = medsByVisit.get(visitId) || entry.medicines || [];
-          visits.push({ ...entry, patientId: patient.id, faculty: entry.faculty || patient.faculty || "", branch: entry.branch || patient.branch || "", gender: entry.gender || patient.gender || "", symptom: entry.symptom || patient.symptom || "", status: entry.createdAt && patient.visitedAt && new Date(entry.createdAt).getTime() === patient.visitedAt.getTime() ? patient.status || entry.status || "" : entry.status || patient.status || "", hospitalName: entry.hospitalName || patient.hospitalName || "", createdAt: entry.createdAt || entry.visitDate || patient.visitedAt?.toISOString() || "", medicines, medicine: medicines.map((item) => item.name).join(", "), quantity: medicines.reduce((sum, item) => sum + item.quantity, 0) });
+          visits.push({ ...entry, patientId: patient.id, faculty: entry.faculty || patient.faculty || "", branch: entry.branch || patient.branch || "", gender: entry.gender || patient.gender || "", symptom: entry.symptom || patient.symptom || "", status: entry.createdAt && patient.visitedAt && new Date(entry.createdAt).getTime() === patient.visitedAt.getTime() ? patient.status || entry.status || "" : entry.status || patient.status || "", hospitalName: entry.hospitalName || patient.hospitalName || "", createdAt: entry.createdAt || entry.visitDate || patient.visitedAt?.toISOString() || "", updatedAt: entry.updatedAt || (entry.createdAt && patient.visitedAt && new Date(entry.createdAt).getTime() === patient.visitedAt.getTime() ? patient.updatedAt?.toISOString() : undefined), medicines, medicine: medicines.map((item) => item.name).join(", "), quantity: medicines.reduce((sum, item) => sum + item.quantity, 0) });
         }
       } else if (patient.visitedAt) {
         const visitId = patient.visitedAt.toISOString();
@@ -45,7 +89,8 @@ router.get("/dashboard/data", async (req, res) => {
         visits.push({ ...patient, createdAt: visitId, medicines, medicine: medicines.map((item) => item.name).join(", "), quantity: medicines.reduce((sum, item) => sum + item.quantity, 0) });
       }
     }
-    res.json({ success: true, data: { visits, stock, borrowRecords: borrowRows.map(borrowRouter.legacy), purchaseOrders: Array.isArray(purchaseHistory?.value) ? purchaseHistory.value : [] } });
+    visits.sort((a, b) => new Date(b.updatedAt || b.createdAt || b.visitDate || 0) - new Date(a.updatedAt || a.createdAt || a.visitDate || 0));
+    res.json({ success: true, data: { visits, stock, borrowRecords: borrowRows.map(borrowRouter.legacy), purchaseOrders: Array.isArray(purchaseHistory?.value) ? [...purchaseHistory.value].sort((a, b) => new Date(b.updatedAt || b.createdAt || b.date || 0) - new Date(a.updatedAt || a.createdAt || a.date || 0)) : [] } });
   } catch (error) {
     console.error("Dashboard data query failed:", error.message);
     res.status(503).json({ success: false, message: "Dashboard data could not be loaded" });
@@ -80,7 +125,7 @@ router.get("/overview", async (_req, res) => {
 
 router.get("/nurses", async (_req, res) => {
   try {
-    const nurses = await prisma.nurse.findMany({ orderBy: { fullName: "asc" } });
+    const nurses = await prisma.nurse.findMany({ orderBy: [{ updatedAt: "desc" }, { fullName: "asc" }] });
     return res.json({ success: true, data: nurses });
   } catch (error) {
     console.error("Nurse list read failed:", error.message);
@@ -92,7 +137,7 @@ router.get("/users", requireRole("ADMIN"), async (_req, res) => {
   try {
     const users = await prisma.user.findMany({
       select: { id: true, email: true, name: true, role: true, isActive: true, createdAt: true },
-      orderBy: [{ name: "asc" }, { email: "asc" }],
+      orderBy: [{ createdAt: "desc" }, { name: "asc" }, { email: "asc" }],
     });
     return res.json({ success: true, data: users });
   } catch (error) {
@@ -109,7 +154,9 @@ router.patch("/users/:id/role", requireRole("ADMIN"), async (req, res) => {
   try {
     const result = await prisma.$transaction(async (tx) => {
       // Serialize role changes so two admins cannot concurrently remove the last active admin.
-      await tx.$queryRaw`SELECT pg_advisory_xact_lock(70824119)`;
+      // Run the void-returning PostgreSQL lock inside a DO block so Prisma does not
+      // attempt to deserialize it as a query result.
+      await tx.$executeRaw`DO $$ BEGIN PERFORM pg_advisory_xact_lock(70824119); END $$`;
       const existing = await tx.user.findUnique({ where: { id: req.params.id }, select: { id: true, role: true, isActive: true } });
       if (!existing) return { status: 404 };
       if (existing.role === "ADMIN" && existing.isActive && role !== "ADMIN") {
@@ -229,8 +276,10 @@ async function syncPatientStatusesFromVisits(tx, records) {
     const nextHistory = history.map((entry) => {
       const incoming = incomingByVisit.get(String(entry?.createdAt || entry?.visitDate || ""));
       if (!incoming) return entry;
+      const merged = { ...entry, ...incoming };
+      if (JSON.stringify(merged) === JSON.stringify(entry)) return entry;
       changed = true;
-      return { ...entry, ...incoming };
+      return { ...merged, updatedAt: new Date().toISOString() };
     });
     if (!changed) continue;
     const latest = nextHistory.reduce((current, entry) => {
@@ -247,6 +296,24 @@ async function syncPatientStatusesFromVisits(tx, records) {
       data.sys = latest.entry.sys || null;
       data.dia = latest.entry.dia || null;
       data.pr = latest.entry.pr || null;
+
+      const profileFields = [
+        "studentId", "firstName", "lastName", "nickname", "faculty", "branch",
+        "visitorType", "visitorDetail", "gender", "blood", "weight", "height",
+      ];
+      for (const field of profileFields) {
+        if (!Object.hasOwn(latest.entry, field)) continue;
+        const value = String(latest.entry[field] ?? "").trim();
+        data[field] = value || null;
+      }
+      if (Object.hasOwn(latest.entry, "age")) {
+        const age = String(latest.entry.age ?? "").trim();
+        data.age = age ? Number(age) : null;
+      }
+      if (Object.hasOwn(latest.entry, "firstName") || Object.hasOwn(latest.entry, "lastName")) {
+        const name = [latest.entry.firstName, latest.entry.lastName].map((part) => String(part || "").trim()).filter(Boolean).join(" ");
+        if (name) data.name = name;
+      }
     }
     await tx.patient.update({ where: { id: patient.id }, data });
   }
@@ -276,7 +343,7 @@ function mergeDutyShiftRecords(rows, legacyRecords) {
 router.get("/duty-shifts", async (_req, res) => {
   try {
     const [rows, legacy] = await Promise.all([
-      prisma.dutyShift.findMany({ include: { user: { select: { email: true } } }, orderBy: [{ date: "desc" }, { createdAt: "desc" }] }),
+      prisma.dutyShift.findMany({ include: { user: { select: { email: true } } }, orderBy: [{ updatedAt: "desc" }, { date: "desc" }, { createdAt: "desc" }] }),
       prisma.legacyStorage.findUnique({ where: { key: "fms-local-duty-records" }, select: { value: true } }),
     ]);
     return res.json({ success: true, data: mergeDutyShiftRecords(rows, legacy?.value) });
@@ -337,7 +404,7 @@ router.post("/duty-shifts", requireRole("ADMIN", "NURSE"), async (req, res) => {
         const remaining = legacy.value.filter((record) => !belongsToAuthenticatedUser(record, req));
         await tx.legacyStorage.upsert({ where: { key: "fms-local-duty-records" }, create: { key: "fms-local-duty-records", value: remaining }, update: { value: remaining } });
       }
-      return tx.dutyShift.findMany({ include: { user: { select: { email: true } } }, orderBy: [{ date: "desc" }, { createdAt: "desc" }] });
+      return tx.dutyShift.findMany({ include: { user: { select: { email: true } } }, orderBy: [{ updatedAt: "desc" }, { date: "desc" }, { createdAt: "desc" }] });
     }, { maxWait: 10_000, timeout: 30_000 });
     const legacy = await prisma.legacyStorage.findUnique({ where: { key: "fms-local-duty-records" }, select: { value: true } });
     return res.json({ success: true, data: mergeDutyShiftRecords(saved, legacy?.value) });
@@ -382,6 +449,44 @@ router.put("/duty-shifts/:id", requireRole("ADMIN", "NURSE"), async (req, res) =
     if (error.code === "P2002") return res.status(409).json({ success: false, message: "This nurse already has a shift or this color is taken on that date" });
     console.error("Duty shift update failed:", error.message);
     return res.status(503).json({ success: false, message: "Duty shift could not be updated" });
+  }
+});
+
+router.delete("/duty-shifts/:id", requireRole("ADMIN", "NURSE"), async (req, res) => {
+  try {
+    await prisma.$transaction(async (tx) => {
+      const current = await tx.dutyShift.findUnique({
+        where: { id: req.params.id },
+        include: { user: { select: { email: true } } },
+      });
+      if (!current) throw Object.assign(new Error("Duty shift not found"), { httpStatus: 404 });
+      if (req.auth.role !== "ADMIN" && current.userId !== req.auth.userId) {
+        throw Object.assign(new Error("You can only cancel your own shifts"), { httpStatus: 403 });
+      }
+
+      await tx.dutyShift.delete({ where: { id: current.id } });
+      const legacy = await tx.legacyStorage.findUnique({ where: { key: "fms-local-duty-records" }, select: { value: true } });
+      if (Array.isArray(legacy?.value)) {
+        const date = current.date.toISOString().slice(0, 10);
+        const ownerEmail = String(current.user?.email || "").trim().toLowerCase();
+        const remaining = legacy.value.filter((item) => {
+          if (item?.date !== date) return true;
+          const itemUid = String(item?.uid || "");
+          const itemEmail = String(item?.email || item?.userEmail || item?.accountEmail || "").trim().toLowerCase();
+          return itemUid !== current.userId && (!ownerEmail || itemEmail !== ownerEmail);
+        });
+        await tx.legacyStorage.upsert({
+          where: { key: "fms-local-duty-records" },
+          create: { key: "fms-local-duty-records", value: remaining },
+          update: { value: remaining },
+        });
+      }
+    }, { maxWait: 10_000, timeout: 20_000 });
+    return res.json({ success: true });
+  } catch (error) {
+    if (error.httpStatus) return res.status(error.httpStatus).json({ success: false, message: error.message });
+    console.error("Duty shift cancellation failed:", error.message);
+    return res.status(503).json({ success: false, message: "Duty shift could not be canceled" });
   }
 });
 
@@ -597,9 +702,10 @@ router.post("/infirmary-visits", requireRole("ADMIN", "NURSE"), async (req, res)
           unit: catalogItem.unit,
           total: catalogItem.total,
           quantity: requested.quantity,
+          storageLocation: catalogItem.storageLocation || "",
         });
       }
-      record.medicines = resolvedMedications.map(({ catalogCode, medicineName, unit, quantity }) => ({ code: catalogCode, name: medicineName, unit, quantity }));
+      record.medicines = resolvedMedications.map(({ catalogCode, medicineName, unit, quantity, storageLocation }) => ({ code: catalogCode, name: medicineName, unit, quantity, storageLocation }));
       record.medicine = resolvedMedications.map((item) => item.medicineName).join(", ");
       record.quantity = resolvedMedications.map((item) => `${item.quantity} ${item.unit}`).join(", ");
 
@@ -660,6 +766,7 @@ router.post("/infirmary-visits", requireRole("ADMIN", "NURSE"), async (req, res)
             catalogCode: medication.catalogCode,
             medicineName: medication.medicineName,
             quantity: medication.quantity,
+            storageLocation: medication.storageLocation || null,
             dispensedAt: visitedAt,
           })),
         });
@@ -684,7 +791,7 @@ router.post("/infirmary-visits", requireRole("ADMIN", "NURSE"), async (req, res)
 // Shared key/value storage used by the static frontend as its persistent store.
 router.get("/legacy-storage", async (req, res) => {
   try {
-    const rows = await prisma.legacyStorage.findMany();
+    const rows = await prisma.legacyStorage.findMany({ orderBy: [{ updatedAt: "desc" }, { key: "asc" }] });
     const nurseReadableKeys = new Set(["fms-infirmary-visits", "fms-infirmary-history", "fms-local-duty-records", "fms-duty-profiles", "fms-catalog-cart", "fms-history-catalog-orders", "fms-order-title", "fms-borrow-products", "fms-borrow-form", "fms-borrow-return-records", "fms-history-borrow-return", "fms-borrow-return-old-data-cleared-v2"]);
     const data = Object.fromEntries(rows
       .filter((row) => row.key !== "fms-stock-records" && (req.auth.role === "ADMIN" || nurseReadableKeys.has(row.key)))
@@ -692,7 +799,7 @@ router.get("/legacy-storage", async (req, res) => {
     data["fms-infirmary-visits"] = await attachDutyResponsibility(await attachCurrentPatientStatuses(data["fms-infirmary-visits"]));
     data["fms-stock-records"] = await catalogRouter.listRecords(req);
     const savedBorrowRecords = Array.isArray(data["fms-borrow-return-records"]) ? data["fms-borrow-return-records"] : [];
-    const borrowRows = await prisma.borrowRecord.findMany({ include: { items: { include: { returns: { orderBy: { returnedAt: "asc" } } } } }, orderBy: { borrowedAt: "desc" } });
+    const borrowRows = await prisma.borrowRecord.findMany({ include: { items: { orderBy: { createdAt: "desc" }, include: { returns: { orderBy: { returnedAt: "desc" } } } } }, orderBy: [{ updatedAt: "desc" }, { borrowedAt: "desc" }] });
     data["fms-borrow-return-records"] = borrowRows.map((row) => {
       const record = borrowRouter.legacy(row);
       const saved = savedBorrowRecords.find((item) => String(item.id) === String(record.id));
@@ -704,6 +811,9 @@ router.get("/legacy-storage", async (req, res) => {
       }
       return record;
     });
+    for (const key of ["fms-infirmary-visits", "fms-infirmary-history", "fms-history-borrow-return", "fms-history-catalog-orders", "fms-local-duty-records"]) {
+      if (Array.isArray(data[key])) data[key].sort((a, b) => new Date(b.updatedAt || b.createdAt || b.completedAt || b.date || 0) - new Date(a.updatedAt || a.createdAt || a.completedAt || a.date || 0));
+    }
     res.json({ success: true, data });
   } catch (error) {
     console.error("Legacy storage read failed:", error.message);
@@ -775,7 +885,30 @@ router.put("/legacy-storage/:key", async (req, res) => {
     }
     if (key === "fms-infirmary-visits") {
       if (!Array.isArray(value)) return res.status(400).json({ success: false, message: "Infirmary visits must be a list" });
+      for (const visit of value) {
+        if (!visit || typeof visit !== "object") continue;
+        const age = String(visit.age ?? "").trim();
+        if (age && (!/^\d+$/.test(age) || Number(age) > 150)) {
+          return res.status(400).json({ success: false, message: "Age must be a whole number from 0 to 150" });
+        }
+        for (const field of ["weight", "height"]) {
+          const measurement = String(visit[field] ?? "").trim();
+          if (measurement && !/^\d{1,5}(?:\.\d{1,2})?$/.test(measurement)) {
+            return res.status(400).json({ success: false, message: `${field} must be a number with up to two decimal places` });
+          }
+        }
+      }
       const row = await prisma.$transaction(async (tx) => {
+        const previous = await tx.legacyStorage.findUnique({ where: { key }, select: { value: true } });
+        const previousByVisit = new Map((Array.isArray(previous?.value) ? previous.value : []).map((visit) => [String(visit?.createdAt || visit?.visitDate || ""), visit]));
+        const now = new Date().toISOString();
+        value = value.map((visit) => {
+          if (!visit || typeof visit !== "object" || Array.isArray(visit)) return visit;
+          const old = previousByVisit.get(String(visit.createdAt || visit.visitDate || ""));
+          const stripTimestamp = (record) => Object.fromEntries(Object.entries(record).filter(([field]) => field !== "updatedAt"));
+          const changed = old && JSON.stringify(stripTimestamp(old)) !== JSON.stringify(stripTimestamp(visit));
+          return { ...visit, updatedAt: changed ? now : visit.updatedAt || visit.createdAt || now };
+        });
         const saved = await tx.legacyStorage.upsert({
           where: { key },
           create: { key, value },

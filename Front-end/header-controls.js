@@ -7,6 +7,7 @@
   if (!controls) return;
 
   const isMenuPage = /(?:^|[/\\])menu(?:\.html)?$/i.test(location.pathname);
+  if (isMenuPage) header.classList.add("menu-page-topbar");
   const isStockAddPage = /(?:^|[/\\])stock-add(?:\.html)?$/i.test(location.pathname);
   const isBorrowFormPage = /(?:^|[/\\])borrow-form(?:\.html)?$/i.test(location.pathname);
   const isBorrowSelectedPage = /(?:^|[/\\])borrow-selected(?:\.html)?$/i.test(location.pathname);

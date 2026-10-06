@@ -1,35 +1,55 @@
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { getApiOverview } from "./api";
 
 describe("getApiOverview", () => {
-  const fetchMock = jest.fn();
-
-  beforeEach(() => {
-    Object.defineProperty(globalThis, "fetch", {
-      configurable: true,
-      value: fetchMock,
-    });
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
-  afterEach(() => fetchMock.mockReset());
-
-  it("returns the API overview for a successful response", async () => {
-    fetchMock.mockResolvedValue({
-      ok: true,
-      json: async () => ({
+  it("requests the overview without using a cached response", async () => {
+    const overview = {
       success: true,
-      data: { message: "ok", database: "connected", counts: { users: 2, dutyShifts: 3 }, modules: [] },
-      }),
+      data: {
+        message: "API is ready",
+        database: "connected" as const,
+        counts: { users: 2, dutyShifts: 3 },
+        modules: ["catalog"],
+      },
+    };
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => overview,
     });
+    vi.stubGlobal("fetch", fetchMock);
 
-    await expect(getApiOverview()).resolves.toMatchObject({ data: { database: "connected" } });
-    expect(fetchMock).toHaveBeenCalledWith("http://localhost:4000/api/overview", { cache: "no-store" });
+    await expect(getApiOverview()).resolves.toEqual(overview);
+    expect(fetchMock).toHaveBeenCalledWith(
+      `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000"}/api/overview`,
+      { cache: "no-store" },
+    );
   });
 
-  it("throws the server message for an error response", async () => {
-    fetchMock.mockResolvedValue({
-      ok: false,
-      json: async () => ({ success: false, message: "API down" }),
-    });
-    await expect(getApiOverview()).rejects.toThrow("API down");
+  it("throws the API message when the response is not successful", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: false,
+        json: async () => ({ success: false, message: "Unavailable" }),
+      }),
+    );
+
+    await expect(getApiOverview()).rejects.toThrow("Unavailable");
+  });
+
+  it("uses a fallback message when an unsuccessful response has no message", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: false,
+        json: async () => ({ success: false }),
+      }),
+    );
+
+    await expect(getApiOverview()).rejects.toThrow("API request failed");
   });
 });

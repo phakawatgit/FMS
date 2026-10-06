@@ -155,23 +155,29 @@
     translating = true;
     pageIsEnglish = isEnglish;
     const table = isEnglish ? copy : reverseCopy;
-    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
-    const nodes = [];
-    while (walker.nextNode()) nodes.push(walker.currentNode);
-    nodes.forEach((node) => {
-      if (node.parentElement?.closest("script,style,textarea")) return;
-      const value = node.nodeValue;
-      const trimmed = value.trim();
-      if (!trimmed || !Object.prototype.hasOwnProperty.call(table, trimmed)) return;
-      node.nodeValue = value.replace(trimmed, table[trimmed]);
-    });
-    document.querySelectorAll("[placeholder],[aria-label],[title]").forEach((element) => {
-      ["placeholder", "aria-label", "title"].forEach((attribute) => {
-        const value = element.getAttribute(attribute);
-        if (value && Object.prototype.hasOwnProperty.call(table, value)) element.setAttribute(attribute, table[value]);
+    try {
+      const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+      const nodes = [];
+      while (walker.nextNode()) nodes.push(walker.currentNode);
+      nodes.forEach((node) => {
+        if (node.parentElement?.closest("script,style,textarea")) return;
+        const value = node.nodeValue;
+        const trimmed = value.trim();
+        if (!trimmed || !Object.prototype.hasOwnProperty.call(table, trimmed)) return;
+        const translated = value.replace(trimmed, table[trimmed]);
+        if (translated !== value) node.nodeValue = translated;
       });
-    });
-    translating = false;
+      document.querySelectorAll("[placeholder],[aria-label],[title]").forEach((element) => {
+        ["placeholder", "aria-label", "title"].forEach((attribute) => {
+          const value = element.getAttribute(attribute);
+          if (value && Object.prototype.hasOwnProperty.call(table, value) && table[value] !== value) {
+            element.setAttribute(attribute, table[value]);
+          }
+        });
+      });
+    } finally {
+      translating = false;
+    }
   };
 
   const style = document.createElement("style");
@@ -289,10 +295,20 @@
     button.setAttribute("aria-label", pageIsEnglish ? "Switch to Thai" : "เปลี่ยนภาษา");
   });
 
-  const translationObserver = new MutationObserver(() => {
-    if (pageIsEnglish) translatePage(true);
+  const translationObserver = new MutationObserver((mutations) => {
+    if (!pageIsEnglish) return;
+    const hasUserFacingMutation = mutations.some((mutation) =>
+      mutation.type === "childList" || mutation.type === "characterData" ||
+      ["placeholder", "aria-label", "title"].includes(mutation.attributeName));
+    if (hasUserFacingMutation) translatePage(true);
   });
-  translationObserver.observe(document.body, { childList: true, subtree: true });
+  translationObserver.observe(document.body, {
+    childList: true,
+    characterData: true,
+    attributes: true,
+    attributeFilter: ["placeholder", "aria-label", "title"],
+    subtree: true,
+  });
 
   document.addEventListener("pointerdown", (event) => {
     const button = event.target.closest?.(languageSelector);

@@ -22,7 +22,6 @@ if (record) {
     overlay.onclick = event => { if (event.target === overlay) finish(false); };
   });
   const actions = document.querySelector(".detail-actions");
-  if (actions) {
     actions.innerHTML = `<button type="button" class="detail-edit" aria-label="แก้ไขรายการ" title="แก้ไขรายการ"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 16.5-.7 3.2 3.2-.7L18.8 8.7a2.1 2.1 0 0 0-3-3L5.5 16.5Z"/><path d="m14.7 7.3 2 2"/></svg> แก้ไข</button><button type="button" class="detail-delete" aria-label="ลบรายการ" title="ลบรายการ"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m9 9 6 6m0-6-6 6"/></svg> ลบ</button>`;
     actions.querySelector(".detail-edit").addEventListener("click", () => {
       FMSStorage.setItem("fms-edit-stock-record", JSON.stringify(record));
@@ -35,5 +34,4 @@ if (record) {
       FMSStorage.setItem("fms-stock-records", JSON.stringify(nextRecords));
       location.href = "./stock.html?deleted=1";
     });
-  }
 }

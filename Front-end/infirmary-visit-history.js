@@ -1,4 +1,5 @@
 const STORAGE_KEY = "fms-infirmary-visits";
+const ARCHIVE_STORAGE_KEY = "fms-infirmary-history";
 const list = document.getElementById("visitList");
 const searchInput = document.getElementById("searchInput");
 const resultCount = document.getElementById("resultCount");
@@ -21,8 +22,16 @@ function escapeHtml(value) {
 
 function getRecords() {
   try {
-    const records = JSON.parse(FMSStorage.getItem(STORAGE_KEY) || "[]");
-    return Array.isArray(records) ? records.filter((record) => ["normal", "refer"].includes(record.status)) : [];
+    const visits = JSON.parse(FMSStorage.getItem(STORAGE_KEY) || "[]");
+    const archived = JSON.parse(FMSStorage.getItem(ARCHIVE_STORAGE_KEY) || "[]");
+    const merged = new Map();
+    [...(Array.isArray(visits) ? visits : []), ...(Array.isArray(archived) ? archived : []).map((record) => ({ ...record, status: record.status || "normal" }))]
+      .filter((record) => ["normal", "refer"].includes(record.status))
+      .forEach((record, index) => {
+        const key = String(record.id || record.createdAt || `${record.firstName || ""}|${record.lastName || ""}|${index}`);
+        merged.set(key, { ...(merged.get(key) || {}), ...record });
+      });
+    return [...merged.values()].sort((a, b) => new Date(b.updatedAt || b.createdAt || b.completedAt || 0) - new Date(a.updatedAt || a.createdAt || a.completedAt || 0));
   } catch {
     return [];
   }
@@ -178,6 +187,6 @@ document.addEventListener("click", (event) => {
     notificationButton.setAttribute("aria-expanded", "false");
   }
 });
-window.addEventListener("storage", (event) => { if (event.key === STORAGE_KEY) render(); });
+window.addEventListener("storage", (event) => { if ([STORAGE_KEY, ARCHIVE_STORAGE_KEY].includes(event.key)) render(); });
 
 renderLanguage();

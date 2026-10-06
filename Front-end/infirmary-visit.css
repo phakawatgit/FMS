@@ -1105,8 +1105,12 @@ body {
 }
 }
 .pending-link {
-  width: 9rem;
+  width: max-content;
+  min-width: 12rem;
   height: 2.5rem;
+  padding-inline: 1rem;
+  flex-shrink: 0;
+  white-space: nowrap;
   margin: 0 0 1rem;
   border: 2px solid #01406d;
   border-radius: .55rem;

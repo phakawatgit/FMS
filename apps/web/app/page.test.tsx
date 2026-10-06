@@ -1,9 +1,12 @@
-import { redirect } from "next/navigation";
+import { describe, expect, it, vi } from "vitest";
 import Home from "./page";
 
-describe("Home page", () => {
-  it("opens the real Front-end entry page", () => {
-    expect(() => Home()).toThrow("NEXT_REDIRECT:/legacy/index.html");
+const { redirect } = vi.hoisted(() => ({ redirect: vi.fn((path: string) => path) }));
+vi.mock("next/navigation", () => ({ redirect }));
+
+describe("home route", () => {
+  it("redirects to the legacy application", async () => {
+    Home();
     expect(redirect).toHaveBeenCalledWith("/legacy/index.html");
   });
 });

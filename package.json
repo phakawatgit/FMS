@@ -6,6 +6,9 @@
     "dev:web": "npm --workspace apps/web run dev",
     "dev:api": "node --watch Back-end/src/server.js",
     "dev:stack": "docker compose up --build",
+    "test": "npm --workspace apps/web run test:run",
+    "test:watch": "npm --workspace apps/web run test",
+    "test:coverage": "npm --workspace apps/web run test:coverage",
     "db:generate": "npm --prefix Back-end run prisma:generate",
     "db:migrate": "npm --prefix Back-end run prisma:migrate --"
   }

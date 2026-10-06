@@ -15,7 +15,7 @@ const catalogCopy = {
   items: ["รายการสินค้า", "Products"],
   itemDetails: ["รายละเอียดสินค้าที่บันทึกในคำสั่งซื้อนี้", "Product details saved in this order"]
 };
-const catalogText = (key) => catalogCopy[key]?.[historyEnglish ? 1 : 0] || key;
+const catalogText = (key) => catalogCopy[key][historyEnglish ? 1 : 0];
 const localizeCatalogValue = (value) => {
   const text = String(value ?? "");
   if (!historyEnglish) return text;
@@ -23,7 +23,8 @@ const localizeCatalogValue = (value) => {
   if (orderMatch) return `Order #${orderMatch[1]}`;
   return ({ "บันทึกคำสั่งซื้อแล้ว": "Order saved", "รอดำเนินการ": "Pending", "กำลังดำเนินการ": "Processing", "เสร็จสิ้น": "Completed", "ยกเลิก": "Cancelled", "ไม่ระบุ": "Not specified", "ยากิน": "Oral medicine", "ยาทา": "Topical medicine", "เวชภัณฑ์": "Medical supplies" })[text] || text;
 };
-const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
+// Call sites pass strings or filter nullable row values before escaping.
+const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
 const normalize = (value) => String(value ?? "").trim().toLocaleLowerCase().replace(/\s+/g, " ");
 function readArray(key) {
   try {
@@ -54,7 +55,7 @@ function findCurrentProduct(item) {
   const code = String(item.code || item.productCode || "").trim().toLocaleLowerCase();
   const name = normalize(item.name || item.productName);
   return stock.find((record) => code && String(record.code || record.productCode || "").trim().toLocaleLowerCase() === code)
-    || stock.find((record) => [record.name, record.productName, record.genericName].some((value) => normalize(value) === name))
+    || (name && stock.find((record) => [record.name, record.productName, record.genericName].some((value) => normalize(value) === name)))
     || null;
 }
 
@@ -87,7 +88,7 @@ function detailRows(order, item, current) {
     ["สถานะคำสั่งซื้อ", order.status]
   ].filter(([, value]) => value !== undefined && value !== null && String(value).trim() !== "");
   const labelMap = { "ชื่อสินค้า": "Product name", "ชื่อสามัญ": "Generic name", "รหัสสินค้า": "Product code", "ประเภทสินค้า": "Category", "รูปแบบ": "Form", "ขนาด": "Size", "จำนวนที่สั่ง": "Quantity ordered", "ตัวเลือก": "Option", "จำนวนในคลังปัจจุบัน": "Current stock", "เบิก/ใช้ไปปัจจุบัน": "Used/issued", "คงเหลือปัจจุบัน": "Current remaining", "สถานะสินค้า": "Product status", "วันหมดอายุ": "Expiry date", "สรรพคุณ": "Benefits", "อาการที่ใช้": "Indications", "วิธีใช้": "Usage", "ข้อควรระวัง": "Precautions", "วันที่สั่งซื้อ": "Order date", "ชื่อเอกสารสั่งซื้อ": "Order document", "สถานะคำสั่งซื้อ": "Order status" };
-  return rows.map(([label, value]) => `<div><dt>${escapeHtml(historyEnglish ? (labelMap[label] || label) : label)}</dt><dd>${escapeHtml(value)}</dd></div>`).join("");
+  return rows.map(([label, value]) => `<div><dt>${escapeHtml(historyEnglish ? labelMap[label] : label)}</dt><dd>${escapeHtml(value)}</dd></div>`).join("");
 }
 
 function productMarkup(order, item, index) {

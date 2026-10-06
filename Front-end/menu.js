@@ -44,7 +44,13 @@ const yearCalendarValue = document.getElementById("yearCalendarValue");
 const yearCalendarOptions = document.getElementById("yearCalendarOptions");
 const ADMIN_SESSION_KEY = "fms-admin-session";
 const API_BASE = window.FMS_API_URL || `${location.protocol}//${location.hostname}:4000`;
-let currentRole = null;
+let currentRole = (() => {
+  try {
+    return JSON.parse(sessionStorage.getItem(ADMIN_SESSION_KEY) || "null")?.role?.toUpperCase() || null;
+  } catch {
+    return null;
+  }
+})();
 
 function isAdminSession() {
   return currentRole === "ADMIN";

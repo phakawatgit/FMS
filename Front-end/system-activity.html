@@ -48,9 +48,9 @@ body header.topbar.dashboard-topbar .actions>.language{flex-basis:62px!important
 }
 </style><style>
 /* Keep the Activity Log header on the Dashboard's full-width grid at every size. */
-body header.topbar.dashboard-topbar{display:flex!important;box-sizing:border-box!important;width:100%!important;height:68px!important;min-height:68px!important;flex-direction:row!important;align-items:center!important;justify-content:flex-end!important;gap:14px!important;padding:6px 48px!important;background:#064d75!important;border-bottom:5px solid #073d65!important}
+body header.topbar.dashboard-topbar{display:flex!important;box-sizing:border-box!important;width:100%!important;height:68px!important;min-height:68px!important;flex-direction:row!important;align-items:center!important;justify-content:space-between!important;gap:14px!important;padding:6px clamp(1rem,4vw,5rem)!important;background:#064d75!important;border-bottom:5px solid #073d65!important}
 body header.topbar.dashboard-topbar .topbar-inner{display:contents!important}
-body header.topbar.dashboard-topbar .brand{display:inline-flex!important;flex:0 1 auto!important;width:auto!important;max-width:none!important;min-width:0!important;align-items:center!important;gap:10px!important;margin-left:auto!important;font:600 15px/1.15 Kanit,Arial,sans-serif!important;white-space:nowrap!important}
+body header.topbar.dashboard-topbar .brand{display:inline-flex!important;flex:0 1 auto!important;width:auto!important;max-width:none!important;min-width:0!important;align-items:center!important;gap:10px!important;margin-left:0!important;font:600 15px/1.15 Kanit,Arial,sans-serif!important;white-space:nowrap!important}
 body header.topbar.dashboard-topbar .brand img{flex:0 0 38px!important;width:38px!important;height:38px!important}
 body header.topbar.dashboard-topbar .brand span{display:block!important;max-width:none!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;font-size:inherit!important}
 body header.topbar.dashboard-topbar .actions{display:flex!important;flex:0 0 auto!important;flex-direction:row!important;flex-wrap:nowrap!important;align-items:center!important;justify-content:flex-end!important;gap:8px!important;width:auto!important;min-width:0!important;margin-left:auto!important}
@@ -79,6 +79,6 @@ body header.topbar.dashboard-topbar .actions{display:flex!important;flex:0 0 aut
     <nav id="activityCards" class="activity-grid" aria-label="เมนูระบบ"></nav>
   </main>
   <aside id="notificationPanel" class="notification-panel" hidden><button id="closeNotification" type="button" aria-label="ปิด">×</button><strong>การแจ้งเตือน</strong><p>คุณกำลังดูประวัติกิจกรรมของระบบ FMS</p></aside>
-  <script type="module" src="./system-activity.js?v=7"></script>
+  <script type="module" src="./system-activity.js?v=8"></script>
 <script src="./language-toggle.js?v=13"></script><script src="./header-controls.js?v=4"></script></body>
 </html>

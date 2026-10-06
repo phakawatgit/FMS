@@ -12,6 +12,7 @@ function serialize(row, req) {
   return {
     code: row.code, name: row.name, productName: row.productName || "", genericName: row.genericName || "",
     category: row.category, form: row.form || "", size: row.size || "", unit: row.unit,
+    storageLocation: row.storageLocation || "",
     total: row.total, used: row.used, remaining: row.remaining, status: row.status,
     benefit: row.benefit || "", symptom: row.symptom || "", usage: row.usage || "", warning: row.warning || "",
     expiry: row.expiry ? row.expiry.toISOString().slice(0, 10) : "", image, imageUrl: image,
@@ -20,7 +21,7 @@ function serialize(row, req) {
 }
 
 async function listRecords(req) {
-  const rows = await prisma.catalog.findMany({ orderBy: [{ createdAt: "desc" }, { code: "asc" }] });
+  const rows = await prisma.catalog.findMany({ orderBy: [{ updatedAt: "desc" }, { code: "asc" }] });
   return rows.map((row) => serialize(row, req));
 }
 
@@ -32,6 +33,11 @@ function normalize(input, req) {
     const max = { name: 200, productName: 200, genericName: 200, category: 80, form: 120, size: 120, unit: 40, status: 40 }[field] || 10000;
     if (value.length > max) throw new Error("field too long");
     record[field] = value || null;
+  }
+  if (Object.hasOwn(input, "storageLocation")) {
+    const storageLocation = input.storageLocation == null ? "" : String(input.storageLocation).trim();
+    if (storageLocation.length > 200) throw new Error("storage location too long");
+    record.storageLocation = storageLocation || null;
   }
   record.code = String(input.code || "").trim();
   if (!record.code || record.code.length > 80 || !record.name || !record.category) throw new Error("required field missing");
@@ -79,6 +85,10 @@ async function syncRecords(records, req) {
   return prisma.$transaction(async (tx) => {
     for (const item of normalized) {
       const { code, ...data } = item;
+      if (!Object.hasOwn(item, "storageLocation")) {
+        const existing = await tx.catalog.findUnique({ where: { code }, select: { storageLocation: true } });
+        if (existing) data.storageLocation = existing.storageLocation;
+      }
       if (item.imageUrl && item.imageUrl.endsWith(`/api/catalog/${encodeURIComponent(code)}/image`)) {
         const existing = await tx.catalog.findUnique({ where: { code }, select: { imageData: true, imageMimeType: true } });
         if (existing?.imageData && !data.imageData) {
@@ -90,7 +100,7 @@ async function syncRecords(records, req) {
     }
     if (normalized.length) await tx.catalog.deleteMany({ where: { code: { notIn: normalized.map((item) => item.code) } } });
     else await tx.catalog.deleteMany();
-    return tx.catalog.findMany({ orderBy: [{ createdAt: "desc" }, { code: "asc" }] });
+    return tx.catalog.findMany({ orderBy: [{ updatedAt: "desc" }, { code: "asc" }] });
   }, { maxWait: 10000, timeout: 30000 });
 }
 
@@ -132,7 +142,7 @@ router.post("/", async (req, res) => {
     if (!created) return res.status(409).json({ success: false, message: "สร้างรหัสยาไม่สำเร็จ กรุณาลองอีกครั้ง" });
     return res.status(201).json({ success: true, data: serialize(created, req) });
   } catch (error) {
-    const invalidInput = ["invalid record", "field too long", "required field missing", "invalid inventory amount", "invalid expiry", "image must be a URL", "image must be an HTTP URL", "image too large"].includes(error.message);
+    const invalidInput = ["invalid record", "field too long", "storage location too long", "required field missing", "invalid inventory amount", "invalid expiry", "image must be a URL", "image must be an HTTP URL", "image too large"].includes(error.message);
     if (!invalidInput) console.error("Catalog create failed:", error.message);
     const status = invalidInput ? 400 : error.code === "P2002" ? 409 : 503;
     return res.status(status).json({
@@ -147,7 +157,7 @@ router.put("/", async (req, res) => {
     const rows = await syncRecords(req.body?.records, req);
     return res.json({ success: true, data: rows.map((row) => serialize(row, req)) });
   } catch (error) {
-    const status = ["invalid record", "field too long", "required field missing", "invalid inventory amount", "invalid expiry", "image must be a URL", "image must be an HTTP URL", "image too large", "invalid catalog list", "duplicate catalog code"].includes(error.message) ? 400 : 503;
+    const status = ["invalid record", "field too long", "storage location too long", "required field missing", "invalid inventory amount", "invalid expiry", "image must be a URL", "image must be an HTTP URL", "image too large", "invalid catalog list", "duplicate catalog code"].includes(error.message) ? 400 : 503;
     console.error("Catalog write failed:", error.message);
     return res.status(status).json({ success: false, message: status === 400 ? "ข้อมูล Catalog ไม่ถูกต้อง" : "บันทึก Catalog ไม่สำเร็จ" });
   }
@@ -176,4 +186,5 @@ router.get("/:code/image", async (req, res) => {
 router.listRecords = listRecords;
 router.syncRecords = syncRecords;
 router.serialize = serialize;
+router.normalize = normalize;
 module.exports = router;

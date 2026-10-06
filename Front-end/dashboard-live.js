@@ -233,6 +233,11 @@
     modalStatus = button.dataset.medicineStatus; modalPage = 0; modalIndex = 0; renderModal();
     document.getElementById("medicineDetailModal").showModal();
   }, true);
+  const medicineModal = document.getElementById("medicineDetailModal");
+  document.getElementById("closeMedicineModal").addEventListener("click", () => medicineModal.close());
+  medicineModal.addEventListener("click", (event) => {
+    if (event.target === medicineModal) medicineModal.close();
+  });
   document.addEventListener("click", (event) => {
     const button = event.target.closest("#medicinePrevPage, #medicineNextPage");
     if (!button) return;

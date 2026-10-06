@@ -10,7 +10,6 @@ const apiRouter = require("./routes/index");
 const { requireCsrfForUnsafeMethods, requireFirebaseSession } = require("./middleware/firebase-session");
 
 const app = express();
-const port = Number(process.env.PORT || 4000);
 const initialNurseNames = [
   "นางศิริวรรณ คงบุญแก้ว",
   "นางสุกัญญา มนธรรมสกุล",
@@ -67,12 +66,19 @@ app.use((error, _req, res, _next) => {
   res.status(500).json({ success: false, message: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" });
 });
 
-prisma.nurse.createMany({
-  data: initialNurseNames.map((fullName) => ({ fullName })),
-  skipDuplicates: true,
-}).then(() => {
-  app.listen(port, () => console.log(`FMS API listening on http://localhost:${port}`));
-}).catch((error) => {
-  console.error("Nurse seed failed:", error);
-  process.exit(1);
-});
+function startServer() {
+  const port = Number(process.env.PORT || 4000);
+  return prisma.nurse.createMany({
+    data: initialNurseNames.map((fullName) => ({ fullName })),
+    skipDuplicates: true,
+  }).then(() => {
+    return app.listen(port, () => console.log(`FMS API listening on http://localhost:${port}`));
+  }).catch((error) => {
+    console.error("Nurse seed failed:", error);
+    process.exit(1);
+  });
+}
+
+if (require.main === module) startServer();
+
+module.exports = { app, startServer };

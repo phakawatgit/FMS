@@ -53,12 +53,10 @@ npm run dev:api
 npm run dev:web
 ```
 
-สำหรับเว็บมีคำสั่งใน workspace `apps/web` ได้แก่ `build`, `test`, `test:watch`, `test:coverage` และ `test:e2e` ตัวอย่างเช่น:
+สำหรับเว็บ workspace `apps/web` มีคำสั่ง `dev`, `build` และ `start` เท่านั้น ปัจจุบันไม่มีชุดทดสอบอัตโนมัติใน repository; เมื่อต้อง QA ให้ใช้แนวทางใน `skills/senior-qa/SKILL.md` และทดสอบด้วยข้อมูลจำลองหรือ local test database ที่ตรวจสอบแล้ว:
 
 ```powershell
 npm --workspace apps/web run build
-npm --workspace apps/web test -- app/page.test.tsx
-npm --workspace apps/web run test:e2e
 ```
 
 ตรวจ `package.json` ของ workspace ก่อนใช้คำสั่ง เพราะ root ไม่ได้ประกาศ script สำหรับทุกงาน และอย่าสมมติว่ามี test/lint script ใน API หรือบริการรายงาน

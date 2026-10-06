@@ -1,4 +1,4 @@
-const list=document.getElementById("historyList"),records=JSON.parse(FMSStorage.getItem("fms-infirmary-history")||"[]"),escapeHtml=value=>String(value||"-").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[char]));list.innerHTML=records.length?records.map(record=>`<article class="history-card"><div><h2>${escapeHtml([record.firstName,record.lastName].filter(Boolean).join(" "))}</h2><p>${escapeHtml(record.symptom)} · ${record.completedAt?new Date(record.completedAt).toLocaleString("th-TH"):"-"}</p></div><span>ปกติ</span></article>`).join(""):'<div class="empty">ยังไม่มีประวัติรายการที่ดำเนินการเสร็จแล้ว</div>';
+location.replace("./infirmary-visit-history.html");
 (() => {
   const header = document.querySelector("header.topbar");
   const tools = header?.querySelector(".page-tools");

@@ -22,34 +22,6 @@ saveOrderButton.addEventListener("click", async (event) => {
     FMSStorage.removeItem("fms-borrow-products"); window.location.href = "./borrow-return.html";
   } catch (error) { saveOrderButton.disabled = false; alert(error.message || "บันทึกการยืมไม่สำเร็จ"); }
 }, true);
-saveOrderButton.addEventListener("click",()=>{
-  const items=chosen();
-  if(!form.fullName&&!form.name){alert("กรุณากรอกชื่อผู้ยืมก่อนบันทึก");return}
-  if(!items.length){alert("กรุณาเลือกรายการยาและเวชภัณฑ์ก่อนบันทึก");return}
-  let liveStock=[];
-  try{const currentStock=JSON.parse(FMSStorage.getItem("fms-stock-records")||"[]");if(Array.isArray(currentStock))liveStock=currentStock}catch{}
-  const stockChanges=[];
-  for(const item of items){
-    const stockItem=liveStock.find(row=>String(row.code)===String(item.code));
-    if(!stockItem){alert(`ไม่พบข้อมูลยา ${item.name||item.code} ในคลัง กรุณาตรวจสอบรายการ`);return}
-    const quantity=Math.max(1,Number(item.quantity)||1),remaining=Math.max(0,(Number(stockItem.total)||0)-(Number(stockItem.used)||0));
-    if(quantity>remaining){alert(`${stockItem.name||stockItem.productName||item.name} มีคงเหลือ ${remaining} รายการ ไม่พอสำหรับการยืม ${quantity} รายการ`);return}
-    stockChanges.push({stockItem,quantity});
-  }
-  const formatRecordDate=date=>`${String(date.getDate()).padStart(2,"0")}/${String(date.getMonth()+1).padStart(2,"0")}/${date.getFullYear()+543}`;
-  let savedRecords=[];
-  try{const current=JSON.parse(FMSStorage.getItem("fms-borrow-return-records")||"[]");if(Array.isArray(current))savedRecords=current}catch{}
-  const primaryKind=borrowTypes.find(type=>type==="ส่วนบุคคล"||type==="กระเป๋าพยาบาล")||borrowTypes[0]||"กระเป๋าพยาบาล";
-  const loanItems=items.map(item=>{const stockItem=liveStock.find(row=>String(row.code)===String(item.code));return{name:stockItem.name||stockItem.productName||item.name||"รายการยา",productName:stockItem.productName||item.productName||stockItem.name||"รายการยา",code:stockItem.code,quantity:Math.max(1,Number(item.quantity)||1),image:stockItem.image||item.image||""}});
-  savedRecords.unshift({id:Date.now(),item:borrowerName,fullName:borrowerName,borrower:primaryKind,kind:primaryKind,borrowerType:borrowTypes.join("、"),date:formatRecordDate(borrowDate),due:formatRecordDate(dueDate),status:"borrowed",role:roles.join("、"),roles:roles.slice(),department:form.branch||"",branch:form.branch||"",nickname:form.nickname||"",studentId:form.studentId||"",phone:form.phone||"",activity:form.activity||"",reason:form.reason||"",items:loanItems.map(item=>({...item})),borrowedItems:loanItems.map(item=>({...item})),stockCommitted:true});
-  stockChanges.forEach(({stockItem,quantity})=>{stockItem.used=(Number(stockItem.used)||0)+quantity;stockItem.remaining=Math.max(0,(Number(stockItem.total)||0)-stockItem.used)});
-  FMSStorage.setItem("fms-stock-records",JSON.stringify(liveStock));
-  FMSStorage.setItem("fms-borrow-return-records",JSON.stringify(savedRecords));if(!window.FMSBorrowHistoryStore?.save(savedRecords))alert("บันทึกการยืมแล้ว แต่สำรองประวัติไม่สำเร็จ กรุณาตรวจสอบพื้นที่จัดเก็บเบราว์เซอร์");
-  FMSStorage.removeItem("fms-borrow-products");
-  saveOrderButton.disabled=true;
-  window.location.href="./borrow-return.html";
-});
-
 const orderNotice = document.createElement("div");
 orderNotice.className = "order-notice-modal";
 orderNotice.hidden = true;

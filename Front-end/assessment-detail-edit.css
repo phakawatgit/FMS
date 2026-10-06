@@ -128,6 +128,43 @@
   transition: border-color .18s ease, box-shadow .18s ease;
 }
 
+.edit-select-wrap {
+  position: relative;
+  display: block;
+  width: 100%;
+}
+
+.edit-grid .edit-select-wrap select {
+  width: 100%;
+  padding-right: 2.6rem;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+.edit-select-chevron {
+  position: absolute;
+  top: 50%;
+  right: .8rem;
+  width: 1rem;
+  height: 1rem;
+  color: #2563eb;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.edit-select-chevron path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.edit-select-wrap:focus-within .edit-select-chevron {
+  color: #0d568d;
+}
+
 .edit-grid input::placeholder,
 .edit-grid textarea::placeholder {
   color: #9aabba;

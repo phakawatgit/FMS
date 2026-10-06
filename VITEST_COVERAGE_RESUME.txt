@@ -1,0 +1,32 @@
+﻿FMS Vitest Coverage - Resume Log
+Updated: 2026-10-05 (Asia/Bangkok)
+Workspace: C:\Users\NS\Documents\GitHub\FMS
+
+Goal
+Increase meaningful Vitest coverage across all in-scope app source files to 100% for statements, branches, functions, and lines. Do not exclude source files or alter runtime behavior only to inflate coverage.
+
+Current status
+- No test process is currently running.
+- Goal has been resumed by the user and work is ongoing.
+- Latest full coverage run: 68 test files, 396 tests passed.
+- Latest full coverage: statements 93.95% (6870/7312), branches 80.21% (4864/6064), functions 93.67% (1362/1454), lines 97.12% (4757/4898).
+- Coverage configuration is in apps/web/vitest.config.mts. It includes apps/web TS/TSX, Back-end/src JS, and Front-end JS; no application source files are excluded from coverage.
+
+Recent test changes
+- apps/web/legacy/history-stock.test.js: tests escaped stock names, menu open/outside-close/link-close, search form submission, refresh events, and notification panel toggle.
+- apps/web/legacy/borrow-return-page.test.js: loadPage can seed stock fixtures; tests legacy product-code resolution, escaped item names, PDF printing, and year-picker arrow/Escape controls.
+- Back-end/src/routes/index-routes.test.js: test GET /legacy-storage enrichment of visit status and duty responsibility; test visit-history sync when records do not match or timestamps are invalid.
+- Current route index suite passes 40 tests. The initially failing expectation was corrected: current patient status overwrites visit status when timestamps match; responsibility fields remain absent when visit has no identity.
+
+Next directions
+- Keep validating high branch-miss files. Back-end/src/routes/index.js has 94 uncovered branches in a focused report despite its route suite passing; inspect report maps and design inputs for the specific missing code paths.
+- Other high-gap files from the latest full report include Front-end/borrow-return.js, dashboard.js, borrow-return-history.js, menu.js, infirmary-visit.js, plus backend auth/catalog/borrow routes.
+- Focused coverage command example:
+  npm.cmd --workspace apps/web exec vitest -- run Back-end/src/routes/index-routes.test.js --coverage --coverage.reporter=json --coverage.reportsDirectory=apps/web/coverage-index-current
+  Focused V8 JSON is at apps/web/coverage-index-current/coverage-final.json.
+- Full suite command:
+  npm.cmd --workspace apps/web run test:coverage
+
+Workspace caution
+- Worktree contains many unrelated/pre-existing modifications/deletions and generated coverage folders. Do not reset broad changes or indiscriminately delete generated reports.
+- Full run takes about 65 seconds and JSDOM may print "Not implemented: navigation to another Document" notices even when all tests pass.

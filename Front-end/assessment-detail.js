@@ -15,10 +15,11 @@ if (!record) {
     const nickname = kind === "entered" ? record.enteredByNickname : record.responsibleNickname;
     return name ? `${name}${nickname ? ` (${nickname})` : ""}` : "-";
   };
+  const facultyNames = { engineering: "หลักสูตรวิศวกรรมศาสตร์", agriculture: "หลักสูตรเทคโนโลยีการเกษตรและวิทยาศาสตร์", business: "หลักสูตรบริหารธุรกิจและนวัตกรรม" };
   const fields = [
     ["ชื่อ-นามสกุล", [record.firstName, record.lastName].filter(Boolean).join(" ")],
     ["ชื่อเล่น", record.nickname], ["อายุ", record.age && `${record.age} ปี`],
-    ["รหัสนักศึกษา", record.studentId], ["สาขา", record.branch], ["เพศ", record.gender],
+    ["รหัสนักศึกษา", record.studentId], ["หลักสูตร", facultyNames[record.faculty] || record.faculty], ["สาขา", record.branch], ["เพศ", record.gender],
     ["กรุ๊ปเลือด", record.blood], ["น้ำหนัก", record.weight && `${record.weight} กก.`],
     ["ส่วนสูง", record.height && `${record.height} ซม.`], ["อาการ", record.symptom],
     ["ยา", record.medicine], ["จำนวนยา", record.quantity],

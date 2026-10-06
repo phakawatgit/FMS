@@ -151,7 +151,7 @@ form.addEventListener("submit", async (event) => {
   }
   try {
     const image = imageInput.value.trim();
-    if (image) {
+    if (image && !/^data:image\/(?:jpeg|png|webp);base64,/i.test(image)) {
       const parsedImageUrl = new URL(image);
       if (!["http:", "https:"].includes(parsedImageUrl.protocol)) throw new Error("Invalid image URL");
     }

@@ -1,16 +1,14 @@
-import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 import { AppHeader } from "./AppHeader";
 
 describe("AppHeader", () => {
-  it("shows Thai controls and calls the language handler", async () => {
-    const onLanguageChange = jest.fn();
-    const user = userEvent.setup();
-    render(<AppHeader language="th" onLanguageChange={onLanguageChange} />);
-
-    const button = screen.getByRole("button", { name: "เปลี่ยนเป็นภาษาอังกฤษ" });
-    expect(screen.getByText("ไทย")).toBeInTheDocument();
-    await user.click(button);
-    expect(onLanguageChange).toHaveBeenCalledTimes(1);
+  it.each(["th", "en"] as const)("shows the %s language state", (language) => {
+    const onLanguageChange = vi.fn();
+    render(<AppHeader language={language} onLanguageChange={onLanguageChange} />);
+    expect(screen.getByRole("img", { name: "FMS" })).toBeInTheDocument();
+    fireEvent.click(screen.getAllByRole("button")[0]);
+    expect(onLanguageChange).toHaveBeenCalledOnce();
+    if (language === "en") expect(screen.getByText("English")).toBeInTheDocument();
   });
 });

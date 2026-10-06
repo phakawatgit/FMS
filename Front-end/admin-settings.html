@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./admin-settings.css?v=2" />
-<script src="./legacy-storage.js?v=3"></script><link rel="stylesheet" href="./responsive.css?v=3"></head>
+<script src="./legacy-storage.js?v=6"></script><link rel="stylesheet" href="./responsive.css?v=3"></head>
 <body>
   <header class="admin-topbar">
     <a class="admin-brand" href="./menu.html"><img src="./assets/fms.png" alt="" /> <span>First Aid &amp; Medicine Management System</span></a>
@@ -63,11 +63,12 @@
     <section id="deletedPanel" class="admin-panel" hidden>
       <div class="panel-heading"><div><p class="eyebrow">ข้อมูลที่ถูกลบ</p><h2>ข้อมูลที่ถูกลบจากฝั่งผู้ใช้</h2></div><span class="panel-note">เก็บเป็นประวัติสำหรับ Admin ตรวจสอบ</span></div>
       <div class="deleted-category-tabs" role="tablist" aria-label="ประเภทข้อมูลที่ถูกลบ"><button type="button" class="is-active" data-deleted-category="all">ทั้งหมด</button><button type="button" data-deleted-category="stock">คลังยา</button><button type="button" data-deleted-category="catalog">แคตตาล็อก</button><button type="button" data-deleted-category="infirmary">การเข้าห้องพยาบาล</button><button type="button" data-deleted-category="borrow">การยืมและคืน</button><button type="button" data-deleted-category="duty">ตารางเข้าเวร</button><button type="button" data-deleted-category="other">อื่น ๆ</button></div>
+      <div class="table-wrap"><table><thead><tr><th>เวลาที่ลบ</th><th>ประเภท</th><th>ชุดข้อมูล</th><th>รายการ</th><th>เหตุผล</th></tr></thead><tbody id="deletedRows"></tbody></table></div>
     </section>
   </main>
   <script src="./admin-audit.js?v=1"></script>
   <script src="./notification-utils.js?v=1"></script>
-  <script src="./admin-settings.js?v=5"></script>
+  <script src="./admin-settings.js?v=8"></script>
   <script src="./language-toggle.js?v=15"></script>
 <script src="./header-controls.js?v=3"></script></body>
 </html>

@@ -1,0 +1,73 @@
+FMS Code Maintenance Summary
+Date: 2026-10-04
+
+Scope
+-----
+This pass audited the checked-in legacy Front-end JavaScript and CSS references,
+the active Next.js workspace, and the active API source. Changes were limited to
+source files that had no references anywhere in the repository. Existing user
+changes were preserved.
+
+Removed files
+-------------
+JavaScript (3 files, 102 lines):
+- Front-end/borrow-return-view.js (31 lines): not loaded or imported by any page.
+- Front-end/catalog-detail.js (7 lines): not loaded or imported; the active
+  catalog detail page loads catalog-detail-page.js.
+- Front-end/infirmary-visit-faculty-branch-native.js (64 lines): not loaded or
+  imported; the visit form loads infirmary-visit-faculty-branch.js, which owns
+  the active custom-select behavior.
+
+Stylesheets (12 files, 2,721 lines):
+- Front-end/borrow-calendar-markers.css (249 lines)
+- Front-end/borrow-calendar-polish.css (130 lines)
+- Front-end/borrow-return-fix.css (64 lines)
+- Front-end/borrow-return-home.css (234 lines)
+- Front-end/borrow-return-minimal.css (155 lines)
+- Front-end/borrow-return-refresh.css (468 lines)
+- Front-end/borrow-return-responsive.css (133 lines)
+- Front-end/borrow-return.css (199 lines)
+- Front-end/catalog-detail-back.css (22 lines)
+- Front-end/catalog-detail-layout.css (751 lines)
+- Front-end/catalog-detail.css (264 lines)
+- Front-end/dashboard-calendar-minimal.css (52 lines)
+
+Reason: no HTML, JavaScript, CSS import, or other repository file referenced
+these stylesheet paths. The active borrow/return and catalog detail pages link
+their current stylesheets directly (including borrow-return-new.css and
+catalog-detail-new.css); no runtime stylesheet loader was found. Removing these
+files reduces the repository by 2,823 lines without removing loaded assets.
+
+Code changed instead
+--------------------
+No replacement implementation was needed for the unused files: they were not
+part of any page's runtime. Existing active entry points were left intact. No
+database schema, API contract, URL, business rule, or persistent data was
+changed in this maintenance pass.
+
+Senior QA checks
+----------------
+The repository does not expose a separate seniorQA agent/tool. The local
+skills/senior-qa/SKILL.md workflow was used for targeted review and checks.
+
+- Jest: 5 suites passed, 7 tests passed.
+- Playwright E2E: 6 tests passed across Chromium, mobile Chrome, and mobile
+  Safari/WebKit.
+- Next.js production build: passed, including lint/type validation.
+- Node syntax check: 57 JavaScript files passed.
+- GET /api/health: returned service status ok.
+- GET /api/database/health: returned PostgreSQL connected.
+
+E2E prerequisites
+-----------------
+Playwright browser binaries were absent initially. Chromium and WebKit were
+installed locally so the existing E2E suite could run. No browser binaries or
+test results were added to the repository.
+
+Limits
+------
+The existing Jest and Playwright suites cover the Next.js starter UI and
+navigation; they do not exercise every legacy workflow or every authenticated
+API mutation. No live user, stock, visit, or database records were changed by
+these QA checks. This pass did not claim a full behavioral proof for every
+legacy screen.

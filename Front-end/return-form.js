@@ -27,13 +27,6 @@ const stockItems = (() => {
 })();
 const normalizeCode = (value) => String(value ?? "").trim().toLowerCase();
 const normalizeName = (value) => String(value ?? "").trim().toLowerCase().replace(/\s+/g, " ");
-const findStockItem = (collection, item) => {
-  const code = normalizeCode(item?.code || item?.productCode);
-  const name = normalizeName(item?.name || item?.productName || item?.item);
-  return collection.find((row) => normalizeCode(row.code || row.productCode) === code)
-    || collection.find((row) => name && normalizeName(row.name || row.productName) === name);
-};
-
 function lockReturnPage(locked) {
   returnPageElement.inert = locked;
   returnFooterElement.inert = locked;
@@ -170,50 +163,6 @@ returnProductsElement.addEventListener("input", (event) => {
   const checkbox = returnProductsElement.querySelector(`[data-return-check="${input.dataset.returnQuantity}"]`);
   if (checkbox) checkbox.checked = Number(input.value) > 0;
 });
-function saveReturn(returnedItems, currentStock, stockReturns, products) {
-  const returnDate = new Date().toLocaleDateString("th-TH", { day: "2-digit", month: "2-digit", year: "numeric" });
-  if (!Array.isArray(record.borrowedItems)) record.borrowedItems = products.map(({ name, code, image, quantity }) => ({ name, code, image, quantity }));
-  const remainingItems = returnedItems.map(({ returned, ...item }) => ({ ...item, quantity: Math.max(0, item.quantity - returned) })).filter((item) => item.quantity > 0);
-  record.returnHistory = Array.isArray(record.returnHistory) ? record.returnHistory : [];
-  record.returnHistory.push({ date: returnDate, items: returnedItems.filter((item) => item.returned > 0).map(({ returned, ...item }) => ({ ...item, quantity: returned })) });
-  if (record.stockCommitted) {
-    stockReturns.forEach(({ item, stock }) => {
-      stock.used = Math.max(0, (Number(stock.used) || 0) - item.returned);
-      stock.remaining = Math.max(0, (Number(stock.total) || 0) - stock.used);
-    });
-    FMSStorage.setItem("fms-stock-records", JSON.stringify(currentStock));
-  }
-  const wasOverdue = String(record.status || "").toLowerCase() === "overdue";
-  record.items = remainingItems;
-  record.status = remainingItems.length ? (wasOverdue ? "overdue" : "borrowed") : "returned";
-  if (!remainingItems.length) record.returnedDate = returnDate;
-  FMSStorage.setItem(STORAGE_KEY, JSON.stringify(records));
-  window.FMSBorrowHistoryStore?.save(records);
-  window.location.href = "./borrow-return-history.html";
-}
-
-document.getElementById("submitReturn").addEventListener("click", () => {
-  if (!record) return;
-  const products = normalizeProducts(record);
-  const returnedItems = products.map((item, index) => ({ ...item, returned: Number(returnProductsElement.querySelector(`[data-return-quantity="${index}"]`)?.value) || 0 }));
-  if (!returnedItems.some((item) => item.returned > 0)) { showReturnNotice("กรุณาระบุจำนวนยาและเวชภัณฑ์ที่นำมาคืน"); return; }
-  let currentStock = [];
-  try { const savedStock = JSON.parse(FMSStorage.getItem("fms-stock-records") || "[]"); if (Array.isArray(savedStock)) currentStock = savedStock; } catch {}
-  const stockReturns = returnedItems.filter((item) => item.returned > 0).map((item) => ({ item, stock: findStockItem(currentStock, item) }));
-  if (record.stockCommitted && stockReturns.some(({ stock }) => !stock)) {
-    showReturnNotice("ไม่พบยาและเวชภัณฑ์บางรายการในคลัง จึงยังบันทึกการคืนไม่ได้", { tone: "error", title: "ไม่พบข้อมูลในคลัง", eyebrow: "บันทึกการคืนไม่สำเร็จ" });
-    return;
-  }
-  const itemCount = returnedItems.filter((item) => item.returned > 0).length;
-  showReturnConfirmation(`ยืนยันส่งคืนยาและเวชภัณฑ์จำนวน ${itemCount} รายการหรือไม่?`, {
-    tone: "success",
-    title: "ยืนยันการส่งคืน",
-    eyebrow: "ตรวจสอบก่อนบันทึก",
-    confirmText: "ส่งคืนและบันทึก",
-    onConfirm: () => saveReturn(returnedItems, currentStock, stockReturns, products),
-  });
-});
-
 document.getElementById("submitReturn").addEventListener("click", async (event) => {
   event.preventDefault(); event.stopImmediatePropagation();
   if (!record) return;

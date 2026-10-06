@@ -13,24 +13,25 @@
     if (thaiDate) {
       let year = Number(thaiDate[3]);
       if (year > 2400) year -= 543;
-      const date = new Date(year, Number(thaiDate[2]) - 1, Number(thaiDate[1]));
-      return Number.isNaN(date.getTime()) ? null : date;
+      return new Date(year, Number(thaiDate[2]) - 1, Number(thaiDate[1]));
     }
     const date = new Date(text);
     return Number.isNaN(date.getTime()) ? null : date;
   };
   const dateOnly = (value) => { const date = parseDate(value); return date ? new Date(date.getFullYear(), date.getMonth(), date.getDate()) : null; };
   const daysFromToday = (value) => { const date = dateOnly(value), today = dateOnly(new Date()); return date ? Math.round((date - today) / 86400000) : null; };
-  const dateLabel = (value, language) => { const date = parseDate(value); return date ? new Intl.DateTimeFormat(language === "th" ? "th-TH" : "en-US", { dateStyle: "medium" }).format(date) : "-"; };
+  // Callers only format dates after daysFromToday has confirmed they are valid.
+  const dateLabel = (value, language) => new Intl.DateTimeFormat(language === "th" ? "th-TH" : "en-US", { dateStyle: "medium" }).format(parseDate(value));
 
   function stockNotifications(language) {
     const notifications = [];
     read("fms-stock-records").forEach((record) => {
       const name = record.name || record.productName || record.genericName || (language === "th" ? "รายการยา" : "Medicine");
       const remaining = Math.max(0, Number(record.remaining ?? (Number(record.total || 0) - Number(record.used || 0))) || 0);
-      const expiryDays = daysFromToday(record.expiry || record.expiryDate);
+      const expiry = record.expiry || record.expiryDate;
+      const expiryDays = daysFromToday(expiry);
       if (expiryDays !== null && expiryDays < 0) notifications.push({ level: "critical", title: language === "th" ? "ยาหมดอายุแล้ว" : "Expired medicine", detail: language === "th" ? `${name} หมดอายุแล้ว กรุณานำออกจากคลัง` : `${name} has expired. Remove it from stock.` });
-      else if (expiryDays !== null && expiryDays <= 30) notifications.push({ level: "warning", title: language === "th" ? "ยาใกล้หมดอายุ" : "Medicine expiring soon", detail: language === "th" ? `${name} จะหมดอายุวันที่ ${dateLabel(record.expiry || record.expiryDate, language)}` : `${name} expires on ${dateLabel(record.expiry || record.expiryDate, language)}` });
+      else if (expiryDays !== null && expiryDays <= 30) notifications.push({ level: "warning", title: language === "th" ? "ยาใกล้หมดอายุ" : "Medicine expiring soon", detail: language === "th" ? `${name} จะหมดอายุวันที่ ${dateLabel(expiry, language)}` : `${name} expires on ${dateLabel(expiry, language)}` });
       if (remaining <= 0) notifications.push({ level: "critical", title: language === "th" ? "ยาหมดสต็อก" : "Out of stock", detail: language === "th" ? `${name} ไม่มีคงเหลือ กรุณาเติมสต็อก` : `${name} has no stock remaining.` });
       else if (remaining < 10) notifications.push({ level: "warning", title: language === "th" ? "ยาใกล้หมดสต็อก" : "Low medicine stock", detail: language === "th" ? `${name} เหลือ ${remaining} ${record.unit || "หน่วย"}` : `${name} has ${remaining} ${record.unit || "units"} left` });
     });

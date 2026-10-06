@@ -91,7 +91,13 @@
         </form>
 
         <section id="signupOtpFlow" class="reset-flow" hidden aria-labelledby="signupOtpTitle">
-          <button id="signupOtpBack" class="reset-back" type="button"><span>กลับไปสร้างบัญชี</span></button>
+          <button id="signupOtpBack" class="reset-back" type="button">
+            <svg class="reset-back-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="9"></circle>
+              <path d="M13.5 8 9.5 12l4 4M9.5 12h6"></path>
+            </svg>
+            <span>กลับไปสร้างบัญชี</span>
+          </button>
           <p class="auth-kicker">EMAIL VERIFICATION</p>
           <h2 id="signupOtpTitle">ยืนยันอีเมล</h2>
           <p id="signupOtpDescription" class="reset-description">กรอกรหัส OTP 6 หลักที่ส่งไปยังอีเมลของคุณ</p>

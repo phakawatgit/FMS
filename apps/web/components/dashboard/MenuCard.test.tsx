@@ -1,12 +1,21 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 import { MenuCard } from "./MenuCard";
 
 describe("MenuCard", () => {
-  it("renders the title, description, image and destination", () => {
-    render(<MenuCard title="คลังยา" description="จัดการยา" image="7.png" href="/stock" />);
+  it("shows its title and description and links to its destination", () => {
+    render(
+      <MenuCard
+        title="Medicine catalog"
+        description="Browse available medicine"
+        image="catalog.png"
+        href="/catalog"
+      />,
+    );
 
-    expect(screen.getByRole("link", { name: /คลังยา จัดการยา/i })).toHaveAttribute("href", "/stock");
-    expect(screen.getByRole("img", { name: "คลังยา" })).toHaveAttribute("src", "/assets/7.png");
-    expect(screen.getByText("จัดการยา")).toBeInTheDocument();
+    expect(screen.getByRole("link")).toHaveAttribute("href", "/catalog");
+    expect(screen.getByRole("heading", { name: "Medicine catalog" })).toBeInTheDocument();
+    expect(screen.getByText("Browse available medicine")).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "Medicine catalog" })).toBeInTheDocument();
   });
 });

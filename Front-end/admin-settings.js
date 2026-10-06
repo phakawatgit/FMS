@@ -28,7 +28,7 @@ function getOptions() {
   };
   let saved = {};
   try { saved = JSON.parse(FMSStorage.getItem(ADMIN_OPTIONS_KEY) || "{}"); } catch {}
-  const stockNames = read("fms-stock-records").map((item) => item.name || item.productName || item.genericName).filter(Boolean);
+  const stockNames = window.FMSAdminSettingsData?.stockNames || read("fms-stock-records").map((item) => item.name || item.productName || item.genericName).filter(Boolean);
   return {
     faculties: Array.isArray(saved.faculties) && saved.faculties.length ? saved.faculties : defaults.faculties,
     branches: Array.isArray(saved.branches) && saved.branches.length ? saved.branches : defaults.branches,
@@ -37,11 +37,21 @@ function getOptions() {
 }
 
 function renderOverview() {
-  $("#databaseRows").innerHTML = COLLECTIONS.map(([key, label]) => {
+  const latestTime = (record) => {
+    const value = record.updatedAt || record.createdAt || record.completedAt || record.borrowedAt || record.date || record.borrowDate;
+    const timestamp = value ? new Date(value).getTime() : 0;
+    return Number.isFinite(timestamp) ? timestamp : 0;
+  };
+  const bootstrapSummaries = window.FMSAdminSettingsData?.summaries;
+  const rows = COLLECTIONS.map(([key, label]) => {
     const records = read(key);
-    const latest = records.map((item) => item.updatedAt || item.createdAt || item.date || item.borrowDate).filter(Boolean).sort().at(-1);
-    return `<tr><td>${escapeHtml(label)}</td><td><code>${escapeHtml(key)}</code></td><td>${records.length}</td><td>${formatDate(latest)}</td></tr>`;
-  }).join("");
+    const summary = bootstrapSummaries?.[key];
+    const latest = summary?.latestAt ? new Date(summary.latestAt).getTime() : records.reduce((time, record) => Math.max(time, latestTime(record)), 0);
+    return { key, label, count: summary?.count ?? records.length, latest };
+  }).sort((a, b) => b.latest - a.latest || a.label.localeCompare(b.label));
+  $("#databaseRows").innerHTML = rows.map(({ key, label, count, latest }) =>
+    `<tr><td>${escapeHtml(label)}</td><td><code>${escapeHtml(key)}</code></td><td>${count}</td><td>${formatDate(latest || "")}</td></tr>`
+  ).join("");
 }
 
 function renderOptions() {
@@ -53,11 +63,10 @@ function renderOptions() {
       ? options[type].map((item, index) => `<li><span>${escapeHtml(item)}</span><button type="button" data-remove-option="${type}" data-index="${index}" aria-label="ลบ ${escapeHtml(item)}">×</button></li>`).join("")
       : `<li class="empty-option">ยังไม่มีข้อมูล${label}</li>`;
   });
-  save(ADMIN_OPTIONS_KEY, options);
 }
 
 function renderActivities() {
-  const records = read(window.FMSAdminAudit.ACTIVITY_KEY);
+  const records = read(window.FMSAdminAudit.ACTIVITY_KEY).sort((a, b) => new Date(b.updatedAt || b.createdAt || 0) - new Date(a.updatedAt || a.createdAt || 0));
   $("#activityRows").innerHTML = records.length ? records.map((item) => `<tr><td>${escapeHtml(formatDate(item.createdAt))}</td><td><strong>${escapeHtml(item.action)}</strong></td><td>${escapeHtml(item.actor)}</td><td>${escapeHtml(JSON.stringify(item.detail || {}))}</td></tr>`).join("") : `<tr><td colspan="4" class="empty-table">ยังไม่มีประวัติการใช้งาน</td></tr>`;
 }
 
@@ -75,13 +84,13 @@ function getDeletedCategoryLabel(category) {
   return { stock: "คลังยา", catalog: "แคตตาล็อก", infirmary: "การเข้าห้องพยาบาล", borrow: "การยืมและคืน", duty: "ตารางเข้าเวร", other: "อื่น ๆ" }[category] || "อื่น ๆ";
 }
 function renderDeleted() {
-  const records = read(window.FMSAdminAudit.DELETED_KEY).filter((item) => deletedCategory === "all" || getDeletedCategory(item.collection) === deletedCategory);
+  const records = read(window.FMSAdminAudit.DELETED_KEY).filter((item) => deletedCategory === "all" || getDeletedCategory(item.collection) === deletedCategory).sort((a, b) => new Date(b.deletedAt || 0) - new Date(a.deletedAt || 0));
   $("#deletedRows").innerHTML = records.length ? records.map((item) => { const category = getDeletedCategory(item.collection); return `<tr><td>${escapeHtml(formatDate(item.deletedAt))}</td><td><span class="deleted-menu-badge is-${category}">${escapeHtml(getDeletedCategoryLabel(category))}</span></td><td>${escapeHtml(item.collection)}</td><td>${escapeHtml(item.record?.name || item.record?.productName || item.record?.email || item.record?.id || item.record?.value || "ข้อมูลรายการ")}</td><td>${escapeHtml(item.reason)}</td></tr>`; }).join("") : `<tr><td colspan="5" class="empty-table">ยังไม่มีข้อมูลที่ถูกลบในประเภทนี้</td></tr>`;
 }
 
 function renderAll() {
   const options = getOptions();
-  const databaseRecords = COLLECTIONS.reduce((sum, [key]) => sum + read(key).length, 0);
+  const databaseRecords = window.FMSAdminSettingsData?.totalRecords ?? COLLECTIONS.reduce((sum, [key]) => sum + read(key).length, 0);
   $("#summaryCollections").textContent = databaseRecords;
   $("#summaryRecords").textContent = Object.values(options).reduce((sum, values) => sum + values.length, 0);
   $("#summaryActivities").textContent = read(window.FMSAdminAudit.ACTIVITY_KEY).length;
@@ -199,6 +208,10 @@ document.querySelectorAll("[data-deleted-category]").forEach((button) => button.
 }));
 
 document.querySelector("#backMenuButton").addEventListener("click", () => window.location.replace("./menu.html"));
+window.addEventListener("fms-admin-settings-ready", () => {
+  renderAll();
+  if (!$("#usersPanel").hidden) loadUsers();
+});
 const notificationButton = document.querySelector("#notificationButton");
 const notificationPanel = document.querySelector("#notificationPanel");
 const closeNotification = document.querySelector("#closeNotification");

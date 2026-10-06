@@ -96,14 +96,15 @@ model Patient {
 }
 
 model PatientMedication {
-  id           String   @id @default(uuid()) @db.Uuid
-  patientId    String   @map("patient_id") @db.Uuid
-  catalogId    String?  @map("catalog_id") @db.Uuid
-  visitId      String   @map("visit_id") @db.VarChar(120)
-  catalogCode  String   @map("catalog_code") @db.VarChar(80)
-  medicineName String   @map("medicine_name") @db.VarChar(200)
-  quantity     Int
-  dispensedAt  DateTime @default(now()) @map("dispensed_at") @db.Timestamptz(6)
+  id              String   @id @default(uuid()) @db.Uuid
+  patientId       String   @map("patient_id") @db.Uuid
+  catalogId       String?  @map("catalog_id") @db.Uuid
+  visitId         String   @map("visit_id") @db.VarChar(120)
+  catalogCode     String   @map("catalog_code") @db.VarChar(80)
+  medicineName    String   @map("medicine_name") @db.VarChar(200)
+  quantity        Int
+  storageLocation String?  @map("storage_location") @db.VarChar(200)
+  dispensedAt     DateTime @default(now()) @map("dispensed_at") @db.Timestamptz(6)
 
   patient Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
   catalog Catalog? @relation(fields: [catalogId], references: [id], onDelete: SetNull)
@@ -124,6 +125,7 @@ model Catalog {
   form               String?             @db.VarChar(120)
   size               String?             @db.VarChar(120)
   unit               String              @default("unit") @db.VarChar(40)
+  storageLocation    String?             @map("storage_location") @db.VarChar(200)
   total              Int                 @default(0)
   used               Int                 @default(0)
   remaining          Int                 @default(0)

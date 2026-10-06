@@ -13,6 +13,8 @@ function legacy(record) {
   const fmt = (date) => date.toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok", day: "2-digit", month: "2-digit", year: "numeric" });
   return {
     id: record.id,
+    createdAt: record.createdAt?.toISOString?.() || "",
+    updatedAt: record.updatedAt?.toISOString?.() || record.createdAt?.toISOString?.() || "",
     item: record.borrowerName,
     fullName: record.borrowerName,
     borrower: record.borrowTypes[0] || "",
@@ -40,9 +42,9 @@ function legacy(record) {
     stockCommitted: true,
   };
 }
-const include = { items: { include: { returns: { orderBy: { returnedAt: "asc" } } } } };
+const include = { items: { orderBy: { createdAt: "desc" }, include: { returns: { orderBy: { returnedAt: "desc" } } } } };
 router.get("/", async (_req, res) => {
-  try { const rows = await prisma.borrowRecord.findMany({ include, orderBy: { borrowedAt: "desc" } }); res.json({ success: true, data: rows.map(legacy) }); }
+  try { const rows = await prisma.borrowRecord.findMany({ include, orderBy: [{ updatedAt: "desc" }, { borrowedAt: "desc" }] }); res.json({ success: true, data: rows.map(legacy) }); }
   catch (error) { console.error("Borrow records read failed:", error.message); res.status(503).json({ success: false, message: "Borrow records could not be read" }); }
 });
 router.post("/", requireRole("ADMIN", "NURSE"), async (req, res) => {

@@ -67,8 +67,25 @@ document.getElementById("filterToggle").addEventListener("click", () => { menu.h
 search.addEventListener("input", render);
 document.getElementById("addButton").addEventListener("click", () => { location.href = "./stock-add.html?from=catalog"; });
 document.querySelector(".cart-button")?.addEventListener("click", () => { location.href = "./catalog-cart.html"; });
+const imageViewer = document.createElement("div");
+imageViewer.className = "catalog-image-viewer";
+imageViewer.hidden = true;
+imageViewer.innerHTML = '<button type="button" class="catalog-image-viewer-close" aria-label="ปิดภาพ">×</button><img alt="ภาพสินค้าแบบขยาย">';
+document.body.append(imageViewer);
+function closeImageViewer() { imageViewer.hidden = true; imageViewer.querySelector("img").removeAttribute("src"); }
+imageViewer.addEventListener("click", event => { if (event.target === imageViewer || event.target.closest(".catalog-image-viewer-close")) closeImageViewer(); });
+document.addEventListener("keydown", event => { if (event.key === "Escape" && !imageViewer.hidden) closeImageViewer(); });
 menu.querySelector('button[data-filter="all"]')?.classList.add("active");
 grid.addEventListener("click", event => {
+  const image = event.target.closest(".catalog-image img");
+  if (image) {
+    event.preventDefault();
+    event.stopPropagation();
+    imageViewer.querySelector("img").src = image.currentSrc || image.src;
+    imageViewer.querySelector("img").alt = image.alt;
+    imageViewer.hidden = false;
+    return;
+  }
   const card = event.target.closest(".catalog-card[data-detail-code]");
   if (card && !event.target.closest("button")) {
     location.href = `./catalog-detail.html?code=${encodeURIComponent(card.dataset.detailCode)}`;

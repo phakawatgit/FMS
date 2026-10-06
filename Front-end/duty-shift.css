@@ -748,6 +748,8 @@ body {
 .duty-detail-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 10px; }
 .duty-detail-actions button { min-height: 40px; padding: 0 16px; border: 1px solid #cbdfe6; border-radius: 9px; background: #fff; color: #28556d; font: inherit; cursor: pointer; }
 .duty-detail-actions .duty-detail-save { border-color: #087f8c; background: #087f8c; color: #fff; font-weight: 600; }
+.duty-detail-actions .duty-detail-remove { margin-right: auto; border-color: #edc3c3; background: #fff6f6; color: #b33b3b; font-weight: 600; }
+.duty-detail-actions .duty-detail-remove:hover:not(:disabled) { border-color: #d76b6b; background: #fff0f0; }
 .duty-detail-actions button:disabled { opacity: .6; cursor: wait; }
 @media(max-width:480px) {
   .duty-detail-dialog { padding: 22px 18px; }

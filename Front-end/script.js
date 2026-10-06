@@ -111,6 +111,7 @@ let currentLanguage = "en";
 let pendingSignupUser = null;
 let resetEmail = "";
 let resetToken = "";
+let loginStatusMessage = null;
 
 const translations = {
     en: {
@@ -139,6 +140,9 @@ const translations = {
         continueTerms: "By continuing, you agree to the FMS workspace terms.",
         loginProgress: "Signing you in...",
         signupProgress: "Creating your account...",
+        signedIn: "Signed in successfully. Welcome, {name}",
+        signupVerified: "Email verified. Please log in.",
+        accountAlreadyLinked: "This account is already linked to another Firebase identity.",
         googleProgress: "Preparing Google sign-in...",
         forgotProgress: "Password reset is ready to connect to the backend.",
         resetBack: "Back to sign in",
@@ -192,6 +196,9 @@ const translations = {
         continueTerms: "เมื่อดำเนินการต่อ คุณยอมรับเงื่อนไขการใช้งาน FMS",
         loginProgress: "กำลังเข้าสู่ระบบ...",
         signupProgress: "กำลังสร้างบัญชี...",
+        signedIn: "เข้าสู่ระบบสำเร็จ ยินดีต้อนรับ {name}",
+        signupVerified: "ยืนยันอีเมลสำเร็จ กรุณาเข้าสู่ระบบ",
+        accountAlreadyLinked: "บัญชีนี้เชื่อมโยงกับบัญชี Firebase อื่นอยู่แล้ว",
         googleProgress: "กำลังเตรียมเชื่อมต่อ Google...",
         forgotProgress: "ฟังก์ชันรีเซ็ตรหัสผ่านพร้อมเชื่อมต่อ backend",
         resetBack: "กลับไปเข้าสู่ระบบ",
@@ -281,6 +288,14 @@ function renderLanguage() {
     signupOtpForm.hidden = false;
     setText(signupOtpResend, currentLanguage === "th" ? "ส่ง OTP อีกครั้ง" : "Resend OTP");
     signupOtpInput.placeholder = t.otpPlaceholder;
+    if (loginStatusMessage) {
+        statusText.textContent = t[loginStatusMessage.key].replace("{name}", loginStatusMessage.name || "");
+    }
+}
+
+function setLoginStatus(key, values = {}) {
+    loginStatusMessage = { key, ...values };
+    statusText.textContent = translations[currentLanguage][key].replace(/\{(\w+)\}/g, (_, name) => values[name] || "");
 }
 
 function setMode(mode) {
@@ -295,6 +310,7 @@ function setMode(mode) {
 
     signupField.hidden = !isSignup;
     passwordInput.autocomplete = isSignup ? "new-password" : "current-password";
+    loginStatusMessage = null;
     statusText.textContent = "";
     renderLanguage();
 }
@@ -322,7 +338,7 @@ languageSwitcher.addEventListener("click", (event) => {
 authForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     const t = translations[currentLanguage];
-    statusText.textContent = currentMode === "signup" ? t.signupProgress : t.loginProgress;
+    setLoginStatus(currentMode === "signup" ? "signupProgress" : "loginProgress");
     const email = document.getElementById("email").value.trim();
     const password = passwordInput.value;
     const fullName = document.getElementById("fullName").value.trim();
@@ -371,7 +387,7 @@ authForm.addEventListener("submit", async (event) => {
 });
 
 googleButton.addEventListener("click", async () => {
-    statusText.textContent = translations[currentLanguage].googleProgress;
+    setLoginStatus("googleProgress");
     try {
         const result = await signInWithPopup(firebaseAuth, googleProvider);
         await establishApiSession(result.user);
@@ -442,9 +458,19 @@ signupOtpForm.addEventListener("submit", async (event) => {
     try {
         const idToken = await pendingSignupUser.getIdToken();
         await apiRequest("/api/auth/signup/otp/verify", { method: "POST", headers: { Authorization: `Bearer ${idToken}` }, body: JSON.stringify({ code: signupOtpInput.value.trim() }) });
-        await pendingSignupUser.getIdToken(true);
-        await establishApiSession(pendingSignupUser);
-        showSignedInMessage(pendingSignupUser);
+        await signOut(firebaseAuth);
+        pendingSignupUser = null;
+        signupOtpFlow.hidden = true;
+        authForm.hidden = false;
+        document.querySelector(".divider").hidden = false;
+        googleButton.hidden = false;
+        terms.hidden = false;
+        signupOtpInput.value = "";
+        signupOtpStatus.textContent = "";
+        setMode("login");
+        passwordInput.value = "";
+        document.getElementById("email").focus();
+        setLoginStatus("signupVerified");
     } catch (error) { signupOtpStatus.textContent = error.message; }
     finally { signupOtpSubmit.disabled = false; }
 });
@@ -496,13 +522,19 @@ newPasswordForm.addEventListener("submit", async (event) => {
 
 function showSignedInMessage(user) {
     const userName = user.displayName || user.email || "Google user";
-    statusText.textContent = currentLanguage === "th"
-        ? `เข้าสู่ระบบสำเร็จ ยินดีต้อนรับ ${userName}`
-        : `Signed in successfully. Welcome, ${userName}`;
+    setLoginStatus("signedIn", { name: userName });
     window.setTimeout(() => { window.location.href = "./menu.html"; }, 700);
 }
 
 function showFirebaseError(error) {
+    const isAccountAlreadyLinked = error.code === "auth/account-exists-with-different-credential"
+        || error.code === "auth/credential-already-in-use"
+        || /account is already linked to another firebase identity/i.test(error.message || "");
+    if (isAccountAlreadyLinked) {
+        setLoginStatus("accountAlreadyLinked");
+        console.error("Firebase Authentication error:", error);
+        return;
+    }
     const messages = {
         "auth/invalid-credential": "อีเมลหรือรหัสผ่านไม่ถูกต้อง",
         "auth/invalid-email": "รูปแบบอีเมลไม่ถูกต้อง",
@@ -516,6 +548,7 @@ function showFirebaseError(error) {
         "auth/missing-email": "กรุณากรอกอีเมล",
         "auth/popup-closed-by-user": "ปิดหน้าต่าง Google แล้ว"
     };
+    loginStatusMessage = null;
     statusText.textContent = messages[error.code] || error.message || "เข้าสู่ระบบไม่สำเร็จ กรุณาลองใหม่";
     console.error("Firebase Authentication error:", error);
 }

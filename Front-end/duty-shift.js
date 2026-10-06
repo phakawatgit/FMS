@@ -54,7 +54,7 @@ let editingDutyColor = null;
 const dutyDetailModal = document.createElement("div");
 dutyDetailModal.className = "duty-detail-modal";
 dutyDetailModal.hidden = true;
-dutyDetailModal.innerHTML = `<section class="duty-detail-dialog" role="dialog" aria-modal="true" aria-labelledby="dutyDetailName"><button class="duty-detail-close" type="button" aria-label="ปิด">×</button><p class="duty-detail-eyebrow">รายละเอียดการเข้าเวร</p><h2 id="dutyDetailName"></h2><p id="dutyDetailAffiliation" class="duty-detail-affiliation"></p><form id="dutyDetailForm"><label class="duty-detail-date-label" for="dutyDetailDate">วันเข้าเวร</label><input id="dutyDetailDate" type="date" required><span class="duty-detail-color-label">เลือกสี</span><div id="dutyDetailPalette" class="duty-detail-palette"></div><p id="dutyDetailStatus" class="duty-detail-status" aria-live="polite"></p><div class="duty-detail-actions"><button class="duty-detail-cancel" type="button">ยกเลิก</button><button class="duty-detail-save" type="submit">บันทึกการแก้ไข</button></div></form></section>`;
+dutyDetailModal.innerHTML = `<section class="duty-detail-dialog" role="dialog" aria-modal="true" aria-labelledby="dutyDetailName"><button class="duty-detail-close" type="button" aria-label="ปิด">×</button><p class="duty-detail-eyebrow">รายละเอียดการเข้าเวร</p><h2 id="dutyDetailName"></h2><p id="dutyDetailAffiliation" class="duty-detail-affiliation"></p><form id="dutyDetailForm"><label class="duty-detail-date-label" for="dutyDetailDate">วันเข้าเวร</label><input id="dutyDetailDate" type="date" required><span class="duty-detail-color-label">เลือกสี</span><div id="dutyDetailPalette" class="duty-detail-palette"></div><p id="dutyDetailStatus" class="duty-detail-status" aria-live="polite"></p><div class="duty-detail-actions"><button class="duty-detail-cancel" type="button">ยกเลิก</button><button class="duty-detail-remove" type="button" hidden>Cancel shift</button><button class="duty-detail-save" type="submit">บันทึกการแก้ไข</button></div></form></section>`;
 document.body.append(dutyDetailModal);
 const dutyDetailForm = document.getElementById("dutyDetailForm");
 const dutyDetailDate = document.getElementById("dutyDetailDate");
@@ -269,6 +269,9 @@ function openDutyDetail(record) {
   dutyDetailModal.querySelector(".duty-detail-color-label").hidden = !canEdit;
   dutyDetailPalette.hidden = !canEdit;
   dutyDetailModal.querySelector(".duty-detail-save").hidden = !canEdit;
+  const removeButton = dutyDetailModal.querySelector(".duty-detail-remove");
+  removeButton.hidden = !canEdit;
+  removeButton.textContent = language === "th" ? "ยกเลิกเวร" : "Cancel shift";
   dutyDetailModal.querySelector(".duty-detail-cancel").textContent = canEdit ? (language === "th" ? "ยกเลิก" : "Cancel") : (language === "th" ? "ปิด" : "Close");
   dutyDetailStatus.textContent = canEdit ? "" : (record.id ? (language === "th" ? "แก้ไขได้เฉพาะรายการเวรของคุณ" : "You can only edit your own shifts") : (language === "th" ? "รายการนี้ยังแก้ไขไม่ได้ กรุณาบันทึกเวรใหม่" : "This legacy entry cannot be edited yet"));
   renderDutyDetailPalette(record, canEdit);
@@ -447,6 +450,27 @@ dutyDetailDate.addEventListener("change", () => {
 });
 dutyDetailModal.querySelector(".duty-detail-close").addEventListener("click", closeDutyDetail);
 dutyDetailModal.querySelector(".duty-detail-cancel").addEventListener("click", closeDutyDetail);
+dutyDetailModal.querySelector(".duty-detail-remove").addEventListener("click", async (event) => {
+  const record = records.find((item) => getDutyRecordKey(item) === editingDutyKey);
+  if (!record?.id || (!hasAdminSession() && !belongsToUser(record))) return;
+  const confirmed = window.confirm(language === "th" ? "ยืนยันยกเลิกเวรนี้หรือไม่? ข้อมูลเวรจะถูกลบออกจากระบบ" : "Cancel this shift? It will be deleted from the system.");
+  if (!confirmed) return;
+  const button = event.currentTarget;
+  button.disabled = true;
+  dutyDetailStatus.textContent = language === "th" ? "กำลังยกเลิกเวร..." : "Canceling shift...";
+  try {
+    await FMSStorage.deleteDutyShift(record.id);
+    records = readRecords();
+    closeDutyDetail();
+    renderCalendar();
+    renderPalette();
+    renderRecords();
+  } catch (error) {
+    dutyDetailStatus.textContent = error.message || (language === "th" ? "ยกเลิกเวรไม่สำเร็จ กรุณาลองอีกครั้ง" : "Could not cancel the shift. Please try again.");
+  } finally {
+    button.disabled = false;
+  }
+});
 dutyDetailModal.addEventListener("click", (event) => { if (event.target === dutyDetailModal) closeDutyDetail(); });
 document.addEventListener("keydown", (event) => { if (event.key === "Escape" && !dutyDetailModal.hidden) closeDutyDetail(); });
 dutyDetailForm.addEventListener("submit", async (event) => {

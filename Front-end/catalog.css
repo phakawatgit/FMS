@@ -341,6 +341,42 @@ body {
   font: 700 .8rem Kanit;
   cursor: pointer;
 }
+.catalog-image-viewer[hidden] { display:none!important; }
+.catalog-image-viewer {
+  position:fixed;
+  z-index:1000;
+  inset:0;
+  display:grid;
+  place-items:center;
+  padding:2rem;
+  background:rgba(8,16,36,.88);
+  cursor:zoom-out;
+}
+.catalog-image-viewer img {
+  display:block;
+  max-width:min(96vw, 1400px);
+  max-height:92vh;
+  width:auto;
+  height:auto;
+  object-fit:contain;
+  background:#fff;
+  border-radius:.75rem;
+  box-shadow:0 1rem 3rem #0007;
+  cursor:default;
+}
+.catalog-image-viewer-close {
+  position:absolute;
+  top:1rem;
+  right:1.25rem;
+  width:2.75rem;
+  height:2.75rem;
+  border:1px solid #ffffff70;
+  border-radius:50%;
+  background:#fff;
+  color:#14213a;
+  font:400 1.8rem/1 Arial,sans-serif;
+  cursor:pointer;
+}
 .order-row button:hover {
   background: #edf4ff;
 }
@@ -570,6 +606,88 @@ body {
 }
 .catalog-info {
   border-top: 0!important;
+}
+
+/* Give medicine photos enough room to be recognized at a glance. */
+body .page .catalog-grid {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 30rem));
+  justify-content: center;
+  align-items: stretch;
+  gap: clamp(.8rem, 1.5vw, 1.25rem);
+}
+.catalog-card {
+  min-height: 0;
+  border: 1px solid #dce5f1!important;
+  border-radius: 1rem;
+  box-shadow: 0 5px 18px #203b6412;
+}
+.catalog-image {
+  height: auto;
+  min-height: 0;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  padding: .85rem;
+  background: linear-gradient(145deg, #f2f7fd, #fff 72%);
+}
+.catalog-image img {
+  display: block;
+  width: 100%!important;
+  height: 100%!important;
+  max-width: 100%;
+  max-height: 100%;
+  padding: 0;
+  object-fit: contain!important;
+  object-position: center;
+  border-radius: .65rem;
+}
+.catalog-info {
+  min-height: 12rem;
+  padding: 1rem 1.1rem;
+}
+.catalog-info h2 {
+  font-size: clamp(1rem, 1.2vw, 1.2rem);
+}
+.catalog-info p {
+  font-size: .82rem;
+}
+.order-row {
+  font-size: .78rem;
+}
+.order-row span {
+  min-width: 4rem;
+  font-size: .72rem;
+}
+@media(max-width:640px) {
+  .catalog-image {
+    height: auto;
+    min-height: 0;
+    aspect-ratio: 1 / 1;
+    padding: .5rem;
+  }
+  .catalog-info {
+    min-height: 11rem;
+    padding: .75rem;
+  }
+  .catalog-info p {
+    font-size: .72rem;
+  }
+}
+/* Keep the actual photo large enough to inspect; don't flatten it into a banner. */
+body .page .catalog-grid .catalog-card .catalog-image {
+  height: clamp(13rem, 19vw, 18rem)!important;
+  min-height: 13rem!important;
+  aspect-ratio: auto!important;
+}
+body .page .catalog-grid .catalog-card .catalog-image img {
+  width: 100%!important;
+  height: 100%!important;
+  object-fit: contain!important;
+}
+@media(max-width:640px) {
+  body .page .catalog-grid .catalog-card .catalog-image {
+    height: min(58vw, 16rem)!important;
+    min-height: 12rem!important;
+  }
 }
 .order-row button {
   border: 0!important;

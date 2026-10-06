@@ -5,6 +5,7 @@
   const endpoint = `${apiBase}/api/legacy-storage`;
   const normalizedPath = location.pathname.replace(/\/+$/, "").toLowerCase();
   const isLoginPage = normalizedPath === "" || normalizedPath === "/" || normalizedPath.endsWith("/index.html") || normalizedPath.endsWith("/front-end");
+  const isAdminSettingsPage = normalizedPath.endsWith("/admin-settings.html");
   const values = new Map();
   let storageReady = false;
 
@@ -32,7 +33,9 @@
   }
 
   function showStorageError(error) {
-    if (error?.status === 401) return;
+    // Permission errors remain enforced by the API, but do not cover the page
+    // with a persistent full-width banner.
+    if (error?.status === 401 || error?.status === 403) return;
     let notice = document.getElementById("fms-storage-error");
     if (!notice) {
       notice = document.createElement("div");
@@ -50,56 +53,65 @@
       document.addEventListener("DOMContentLoaded", attachNotice, { once: true });
       if (document.body) attachNotice();
     }
-    notice.textContent = error?.status === 401
-      ? "กรุณาเข้าสู่ระบบใหม่ก่อนใช้งานข้อมูลส่วนกลาง"
-      : error?.status === 403
-        ? error.message === "CSRF validation failed"
-          ? "เซสชันหมดอายุ กรุณาออกจากระบบแล้วเข้าสู่ระบบใหม่"
-          : "บัญชีนี้ไม่มีสิทธิ์ทำรายการนี้ กรุณาเข้าสู่ระบบด้วยบัญชีผู้ดูแลระบบหรือตรวจสอบสิทธิ์"
-        : "เชื่อมต่อฐานข้อมูลไม่ได้ ข้อมูลยังไม่ได้บันทึก กรุณาลองใหม่เมื่อติดต่อระบบได้";
+    notice.textContent = "เชื่อมต่อฐานข้อมูลไม่ได้ ข้อมูลยังไม่ได้บันทึก กรุณาลองใหม่เมื่อติดต่อระบบได้";
   }
 
   function dispatchChange(key) {
     window.dispatchEvent(new StorageEvent("storage", { key }));
   }
 
+  let settingsCacheKey = "";
+  const dirtySettingsKeys = new Set();
   try {
-    const response = isLoginPage ? { data: {} } : request("GET", endpoint);
-    Object.entries(response.data || {}).forEach(([key, value]) => values.set(key, value));
+    if (isAdminSettingsPage) {
+      let adminId = "admin";
+      try {
+        const session = JSON.parse(sessionStorage.getItem("fms-admin-session") || "null");
+        adminId = session?.uid || session?.email || adminId;
+      } catch {}
+      settingsCacheKey = `fms-admin-settings-bootstrap:${adminId}`;
+      let cached = null;
+      try { cached = JSON.parse(sessionStorage.getItem(settingsCacheKey) || "null"); } catch {}
+      if (cached) {
+        window.FMSAdminSettingsData = cached;
+        Object.entries(cached.data || {}).forEach(([key, value]) => values.set(key, value));
+      }
+      // Allow the page to render from cached data or defaults while the network
+      // request runs in the background.
+      storageReady = true;
+    } else {
+      const response = isLoginPage ? { data: {} } : request("GET", endpoint);
+      Object.entries(response.data || {}).forEach(([key, value]) => values.set(key, value));
 
-    if (!isLoginPage) {
-    const dutyResponse = request("GET", `${apiBase}/api/duty-shifts`);
-    if (Array.isArray(dutyResponse.data) && (dutyResponse.data.length || values.has("fms-local-duty-records"))) {
-      values.set("fms-local-duty-records", dutyResponse.data);
+      if (!isLoginPage) {
+        const dutyResponse = request("GET", `${apiBase}/api/duty-shifts`);
+        if (Array.isArray(dutyResponse.data) && (dutyResponse.data.length || values.has("fms-local-duty-records"))) {
+          values.set("fms-local-duty-records", dutyResponse.data);
+        }
+        // One-time import of existing browser records. The server copy wins.
+        const oldStorage = window.localStorage;
+        const pendingImport = {};
+        let isAdmin = false;
+        try { isAdmin = JSON.parse(sessionStorage.getItem("fms-admin-session") || "null")?.role === "admin"; } catch {}
+        const nurseImportKeys = new Set(["fms-infirmary-visits", "fms-infirmary-history", "fms-local-duty-records", "fms-duty-profiles"]);
+        for (let index = 0; index < oldStorage.length; index += 1) {
+          const key = oldStorage.key(index);
+          if (!key || !key.startsWith("fms-") || key === "fms-admin-session" || values.has(key)) continue;
+          if (!isAdmin && !nurseImportKeys.has(key)) continue;
+          const raw = oldStorage.getItem(key);
+          try { pendingImport[key] = JSON.parse(raw); } catch { pendingImport[key] = raw; }
+        }
+        Object.entries(pendingImport).forEach(([key, value]) => {
+          request("PUT", `${endpoint}/${encodeURIComponent(key)}`, { value });
+          values.set(key, value);
+        });
+        for (let index = oldStorage.length - 1; index >= 0; index -= 1) {
+          const key = oldStorage.key(index);
+          if (key?.startsWith("fms-") && (values.has(key) || Object.hasOwn(pendingImport, key))) oldStorage.removeItem(key);
+        }
+      }
+      storageReady = true;
     }
-    // One-time import of existing FMS browser records. The server copy wins on
-    // conflicts; browser data is removed only after the server confirms the import.
-    const oldStorage = window.localStorage;
-    const pendingImport = {};
-    let isAdmin = false;
-    try { isAdmin = JSON.parse(sessionStorage.getItem("fms-admin-session") || "null")?.role === "admin"; } catch {}
-    const nurseImportKeys = new Set(["fms-infirmary-visits", "fms-infirmary-history", "fms-local-duty-records", "fms-duty-profiles"]);
-    for (let index = 0; index < oldStorage.length; index += 1) {
-      const key = oldStorage.key(index);
-      if (!key || !key.startsWith("fms-") || key === "fms-admin-session" || values.has(key)) continue;
-      if (!isAdmin && !nurseImportKeys.has(key)) continue;
-      const raw = oldStorage.getItem(key);
-      try { pendingImport[key] = JSON.parse(raw); } catch { pendingImport[key] = raw; }
-    }
-    if (Object.keys(pendingImport).length) {
-      Object.entries(pendingImport).forEach(([key, value]) => {
-        request("PUT", `${endpoint}/${encodeURIComponent(key)}`, { value });
-        values.set(key, value);
-      });
-    }
-
-    // Remove old FMS browser copies after the server is confirmed available.
-    for (let index = oldStorage.length - 1; index >= 0; index -= 1) {
-      const key = oldStorage.key(index);
-      if (key?.startsWith("fms-") && (values.has(key) || Object.hasOwn(pendingImport, key))) oldStorage.removeItem(key);
-    }
-    }
-    storageReady = true;
   } catch (error) {
     console.error("FMS legacy storage is unavailable.", error);
     showStorageError(error);
@@ -177,6 +189,15 @@
       dispatchChange("fms-local-duty-records");
       return updated;
     },
+    async deleteDutyShift(id) {
+      const response = await fetch(`${apiBase}/api/duty-shifts/${encodeURIComponent(id)}`, { method: "DELETE", credentials: "include", headers: { "X-FMS-CSRF": csrfToken() } });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.message || `Duty shift cancellation failed (${response.status}).`);
+      const records = values.get("fms-local-duty-records") || [];
+      values.set("fms-local-duty-records", records.filter((record) => String(record.id) !== String(id)));
+      dispatchChange("fms-local-duty-records");
+      return true;
+    },
     setItem(key, rawValue) {
       if (!storageReady) {
         showStorageError();
@@ -197,6 +218,7 @@
           request("PUT", `${endpoint}/${encodeURIComponent(name)}`, { value });
         }
         values.set(name, value);
+        if (isAdminSettingsPage) dirtySettingsKeys.add(name);
         dispatchChange(name);
       } catch (error) {
         console.error("FMS data was not saved.", error);
@@ -242,4 +264,31 @@
       Array.from(values.keys()).forEach((key) => this.removeItem(key));
     }
   });
+
+  async function refreshAdminSettingsData() {
+    try {
+      const response = await fetch(`${apiBase}/api/admin/settings-bootstrap`, { credentials: "include" });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || !result.success) throw new Error(result.message || `Settings load failed (${response.status}).`);
+      const data = { ...(result.data || {}) };
+      for (const key of dirtySettingsKeys) {
+        if (values.has(key)) data[key] = values.get(key);
+      }
+      ["fms-admin-options", "fms-admin-audit-log", "fms-admin-deleted-records"].forEach((key) => {
+        if (!Object.hasOwn(data, key) && !dirtySettingsKeys.has(key)) values.delete(key);
+      });
+      Object.entries(data).forEach(([key, value]) => values.set(key, value));
+      window.FMSAdminSettingsData = { ...result, data };
+      try { sessionStorage.setItem(settingsCacheKey, JSON.stringify(window.FMSAdminSettingsData)); } catch {}
+      window.dispatchEvent(new CustomEvent("fms-admin-settings-ready"));
+    } catch (error) {
+      console.error("Settings data could not be refreshed.", error);
+      showStorageError(error);
+    }
+  }
+
+  if (isAdminSettingsPage) {
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => void refreshAdminSettingsData(), { once: true });
+    else void refreshAdminSettingsData();
+  }
 })();

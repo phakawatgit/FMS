@@ -1,6 +1,7 @@
-if (record) {
+if (typeof record !== "undefined" && record) {
   target.classList.toggle("is-normal", record.status === "normal");
-  const value = (key) => escapeHtml(record[key] || "");
+  const facultyNames = { engineering: "หลักสูตรวิศวกรรมศาสตร์", agriculture: "หลักสูตรเทคโนโลยีการเกษตรและวิทยาศาสตร์", business: "หลักสูตรบริหารธุรกิจและนวัตกรรม" };
+  const value = (key) => escapeHtml(key === "faculty" ? facultyNames[record.faculty] || record.faculty || "" : record[key] || "");
   const field = (key, label, span = "") => `<label class="${span}"><span>${label}</span><input readonly value="${value(key)}" /></label>`;
   const status = { observe: "รอดูอาการ", normal: "ปกติ", refer: "ส่งโรงพยาบาล" }[record.status] || "-";
   const visitor = record.visitorType === "guest" ? "guest" : "student";
@@ -16,7 +17,7 @@ if (record) {
     <div class="detail-visitor"><span class="${visitor}">${visitorText}</span></div>
     <div class="detail-form-grid">
       ${field("firstName", "ชื่อ", "wide")}${field("lastName", "นามสกุล", "wide")}${field("nickname", "ชื่อเล่น")}
-      ${field("age", "อายุ")}${field("studentId", "รหัสนักศึกษา")}${field("branch", "สาขา")}
+      ${field("age", "อายุ")}${field("studentId", "รหัสนักศึกษา")}${field("faculty", "หลักสูตร")}${field("branch", "สาขา")}
       ${field("gender", "เพศ")}${field("blood", "กรุ๊ปเลือด")}${field("weight", "น้ำหนัก")}${field("height", "ส่วนสูง")}
       ${field("symptom", "อาการ", "wide")}
       <div class="detail-vitals"><strong>ผลการวัดความดัน</strong>${field("sys", "SYS")}${field("dia", "DIA")}${field("pr", "PR")}</div>

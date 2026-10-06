@@ -1322,3 +1322,31 @@ html, body, body * {
 .topbar .topbar-actions fieldset.language-switcher label:not(:has(input:checked)) {
   display: none !important;
 }
+
+@media (min-width: 601px) {
+  body header.topbar.menu-page-topbar {
+    position: relative !important;
+    display: block !important;
+    padding-inline: 0 !important;
+  }
+  body header.topbar.menu-page-topbar > .topbar-inner {
+    display: contents !important;
+  }
+  body header.topbar.menu-page-topbar .brand {
+    position: absolute !important;
+    top: 50% !important;
+    left: clamp(1rem, 4vw, 5rem) !important;
+    z-index: 1 !important;
+    width: max-content !important;
+    max-width: min(48vw, 32rem) !important;
+    margin: 0 !important;
+    transform: translateY(-50%) !important;
+  }
+  body header.topbar.menu-page-topbar .topbar-actions {
+    position: absolute !important;
+    top: 50% !important;
+    right: clamp(1rem, 3vw, 3rem) !important;
+    margin: 0 !important;
+    transform: translateY(-50%) !important;
+  }
+}

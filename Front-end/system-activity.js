@@ -39,7 +39,7 @@ if (languageButton) {
 }
 
 const activities = [
-  { title: "History · Infirmary Visit", description: { th: "ประวัติการเข้าห้องพยาบาล", en: "Infirmary visit history" }, image: "6.png", href: "./infirmary-visit-history.html", tone: "orange", storageKeys: ["fms-infirmary-visits"], filter: (record) => ["normal", "refer"].includes(record.status) },
+  { title: "History · Infirmary Visit", description: { th: "ประวัติการเข้าห้องพยาบาล", en: "Infirmary visit history" }, image: "6.png", href: "./infirmary-visit-history.html", tone: "orange", storageKeys: ["fms-infirmary-visits", "fms-infirmary-history"], filter: (record, key) => key === "fms-infirmary-history" ? ["normal", "refer", undefined].includes(record.status) : ["normal", "refer"].includes(record.status), deduplicate: true },
   { title: "History · Stock", description: { th: "ประวัติคลังยาและเวชภัณฑ์", en: "Medicine inventory history" }, image: "7.png", href: "./history-stock.html", tone: "orange", storageKeys: ["fms-stock-records", "fms-infirmary-visits"], filter: (record, key) => key !== "fms-infirmary-visits" || Boolean(record.medicine && !["เลือกยา", "select medicine"].includes(String(record.medicine).toLocaleLowerCase())) },
   { title: "History · Catalog", description: { th: "ประวัติการสั่งซื้อสินค้า", en: "Catalog order history" }, image: "8.png", href: "./history-catalog.html", tone: "orange", storageKeys: ["fms-history-catalog-orders"] },
   { title: "History · Borrow and Return", description: { th: "ประวัติการยืม–คืน", en: "Borrow and return history" }, image: "9.png", href: "./borrow-return-history.html", tone: "orange", storageKeys: ["fms-borrow-return-records", "fms-history-borrow-return"] },
@@ -62,12 +62,15 @@ function getActivitySummary(activity) {
   const records = activity.storageKeys.flatMap((key) => readRecords(key)
     .filter((record) => !activity.filter || activity.filter(record, key))
     .map((record) => ({ record, key })));
-  const latest = records
+  const summaryRecords = activity.deduplicate
+    ? [...new Map(records.map(({ record, key }, index) => [record.id || record.createdAt || `${key}:${index}`, { record, key }])).values()]
+    : records;
+  const latest = summaryRecords
     .map(({ record }) => record.createdAt || record.updatedAt || record.date || record.borrowDate || record.orderDate || record.completedAt)
     .map((value) => new Date(value))
     .filter((date) => !Number.isNaN(date.getTime()))
     .sort((a, b) => b - a)[0];
-  return { count: records.length, latest };
+  return { count: summaryRecords.length, latest };
 }
 
 function formatActivityDescription(activity) {
