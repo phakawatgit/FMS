@@ -1,12 +1,20 @@
 const express = require("express");
 const databaseRouter = require("./database");
 const prisma = require("../lib/prisma");
+const { parseNumericId } = require("../lib/numeric-id");
 const authRouter = require("./auth");
 const catalogRouter = require("./catalog");
 const borrowRouter = require("./borrow");
 const { requireRole } = require("../middleware/firebase-session");
 
 const router = express.Router();
+const adminBlockedFeatureKeys = new Set([
+  "fms-stock-records",
+  "fms-infirmary-visits", "fms-infirmary-history",
+  "fms-local-duty-records", "fms-duty-profiles",
+  "fms-borrow-products", "fms-borrow-form", "fms-borrow-return-records",
+  "fms-history-borrow-return", "fms-borrow-return-old-data-cleared-v2",
+]);
 
 router.use("/database", databaseRouter);
 router.use("/auth", authRouter);
@@ -100,7 +108,7 @@ router.get("/dashboard/data", async (req, res) => {
 router.get("/overview", async (_req, res) => {
   try {
     const [users, dutyShifts] = await Promise.all([
-      prisma.user.count(),
+      prisma.user.count({ where: { isActive: true } }),
       prisma.dutyShift.count(),
     ]);
 
@@ -123,16 +131,6 @@ router.get("/overview", async (_req, res) => {
   }
 });
 
-router.get("/nurses", async (_req, res) => {
-  try {
-    const nurses = await prisma.nurse.findMany({ orderBy: [{ updatedAt: "desc" }, { fullName: "asc" }] });
-    return res.json({ success: true, data: nurses });
-  } catch (error) {
-    console.error("Nurse list read failed:", error.message);
-    return res.status(503).json({ success: false, message: "อ่านรายชื่อพยาบาลไม่สำเร็จ" });
-  }
-});
-
 router.get("/users", requireRole("ADMIN"), async (_req, res) => {
   try {
     const users = await prisma.user.findMany({
@@ -147,9 +145,11 @@ router.get("/users", requireRole("ADMIN"), async (_req, res) => {
 });
 
 router.patch("/users/:id/role", requireRole("ADMIN"), async (req, res) => {
+  const userId = parseNumericId(req.params.id);
+  if (!userId) return res.status(400).json({ success: false, message: "User ID is invalid" });
   const role = String(req.body?.role || "").toUpperCase();
-  if (!["ADMIN", "NURSE"].includes(role)) {
-    return res.status(400).json({ success: false, message: "Role must be ADMIN or NURSE" });
+  if (!["ADMIN", "NURSE", "VISITOR"].includes(role)) {
+    return res.status(400).json({ success: false, message: "Role must be ADMIN, NURSE, or VISITOR" });
   }
   try {
     const result = await prisma.$transaction(async (tx) => {
@@ -157,7 +157,7 @@ router.patch("/users/:id/role", requireRole("ADMIN"), async (req, res) => {
       // Run the void-returning PostgreSQL lock inside a DO block so Prisma does not
       // attempt to deserialize it as a query result.
       await tx.$executeRaw`DO $$ BEGIN PERFORM pg_advisory_xact_lock(70824119); END $$`;
-      const existing = await tx.user.findUnique({ where: { id: req.params.id }, select: { id: true, role: true, isActive: true } });
+      const existing = await tx.user.findUnique({ where: { id: userId }, select: { id: true, role: true, isActive: true } });
       if (!existing) return { status: 404 };
       if (existing.role === "ADMIN" && existing.isActive && role !== "ADMIN") {
         const adminCount = await tx.user.count({ where: { role: "ADMIN", isActive: true } });
@@ -186,7 +186,7 @@ function serializeDutyShift(record) {
   const lightness = (colorNumber - 1) % 5 === 0 ? 70 : 78;
   return {
     id: record.id,
-    uid: record.userId,
+    uid: record.user?.firebaseUid || String(record.userId),
     email: record.user?.email || "",
     nurseName: `${record.firstName} ${record.lastName}`.trim(),
     firstName: record.firstName,
@@ -226,12 +226,13 @@ async function attachDutyResponsibility(records) {
   if (!dateKeys.length) return records;
   const shifts = await prisma.dutyShift.findMany({
     where: { date: { in: dateKeys.map(parseDutyDate) } },
-    include: { user: { select: { email: true } } },
+    include: { user: { select: { email: true, firebaseUid: true } } },
   });
   const shiftsByPersonAndDate = new Map();
   for (const shift of shifts) {
     const date = shift.date.toISOString().slice(0, 10);
-    shiftsByPersonAndDate.set(`${date}:${shift.userId.toLowerCase()}`, shift);
+    shiftsByPersonAndDate.set(`${date}:${String(shift.userId).toLowerCase()}`, shift);
+    if (shift.user?.firebaseUid) shiftsByPersonAndDate.set(`${date}:${shift.user.firebaseUid.toLowerCase()}`, shift);
     if (shift.user?.email) shiftsByPersonAndDate.set(`${date}:${shift.user.email.toLowerCase()}`, shift);
   }
   return records.map((record) => {
@@ -343,7 +344,7 @@ function mergeDutyShiftRecords(rows, legacyRecords) {
 router.get("/duty-shifts", async (_req, res) => {
   try {
     const [rows, legacy] = await Promise.all([
-      prisma.dutyShift.findMany({ include: { user: { select: { email: true } } }, orderBy: [{ updatedAt: "desc" }, { date: "desc" }, { createdAt: "desc" }] }),
+      prisma.dutyShift.findMany({ include: { user: { select: { email: true, firebaseUid: true } } }, orderBy: [{ updatedAt: "desc" }, { date: "desc" }, { createdAt: "desc" }] }),
       prisma.legacyStorage.findUnique({ where: { key: "fms-local-duty-records" }, select: { value: true } }),
     ]);
     return res.json({ success: true, data: mergeDutyShiftRecords(rows, legacy?.value) });
@@ -353,7 +354,7 @@ router.get("/duty-shifts", async (_req, res) => {
   }
 });
 
-router.post("/duty-shifts", requireRole("ADMIN", "NURSE"), async (req, res) => {
+router.post("/duty-shifts", requireRole("NURSE"), async (req, res) => {
   const records = Array.isArray(req.body?.records) ? req.body.records : [];
   if (records.length > 1000) return res.status(400).json({ success: false, message: "Too many duty shifts in one request" });
   const latestByDate = new Map();
@@ -383,7 +384,7 @@ router.post("/duty-shifts", requireRole("ADMIN", "NURSE"), async (req, res) => {
         if (colorOwner) throw Object.assign(new Error("This color is already assigned on that date"), { httpStatus: 409 });
         await tx.dutyShift.upsert({
           where: { userId_date: { userId: req.auth.userId, date: record.date } },
-          create: { id: require("node:crypto").randomUUID(), ...record, userId: req.auth.userId },
+          create: { ...record, userId: req.auth.userId },
           update: { color: record.color, firstName: record.firstName, lastName: record.lastName, nickname: record.nickname, affiliation: record.affiliation },
         });
       }
@@ -404,7 +405,7 @@ router.post("/duty-shifts", requireRole("ADMIN", "NURSE"), async (req, res) => {
         const remaining = legacy.value.filter((record) => !belongsToAuthenticatedUser(record, req));
         await tx.legacyStorage.upsert({ where: { key: "fms-local-duty-records" }, create: { key: "fms-local-duty-records", value: remaining }, update: { value: remaining } });
       }
-      return tx.dutyShift.findMany({ include: { user: { select: { email: true } } }, orderBy: [{ updatedAt: "desc" }, { date: "desc" }, { createdAt: "desc" }] });
+      return tx.dutyShift.findMany({ include: { user: { select: { email: true, firebaseUid: true } } }, orderBy: [{ updatedAt: "desc" }, { date: "desc" }, { createdAt: "desc" }] });
     }, { maxWait: 10_000, timeout: 30_000 });
     const legacy = await prisma.legacyStorage.findUnique({ where: { key: "fms-local-duty-records" }, select: { value: true } });
     return res.json({ success: true, data: mergeDutyShiftRecords(saved, legacy?.value) });
@@ -415,7 +416,9 @@ router.post("/duty-shifts", requireRole("ADMIN", "NURSE"), async (req, res) => {
   }
 });
 
-router.put("/duty-shifts/:id", requireRole("ADMIN", "NURSE"), async (req, res) => {
+router.put("/duty-shifts/:id", requireRole("NURSE"), async (req, res) => {
+  const shiftId = parseNumericId(req.params.id);
+  if (!shiftId) return res.status(400).json({ success: false, message: "Duty shift ID is invalid" });
   const date = parseDutyDate(req.body?.date);
   const color = String(req.body?.colorId || "");
   if (!date || !/^color-(?:[1-9]|[1-4]\d|50)$/.test(color)) {
@@ -423,12 +426,12 @@ router.put("/duty-shifts/:id", requireRole("ADMIN", "NURSE"), async (req, res) =
   }
   try {
     const updated = await prisma.$transaction(async (tx) => {
-      const current = await tx.dutyShift.findUnique({ where: { id: req.params.id }, include: { user: { select: { email: true } } } });
+      const current = await tx.dutyShift.findUnique({ where: { id: shiftId }, include: { user: { select: { email: true, firebaseUid: true } } } });
       if (!current) throw Object.assign(new Error("Duty shift not found"), { httpStatus: 404 });
       if (req.auth.role !== "ADMIN" && current.userId !== req.auth.userId) {
         throw Object.assign(new Error("You can only edit your own duty shifts"), { httpStatus: 403 });
       }
-      const record = await tx.dutyShift.update({ where: { id: current.id }, data: { date, color }, include: { user: { select: { email: true } } } });
+      const record = await tx.dutyShift.update({ where: { id: current.id }, data: { date, color }, include: { user: { select: { email: true, firebaseUid: true } } } });
       const legacy = await tx.legacyStorage.findUnique({ where: { key: "fms-local-duty-records" }, select: { value: true } });
       if (Array.isArray(legacy?.value)) {
         const oldDate = current.date.toISOString().slice(0, 10);
@@ -437,7 +440,7 @@ router.put("/duty-shifts/:id", requireRole("ADMIN", "NURSE"), async (req, res) =
           if (item?.date !== oldDate) return true;
           const itemUid = String(item?.uid || "");
           const itemEmail = String(item?.email || item?.userEmail || item?.accountEmail || "").trim().toLowerCase();
-          return itemUid !== current.userId && (!ownerEmail || itemEmail !== ownerEmail);
+          return itemUid !== String(current.user?.firebaseUid || current.userId) && (!ownerEmail || itemEmail !== ownerEmail);
         });
         await tx.legacyStorage.upsert({ where: { key: "fms-local-duty-records" }, create: { key: "fms-local-duty-records", value: remaining }, update: { value: remaining } });
       }
@@ -452,12 +455,14 @@ router.put("/duty-shifts/:id", requireRole("ADMIN", "NURSE"), async (req, res) =
   }
 });
 
-router.delete("/duty-shifts/:id", requireRole("ADMIN", "NURSE"), async (req, res) => {
+router.delete("/duty-shifts/:id", requireRole("NURSE"), async (req, res) => {
+  const shiftId = parseNumericId(req.params.id);
+  if (!shiftId) return res.status(400).json({ success: false, message: "Duty shift ID is invalid" });
   try {
     await prisma.$transaction(async (tx) => {
       const current = await tx.dutyShift.findUnique({
-        where: { id: req.params.id },
-        include: { user: { select: { email: true } } },
+        where: { id: shiftId },
+        include: { user: { select: { email: true, firebaseUid: true } } },
       });
       if (!current) throw Object.assign(new Error("Duty shift not found"), { httpStatus: 404 });
       if (req.auth.role !== "ADMIN" && current.userId !== req.auth.userId) {
@@ -473,7 +478,7 @@ router.delete("/duty-shifts/:id", requireRole("ADMIN", "NURSE"), async (req, res
           if (item?.date !== date) return true;
           const itemUid = String(item?.uid || "");
           const itemEmail = String(item?.email || item?.userEmail || item?.accountEmail || "").trim().toLowerCase();
-          return itemUid !== current.userId && (!ownerEmail || itemEmail !== ownerEmail);
+          return itemUid !== String(current.user?.firebaseUid || current.userId) && (!ownerEmail || itemEmail !== ownerEmail);
         });
         await tx.legacyStorage.upsert({
           where: { key: "fms-local-duty-records" },
@@ -490,13 +495,6 @@ router.delete("/duty-shifts/:id", requireRole("ADMIN", "NURSE"), async (req, res
   }
 });
 
-function normalizeNurseName(value) {
-  return String(value || "")
-    .trim()
-    .replace(/^(?:นางสาว|น\.ส\.|นาง|นาย)\s*/, "")
-    .replace(/\s+/g, " ");
-}
-
 function normalizePatientVisitorType(value) {
   const normalized = String(value || "").trim().toLocaleLowerCase();
   if (normalized === "student") return "บุคคลภายใน";
@@ -504,42 +502,30 @@ function normalizePatientVisitorType(value) {
   return value || null;
 }
 
-router.post("/nurses", requireRole("ADMIN", "NURSE"), async (req, res) => {
+router.put("/users/profile", requireRole("ADMIN", "NURSE"), async (req, res) => {
   const firstName = String(req.body?.firstName || "").trim();
   const lastName = String(req.body?.lastName || "").trim();
   const nickname = String(req.body?.nickname || "").trim();
   const affiliation = String(req.body?.affiliation || "").trim();
   if (!firstName || !lastName || firstName.length > 120 || lastName.length > 120 || nickname.length > 120 || affiliation.length > 255) {
-    return res.status(400).json({ success: false, message: "ข้อมูลพยาบาลไม่ถูกต้อง" });
+    return res.status(400).json({ success: false, message: "User profile data is invalid" });
   }
 
-  const fullName = `${firstName} ${lastName}`;
   try {
-    const knownNurses = await prisma.nurse.findMany({ select: { fullName: true } });
-    const canonicalNurse = knownNurses.find((nurse) => normalizeNurseName(nurse.fullName) === normalizeNurseName(fullName));
-    const canonicalFullName = canonicalNurse?.fullName ?? fullName;
-    const [nurse] = await prisma.$transaction([
-      prisma.nurse.upsert({
-        where: { fullName: canonicalFullName },
-        create: { fullName: canonicalFullName, nickname: nickname || null, affiliation: affiliation || null },
-        update: { nickname: nickname || null, ...(affiliation ? { affiliation } : {}) },
-      }),
-      prisma.user.update({
-        where: { id: req.auth.userId },
-        data: { name: fullName, firstName, lastName, nickname: nickname || null },
-      }),
-    ]);
-    return res.json({ success: true, data: nurse });
+    const user = await prisma.user.update({
+      where: { id: req.auth.userId },
+      data: { name: `${firstName} ${lastName}`, firstName, lastName, nickname: nickname || null, affiliation: affiliation || null },
+      select: { id: true, email: true, name: true, firstName: true, lastName: true, nickname: true, affiliation: true, role: true },
+    });
+    return res.json({ success: true, data: user });
   } catch (error) {
-    console.error("Nurse upsert failed:", error.message);
-    return res.status(503).json({ success: false, message: "บันทึกข้อมูลพยาบาลไม่สำเร็จ" });
+    console.error("User profile update failed:", error.message);
+    return res.status(503).json({ success: false, message: "User profile could not be saved" });
   }
 });
-
-// Persist the legacy infirmary form as patient and visit rows without requiring
-// a login or nurse account. Keep the legacy list in the same transaction for
-// the existing history pages.
-router.post("/infirmary-visits", requireRole("ADMIN", "NURSE"), async (req, res) => {
+// Persist the infirmary form for authorized nursing staff and keep its legacy
+// list synchronized for the existing history pages.
+router.post("/infirmary-visits", requireRole("NURSE"), async (req, res) => {
   const input = req.body?.record;
   if (!input || typeof input !== "object" || Array.isArray(input)) {
     return res.status(400).json({ success: false, message: "ข้อมูลผู้ป่วยไม่ถูกต้อง" });
@@ -696,7 +682,7 @@ router.post("/infirmary-visits", requireRole("ADMIN", "NURSE"), async (req, res)
         if (matches.length > 1) throw Object.assign(new Error("Catalog medicine name is ambiguous"), { httpStatus: 409 });
         const catalogItem = matches[0];
         resolvedMedications.push({
-          catalogId: catalogItem.id,
+          catalogRefCode: catalogItem.code,
           catalogCode: catalogItem.code,
           medicineName: catalogItem.name,
           unit: catalogItem.unit,
@@ -720,14 +706,14 @@ router.post("/infirmary-visits", requireRole("ADMIN", "NURSE"), async (req, res)
       if (!existingMedicationRows.length) {
         for (const medication of resolvedMedications) {
           const updated = await tx.catalog.updateMany({
-            where: { id: medication.catalogId, remaining: { gte: medication.quantity } },
+            where: { code: medication.catalogRefCode, remaining: { gte: medication.quantity } },
             data: { used: { increment: medication.quantity }, remaining: { decrement: medication.quantity } },
           });
           if (updated.count !== 1) throw Object.assign(new Error("Insufficient catalog stock"), { httpStatus: 409 });
-          const afterDispensing = await tx.catalog.findUnique({ where: { id: medication.catalogId }, select: { id: true, total: true, remaining: true } });
+          const afterDispensing = await tx.catalog.findUnique({ where: { code: medication.catalogRefCode }, select: { total: true, remaining: true } });
           const lowStockLimit = Math.max(1, Math.ceil(afterDispensing.total * 0.2));
           await tx.catalog.update({
-            where: { id: medication.catalogId },
+            where: { code: medication.catalogRefCode },
             data: { status: afterDispensing.remaining === 0 ? "หมด" : afterDispensing.remaining <= lowStockLimit ? "ใกล้หมด" : "ปกติ" },
           });
         }
@@ -761,7 +747,7 @@ router.post("/infirmary-visits", requireRole("ADMIN", "NURSE"), async (req, res)
         await tx.patientMedication.createMany({
           data: resolvedMedications.map((medication) => ({
             patientId: patient.id,
-            catalogId: medication.catalogId,
+            catalogRefCode: medication.catalogRefCode,
             visitId: sourceRecordId,
             catalogCode: medication.catalogCode,
             medicineName: medication.medicineName,
@@ -831,6 +817,9 @@ router.post("/legacy-storage/bulk", requireRole("ADMIN"), async (req, res) => {
   const entries = Object.entries(data)
     .filter(([key]) => String(key).trim() && String(key).length <= 120)
     .map(([key, value]) => [String(key).trim(), value]);
+  if (entries.some(([key]) => adminBlockedFeatureKeys.has(key))) {
+    return res.status(403).json({ success: false, message: "Administrators cannot modify infirmary, duty, stock, or borrow records" });
+  }
 
   try {
     await prisma.$transaction(async (tx) => {
@@ -854,6 +843,9 @@ router.post("/legacy-storage/bulk", requireRole("ADMIN"), async (req, res) => {
 
 router.put("/legacy-storage/:key", async (req, res) => {
   const key = String(req.params.key || "").trim();
+  if (req.auth.role === "ADMIN" && adminBlockedFeatureKeys.has(key)) {
+    return res.status(403).json({ success: false, message: "Administrators cannot modify infirmary, duty, stock, or borrow records" });
+  }
   if (req.auth.role !== "ADMIN" && !["fms-infirmary-visits", "fms-infirmary-history", "fms-local-duty-records", "fms-duty-profiles", "fms-catalog-cart", "fms-history-catalog-orders", "fms-order-title", "fms-stock-records", "fms-borrow-products", "fms-borrow-form", "fms-borrow-return-records", "fms-history-borrow-return", "fms-borrow-return-old-data-cleared-v2"].includes(key)) {
     return res.status(403).json({ success: false, message: "Insufficient permission" });
   }
@@ -885,22 +877,25 @@ router.put("/legacy-storage/:key", async (req, res) => {
     }
     if (key === "fms-infirmary-visits") {
       if (!Array.isArray(value)) return res.status(400).json({ success: false, message: "Infirmary visits must be a list" });
+      const previous = await prisma.legacyStorage.findUnique({ where: { key }, select: { value: true } });
+      const previousByVisit = new Map((Array.isArray(previous?.value) ? previous.value : []).map((visit) => [String(visit?.createdAt || visit?.visitDate || ""), visit]));
       for (const visit of value) {
         if (!visit || typeof visit !== "object") continue;
+        const old = previousByVisit.get(String(visit.createdAt || visit.visitDate || ""));
         const age = String(visit.age ?? "").trim();
-        if (age && (!/^\d+$/.test(age) || Number(age) > 150)) {
+        const previousAge = String(old?.age ?? "").trim();
+        if (age && (!/^\d+$/.test(age) || Number(age) > 150) && (!old || age !== previousAge)) {
           return res.status(400).json({ success: false, message: "Age must be a whole number from 0 to 150" });
         }
         for (const field of ["weight", "height"]) {
           const measurement = String(visit[field] ?? "").trim();
-          if (measurement && !/^\d{1,5}(?:\.\d{1,2})?$/.test(measurement)) {
+          const previousMeasurement = String(old?.[field] ?? "").trim();
+          if (measurement && !/^\d{1,5}(?:\.\d{1,2})?$/.test(measurement) && (!old || measurement !== previousMeasurement)) {
             return res.status(400).json({ success: false, message: `${field} must be a number with up to two decimal places` });
           }
         }
       }
       const row = await prisma.$transaction(async (tx) => {
-        const previous = await tx.legacyStorage.findUnique({ where: { key }, select: { value: true } });
-        const previousByVisit = new Map((Array.isArray(previous?.value) ? previous.value : []).map((visit) => [String(visit?.createdAt || visit?.visitDate || ""), visit]));
         const now = new Date().toISOString();
         value = value.map((visit) => {
           if (!visit || typeof visit !== "object" || Array.isArray(visit)) return visit;
@@ -933,6 +928,9 @@ router.put("/legacy-storage/:key", async (req, res) => {
 
 router.delete("/legacy-storage/:key", async (req, res) => {
   const key = String(req.params.key || "").trim();
+  if (req.auth.role === "ADMIN" && adminBlockedFeatureKeys.has(key)) {
+    return res.status(403).json({ success: false, message: "Administrators cannot modify infirmary, duty, stock, or borrow records" });
+  }
   const staffDeletableKeys = new Set(["fms-borrow-products", "fms-borrow-return-records", "fms-history-borrow-return", "fms-borrow-return-old-data-cleared-v2"]);
   if (req.auth.role !== "ADMIN" && !staffDeletableKeys.has(key)) {
     return res.status(403).json({ success: false, message: "Insufficient permission" });

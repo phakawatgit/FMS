@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider   = "prisma-client-js"
   engineType = "binary"
 }
 
@@ -17,17 +17,19 @@ enum BorrowStatus {
 enum Role {
   ADMIN
   NURSE
+  VISITOR
 }
 
 model User {
-  id                  String      @id
+  id                  Int         @id @default(autoincrement())
   email               String      @unique
   name                String
   firstName           String?     @map("first_name")
   lastName            String?     @map("last_name")
   nickname            String?     @db.VarChar(120)
+  affiliation         String?     @db.VarChar(255)
   password            String?
-  role                Role        @default(NURSE)
+  role                Role        @default(VISITOR)
   firebaseUid         String?     @unique @map("firebase_uid")
   isActive            Boolean     @default(true) @map("is_active")
   createdAt           DateTime    @default(now())
@@ -39,14 +41,14 @@ model User {
 }
 
 model DutyShift {
-  id          String   @id
+  id          Int      @id @default(autoincrement())
   date        DateTime
   color       String
   firstName   String
   lastName    String
   nickname    String?
   affiliation String?
-  userId      String
+  userId      Int
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now()) @updatedAt
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -57,7 +59,7 @@ model DutyShift {
 }
 
 model Patient {
-  id                String              @id @default(uuid()) @db.Uuid
+  id                Int                 @id @default(autoincrement())
   studentId         String?             @map("patient_number") @db.VarChar(80)
   name              String              @db.VarChar(200)
   firstName         String?             @map("first_name") @db.VarChar(100)
@@ -80,8 +82,8 @@ model Patient {
   hospitalName      String?             @map("hospital_name") @db.VarChar(200)
   visitedAt         DateTime?           @map("visited_at") @db.Timestamptz(6)
   infirmaryHistory  Json?               @map("infirmary_history")
-  createdById       String?             @map("created_by_id")
-  responsibleUserId String?             @map("responsible_user_id")
+  createdById       Int?                @map("created_by_id")
+  responsibleUserId Int?                @map("responsible_user_id")
   createdAt         DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt         DateTime            @updatedAt @map("updated_at") @db.Timestamptz(6)
   medications       PatientMedication[]
@@ -96,9 +98,9 @@ model Patient {
 }
 
 model PatientMedication {
-  id              String   @id @default(uuid()) @db.Uuid
-  patientId       String   @map("patient_id") @db.Uuid
-  catalogId       String?  @map("catalog_id") @db.Uuid
+  id              Int      @id @default(autoincrement())
+  patientId       Int      @map("patient_id")
+  catalogRefCode  String?  @map("catalog_ref_code") @db.VarChar(80)
   visitId         String   @map("visit_id") @db.VarChar(120)
   catalogCode     String   @map("catalog_code") @db.VarChar(80)
   medicineName    String   @map("medicine_name") @db.VarChar(200)
@@ -107,7 +109,7 @@ model PatientMedication {
   dispensedAt     DateTime @default(now()) @map("dispensed_at") @db.Timestamptz(6)
 
   patient Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  catalog Catalog? @relation(fields: [catalogId], references: [id], onDelete: SetNull)
+  catalog Catalog? @relation(fields: [catalogRefCode], references: [code], onDelete: SetNull)
 
   @@unique([visitId, catalogCode])
   @@index([patientId, dispensedAt])
@@ -116,8 +118,7 @@ model PatientMedication {
 }
 
 model Catalog {
-  id                 String              @id @default(uuid()) @db.Uuid
-  code               String              @unique @db.VarChar(80)
+  code               String              @id @db.VarChar(80)
   name               String              @db.VarChar(200)
   productName        String?             @map("product_name") @db.VarChar(200)
   genericName        String?             @map("generic_name") @db.VarChar(200)
@@ -149,9 +150,9 @@ model Catalog {
 }
 
 model BorrowItem {
-  id               String         @id @default(uuid()) @db.Uuid
-  borrowRecordId   String         @map("borrow_record_id") @db.Uuid
-  catalogId        String?        @map("catalog_id") @db.Uuid
+  id               Int            @id @default(autoincrement())
+  borrowRecordId   Int            @map("borrow_record_id")
+  catalogRefCode   String?        @map("catalog_ref_code") @db.VarChar(80)
   catalogCode      String         @map("catalog_code") @db.VarChar(80)
   itemName         String         @map("item_name") @db.VarChar(200)
   unit             String         @db.VarChar(40)
@@ -159,18 +160,18 @@ model BorrowItem {
   quantityReturned Int            @default(0) @map("quantity_returned")
   createdAt        DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
   borrowRecord     BorrowRecord   @relation(fields: [borrowRecordId], references: [id], onDelete: Cascade)
-  catalog          Catalog?       @relation(fields: [catalogId], references: [id], onDelete: SetNull)
+  catalog          Catalog?       @relation(fields: [catalogRefCode], references: [code], onDelete: SetNull)
   returns          BorrowReturn[]
 
   @@unique([borrowRecordId, catalogCode])
-  @@index([catalogId])
+  @@index([catalogRefCode])
   @@index([catalogCode])
   @@map("borrow_items")
 }
 
 model BorrowReturn {
-  id           String     @id @default(uuid()) @db.Uuid
-  borrowItemId String     @map("borrow_item_id") @db.Uuid
+  id           Int        @id @default(autoincrement())
+  borrowItemId Int        @map("borrow_item_id")
   quantity     Int
   condition    String?    @db.VarChar(120)
   note         String?    @db.Text
@@ -182,25 +183,25 @@ model BorrowReturn {
 }
 
 model BorrowRecord {
-  id           String       @id @default(uuid()) @db.Uuid
-  borrowerName String       @map("borrower_name") @db.VarChar(200)
-  nickname     String?      @db.VarChar(120)
-  studentId    String?      @map("student_id") @db.VarChar(80)
-  branch       String?      @db.VarChar(120)
-  phone        String?      @db.VarChar(40)
-  roles        Json
-  borrowTypes  Json         @map("borrow_types")
-  activity     String?      @db.Text
-  reason       String?      @db.Text
-  borrowedAt   DateTime     @default(now()) @map("borrowed_at") @db.Timestamptz(6)
-  dueAt        DateTime     @map("due_at") @db.Date
-  originalDueAt DateTime?   @map("original_due_at") @db.Date
-  extendedAt   DateTime?    @map("extended_at") @db.Timestamptz(6)
-  returnedAt   DateTime?    @map("returned_at") @db.Timestamptz(6)
-  status       BorrowStatus @default(BORROWED)
-  createdAt    DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt    DateTime     @updatedAt @map("updated_at") @db.Timestamptz(6)
-  items        BorrowItem[]
+  id            Int          @id @default(autoincrement())
+  borrowerName  String       @map("borrower_name") @db.VarChar(200)
+  nickname      String?      @db.VarChar(120)
+  studentId     String?      @map("student_id") @db.VarChar(80)
+  branch        String?      @db.VarChar(120)
+  phone         String?      @db.VarChar(40)
+  roles         Json
+  borrowTypes   Json         @map("borrow_types")
+  activity      String?      @db.Text
+  reason        String?      @db.Text
+  borrowedAt    DateTime     @default(now()) @map("borrowed_at") @db.Timestamptz(6)
+  dueAt         DateTime     @map("due_at") @db.Date
+  originalDueAt DateTime?    @map("original_due_at") @db.Date
+  extendedAt    DateTime?    @map("extended_at") @db.Timestamptz(6)
+  returnedAt    DateTime?    @map("returned_at") @db.Timestamptz(6)
+  status        BorrowStatus @default(BORROWED)
+  createdAt     DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime     @updatedAt @map("updated_at") @db.Timestamptz(6)
+  items         BorrowItem[]
 
   @@index([status, dueAt])
   @@index([studentId, borrowedAt])
@@ -209,7 +210,7 @@ model BorrowRecord {
 }
 
 model PasswordResetOtp {
-  id                  String    @id @default(uuid())
+  id                  Int       @id @default(autoincrement())
   email               String
   firebaseUid         String
   codeHash            String
@@ -224,16 +225,9 @@ model PasswordResetOtp {
   @@index([resetTokenHash])
 }
 
-model Nurse {
-  fullName    String   @id @db.VarChar(255)
-  nickname    String?  @db.VarChar(120)
-  affiliation String?  @db.VarChar(255)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
 model LegacyStorage {
-  key       String   @id
+  id        Int      @id @default(autoincrement())
+  key       String   @unique
   value     Json
   updatedAt DateTime @updatedAt
 }

@@ -93,6 +93,20 @@ medicationList.addEventListener("click", (event) => {
   event.target.closest(".medication-row").remove();
   if (!medicationList.children.length) medicationList.append(createMedicationRow());
 });
+const isVisitorAccount = (() => {
+  try { return JSON.parse(sessionStorage.getItem("fms-admin-session") || "null")?.role === "visitor"; }
+  catch { return false; }
+})();
+if (isVisitorAccount) {
+  form.querySelectorAll("input, select, textarea, button").forEach((control) => { control.disabled = true; });
+  message.textContent = language === "th" ? "บัญชี Visitor ดูข้อมูลได้อย่างเดียว ไม่สามารถกรอกหรือบันทึกข้อมูลคนไข้ได้" : "Visitor accounts can view records but cannot enter or save patient data.";
+  message.style.color = "#555";
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+  }, true);
+}
+
 // Save the visit and all medication lines in one database transaction.
 form.addEventListener("submit", async (event) => {
   event.preventDefault();

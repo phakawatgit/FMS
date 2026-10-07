@@ -137,20 +137,6 @@ describe("core API routes", () => {
     expect(res.body.database).toBe("disconnected");
   });
 
-  it("lists nurses and reports database read failures", async () => {
-    const list = vi.spyOn(prisma.nurse, "findMany").mockResolvedValue([{ id: "n1", fullName: "A Nurse" }]);
-    const res = response();
-    await handler("get", "/nurses")({}, res);
-    expect(res.body.data).toEqual([{ id: "n1", fullName: "A Nurse" }]);
-    expect(list).toHaveBeenCalledWith({ orderBy: { fullName: "asc" } });
-
-    vi.spyOn(console, "error").mockImplementation(() => {});
-    list.mockRejectedValue(new Error("database unavailable"));
-    const failed = response();
-    await handler("get", "/nurses")({}, failed);
-    expect(failed.statusCode).toBe(503);
-  });
-
   it("lists user accounts and converts user query failures to service unavailable", async () => {
     const list = vi.spyOn(prisma.user, "findMany").mockResolvedValue([{ id: "u1", role: "NURSE" }]);
     const res = response();
@@ -398,29 +384,21 @@ describe("core API routes", () => {
     expect(missing.statusCode).toBe(404);
   });
 
-  it("upserts a canonical nurse name and reports nurse list results", async () => {
-    const nurse = { id: "n1", fullName: "Ann Nurse" };
-    vi.spyOn(prisma.nurse, "findMany").mockResolvedValue([{ fullName: "Ann Nurse" }]);
-    const upsert = vi.spyOn(prisma.nurse, "upsert").mockResolvedValue(nurse);
-    vi.spyOn(prisma.user, "update").mockResolvedValue({});
-    vi.spyOn(prisma, "$transaction").mockResolvedValue([nurse, {}]);
+  it("updates the authenticated user profile without maintaining a separate nurse directory", async () => {
+    const user = { id: 1, name: "Ann Nurse", firstName: "Ann", lastName: "Nurse", nickname: "A", affiliation: "FMS" };
+    const update = vi.spyOn(prisma.user, "update").mockResolvedValue(user);
     const saved = response();
-    await handler("post", "/nurses")({ auth: { userId: "u1" }, body: { firstName: " Ann ", lastName: "Nurse", nickname: "A" } }, saved);
-    expect(saved.body.data).toEqual(nurse);
-    expect(upsert).toHaveBeenCalledWith(expect.objectContaining({ where: { fullName: "Ann Nurse" } }));
-
-    vi.spyOn(prisma.nurse, "findMany").mockResolvedValue([nurse]);
-    const listed = response();
-    await handler("get", "/nurses")({}, listed);
-    expect(listed.body.data).toEqual([nurse]);
+    await handler("put", "/users/profile")({ auth: { userId: 1 }, body: { firstName: " Ann ", lastName: "Nurse", nickname: "A", affiliation: "FMS" } }, saved);
+    expect(saved.body.data).toEqual(user);
+    expect(update).toHaveBeenCalledWith(expect.objectContaining({ where: { id: 1 }, data: expect.objectContaining({ name: "Ann Nurse", nickname: "A", affiliation: "FMS" }) }));
   });
 
-  it("rejects incomplete nurse profiles and malformed legacy imports before database writes", async () => {
-    const nurseWrite = vi.spyOn(prisma.nurse, "upsert");
-    const nurseResponse = response();
-    await handler("post", "/nurses")({ body: { firstName: " ", lastName: "Nurse" } }, nurseResponse);
-    expect(nurseResponse.statusCode).toBe(400);
-    expect(nurseWrite).not.toHaveBeenCalled();
+  it("rejects incomplete user profiles and malformed legacy imports before database writes", async () => {
+    const userWrite = vi.spyOn(prisma.user, "update");
+    const profileResponse = response();
+    await handler("put", "/users/profile")({ body: { firstName: " ", lastName: "Nurse" } }, profileResponse);
+    expect(profileResponse.statusCode).toBe(400);
+    expect(userWrite).not.toHaveBeenCalled();
 
     const transaction = vi.spyOn(prisma, "$transaction");
     const bulkResponse = response();

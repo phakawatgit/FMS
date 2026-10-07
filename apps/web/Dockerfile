@@ -7,6 +7,8 @@ COPY apps/web ./apps/web
 COPY Front-end ./apps/web/public/legacy
 WORKDIR /app/apps/web
 ENV NEXT_TELEMETRY_DISABLED=1
+ARG API_PROXY_TARGET=http://localhost:4000
+ENV API_PROXY_TARGET=$API_PROXY_TARGET
 RUN npm run build
 EXPOSE 3000
 CMD ["npm", "start"]

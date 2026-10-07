@@ -4,6 +4,7 @@ const router = express.Router();
 const legacyKey = "fms-stock-records";
 const imageDataPattern = /^data:image\/(jpeg|png|webp);base64,([A-Za-z0-9+/=]+)$/i;
 const textFields = ["name", "productName", "genericName", "category", "form", "size", "unit", "status", "benefit", "symptom", "usage", "warning"];
+const { requireRole } = require("../middleware/firebase-session");
 
 function serialize(row, req) {
   const image = row.imageUrl?.startsWith("/api/")
@@ -114,7 +115,7 @@ router.get("/", async (req, res) => {
 
 // Any signed-in staff member can add a new catalog item. Existing items and
 // stock quantities remain protected by the admin-only full-list update route.
-router.post("/", async (req, res) => {
+router.post("/", requireRole("NURSE"), async (req, res) => {
   try {
     const data = normalize(req.body?.record, req);
     const codeMatch = /^(.*?)(\d+)$/.exec(data.code);
@@ -152,7 +153,7 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.put("/", async (req, res) => {
+router.put("/", requireRole("NURSE"), async (req, res) => {
   try {
     const rows = await syncRecords(req.body?.records, req);
     return res.json({ success: true, data: rows.map((row) => serialize(row, req)) });

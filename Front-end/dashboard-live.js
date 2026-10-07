@@ -1,7 +1,7 @@
 /* Live dashboard aggregates the records saved by the infirmary and stock pages. */
 (() => {
   let databaseDashboard = null;
-  const apiBase = window.FMS_API_URL || `${location.protocol}//${location.hostname}:4000`;
+  const apiBase = window.FMS_API_URL || "";
   async function refreshDatabaseDashboard() {
     try {
       const response = await fetch(`${apiBase}/api/dashboard/data`, { cache: "no-store", credentials: "include" });

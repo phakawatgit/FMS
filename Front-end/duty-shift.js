@@ -11,7 +11,7 @@ const firebaseConfig = {
 };
 
 const DUTY_KEY = "fms-local-duty-records";
-const API_BASE = window.FMS_API_URL || `${location.protocol}//${location.hostname}:4000`;
+const API_BASE = window.FMS_API_URL || "";
 const DUTY_PROFILE_KEY = "fms-duty-profiles";
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -379,8 +379,8 @@ async function saveDuty(event) {
     saveLocalRecord(record);
     savedToDatabase = true;
     const csrf = document.cookie.split(";").map((part) => part.trim()).find((part) => part.startsWith("fms_csrf="))?.slice("fms_csrf=".length) || "";
-    const response = await fetch(`${API_BASE}/api/nurses`, {
-      method: "POST",
+    const response = await fetch(`${API_BASE}/api/users/profile`, {
+      method: "PUT",
       credentials: "include",
       headers: { "Content-Type": "application/json", "X-FMS-CSRF": decodeURIComponent(csrf) },
       body: JSON.stringify({
@@ -390,7 +390,7 @@ async function saveDuty(event) {
         affiliation: record.affiliation,
       }),
     });
-    if (!response.ok) throw new Error("Nurse data could not be saved");
+    if (!response.ok) throw new Error("User profile could not be saved");
   } catch (error) {
     console.error("Nurse data sync failed:", error);
   }

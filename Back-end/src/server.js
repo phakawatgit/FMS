@@ -4,29 +4,16 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
-const prisma = require("./lib/prisma");
 const healthRouter = require("./routes/health");
 const apiRouter = require("./routes/index");
 const { requireCsrfForUnsafeMethods, requireFirebaseSession } = require("./middleware/firebase-session");
 
 const app = express();
-const initialNurseNames = [
-  "นางศิริวรรณ คงบุญแก้ว",
-  "นางสุกัญญา มนธรรมสกุล",
-  "นายณัฐพล นาคบุตร",
-  "น.ส.นารีนุช เพ็ชรเวช",
-  "น.ส.เจนจิรา เกิดกอบ",
-  "น.ส.มนธยา จูบุญส่ง",
-  "น.ส.ปัญญาพร ปิยะวัฒน์",
-  "น.ส.ฤทัยรัตน์ อุ่นนอง",
-  "น.ส.พรพิมล วิเชียรรัตน์",
-  "น.ส.ปริมมา เสาวรส",
-];
-
 app.disable("x-powered-by");
 app.use(helmet());
 const allowedOrigins = new Set([
   process.env.FRONTEND_URL,
+  "https://consent-stinging-abide.ngrok-free.dev",
   "http://localhost:3000",
   "http://localhost:3001",
   "http://127.0.0.1:3000",
@@ -53,7 +40,12 @@ app.get("/", (_req, res) => {
 app.use("/api/health", healthRouter);
 app.use("/api", (req, res, next) => {
   if (req.path.startsWith("/auth/") || req.path === "/database/health") return next();
-  return requireFirebaseSession(req, res, () => requireCsrfForUnsafeMethods(req, res, next));
+  return requireFirebaseSession(req, res, () => {
+    if (req.auth.role === "VISITOR" && !["GET", "HEAD", "OPTIONS"].includes(req.method)) {
+      return res.status(403).json({ success: false, message: "Visitor accounts can only view data" });
+    }
+    return requireCsrfForUnsafeMethods(req, res, next);
+  });
 });
 app.use("/api", apiRouter);
 
@@ -68,15 +60,7 @@ app.use((error, _req, res, _next) => {
 
 function startServer() {
   const port = Number(process.env.PORT || 4000);
-  return prisma.nurse.createMany({
-    data: initialNurseNames.map((fullName) => ({ fullName })),
-    skipDuplicates: true,
-  }).then(() => {
-    return app.listen(port, () => console.log(`FMS API listening on http://localhost:${port}`));
-  }).catch((error) => {
-    console.error("Nurse seed failed:", error);
-    process.exit(1);
-  });
+  return app.listen(port, () => console.log(`FMS API listening on http://localhost:${port}`));
 }
 
 if (require.main === module) startServer();

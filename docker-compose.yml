@@ -47,21 +47,10 @@ services:
     build:
       context: .
       dockerfile: apps/web/Dockerfile
-    environment:
-      NEXT_PUBLIC_API_URL: http://localhost:4000
+      args:
+        API_PROXY_TARGET: http://api:4000
     ports:
       - "3001:3000"
-    depends_on:
-      api:
-        condition: service_healthy
-
-  studio:
-    image: fms-api:local
-    command: ["npx", "prisma", "studio", "--schema", "prisma/schema.prisma", "--hostname", "0.0.0.0", "--port", "5555", "--browser", "none"]
-    environment:
-      DATABASE_URL: postgresql://fms:fms_password@postgres:5432/fms?schema=public
-    ports:
-      - "5555:5555"
     depends_on:
       api:
         condition: service_healthy

@@ -156,7 +156,7 @@ document.querySelectorAll("[data-panel]").forEach((button) => button.addEventLis
   if (button.dataset.panel === "usersPanel") loadUsers();
 }));
 
-const apiBase = window.FMS_API_URL || `${location.protocol}//${location.hostname}:4000`;
+const apiBase = window.FMS_API_URL || "";
 const csrfCookie = () => document.cookie.split(";").map((part) => part.trim()).find((part) => part.startsWith("fms_csrf="))?.slice("fms_csrf=".length) || "";
 async function adminApi(path, options = {}) {
   const headers = { "Content-Type": "application/json", ...(options.headers || {}) };
@@ -174,7 +174,7 @@ async function loadUsers() {
   message.textContent = "";
   try {
     const users = await adminApi("/api/users");
-    rows.innerHTML = users.length ? users.map((user) => `<tr data-user-id="${escapeHtml(user.id)}"><td>${escapeHtml(user.name || "-")}</td><td>${escapeHtml(user.email)}</td><td>${user.role === "ADMIN" ? "Admin" : "Nurse"}</td><td><div class="role-controls"><select aria-label="สิทธิ์ของ ${escapeHtml(user.email)}"><option value="NURSE" ${user.role === "NURSE" ? "selected" : ""}>Nurse</option><option value="ADMIN" ${user.role === "ADMIN" ? "selected" : ""}>Admin</option></select><button type="button" data-save-role>บันทึก</button></div></td></tr>`).join("") : `<tr><td colspan="4" class="empty-table">ยังไม่มีบัญชีผู้ใช้</td></tr>`;
+    rows.innerHTML = users.length ? users.map((user) => `<tr data-user-id="${escapeHtml(user.id)}"><td>${escapeHtml(user.name || "-")}</td><td>${escapeHtml(user.email)}</td><td>${({ ADMIN: "Admin", NURSE: "Nurse", VISITOR: "Visitor" })[user.role] || "Visitor"}</td><td><div class="role-controls"><select aria-label="สิทธิ์ของ ${escapeHtml(user.email)}"><option value="VISITOR" ${user.role === "VISITOR" ? "selected" : ""}>Visitor</option><option value="NURSE" ${user.role === "NURSE" ? "selected" : ""}>Nurse</option><option value="ADMIN" ${user.role === "ADMIN" ? "selected" : ""}>Admin</option></select><button type="button" data-save-role>บันทึก</button></div></td></tr>`).join("") : `<tr><td colspan="4" class="empty-table">ยังไม่มีบัญชีผู้ใช้</td></tr>`;
   } catch (error) {
     rows.innerHTML = `<tr><td colspan="4" class="empty-table">โหลดบัญชีผู้ใช้ไม่สำเร็จ</td></tr>`;
     message.textContent = error.message;

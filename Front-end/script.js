@@ -49,7 +49,7 @@ const resetOtpInput = document.getElementById("resetOtp");
 const newPasswordInput = document.getElementById("newPassword");
 const confirmPasswordInput = document.getElementById("confirmPassword");
 const resetStatus = document.getElementById("resetStatus");
-const API_BASE = window.FMS_API_URL || `${location.protocol}//${location.hostname}:4000`;
+const API_BASE = window.FMS_API_URL || "";
 
 async function establishApiSession(user) {
     try {

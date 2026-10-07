@@ -3,7 +3,6 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 const require = createRequire(import.meta.url);
 const { app, startServer } = require("./server.js");
-const prisma = require("./lib/prisma.js");
 let server;
 
 async function openServer() {
@@ -54,25 +53,11 @@ describe("API server", () => {
     expect(await missingPublicApiRoute.json()).toEqual(missingBody);
   });
 
-  it("seeds nurse names before listening", async () => {
+  it("starts the API without seeding a separate nurse directory", async () => {
     const fakeServer = { listening: true };
-    vi.spyOn(prisma.nurse, "createMany").mockResolvedValue({ count: 10 });
     vi.spyOn(app, "listen").mockImplementation((_port, callback) => { callback(); return fakeServer; });
     vi.spyOn(console, "log").mockImplementation(() => {});
     await expect(startServer()).resolves.toBe(fakeServer);
-    expect(prisma.nurse.createMany).toHaveBeenCalledWith({
-      data: expect.arrayContaining([expect.objectContaining({ fullName: expect.any(String) })]),
-      skipDuplicates: true,
-    });
-    expect(prisma.nurse.createMany.mock.calls[0][0].data).toHaveLength(10);
     expect(app.listen).toHaveBeenCalledOnce();
-  });
-
-  it("exits when nurse seeding fails", async () => {
-    vi.spyOn(console, "error").mockImplementation(() => {});
-    vi.spyOn(process, "exit").mockImplementation(() => undefined);
-    vi.spyOn(prisma.nurse, "createMany").mockRejectedValue(new Error("seed failed"));
-    await expect(startServer()).resolves.toBeUndefined();
-    expect(process.exit).toHaveBeenCalledWith(1);
   });
 });

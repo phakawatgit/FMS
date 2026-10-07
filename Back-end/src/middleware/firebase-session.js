@@ -91,11 +91,10 @@ async function upsertFirebaseUser(firebaseUser) {
 
   const user = await prisma.user.create({
     data: {
-      id: firebaseUser.uid,
       firebaseUid: firebaseUser.uid,
       email,
       name: firebaseUser.displayName || email,
-      role: isConfiguredAdmin ? "ADMIN" : "NURSE",
+      role: isConfiguredAdmin ? "ADMIN" : "VISITOR",
       isActive: true,
     },
   });

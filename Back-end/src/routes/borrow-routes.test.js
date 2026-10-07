@@ -138,7 +138,7 @@ describe("borrow API routes", () => {
 
   it("records partial returns, restores stock and keeps the borrow open", async () => {
     const current = borrowRow({
-      items: [{ id: "borrow-item-1", itemName: "Bandage", catalogCode: "MED-1", catalogId: "item-1", quantityBorrowed: 5, quantityReturned: 0, returns: [] }],
+      items: [{ id: "borrow-item-1", itemName: "Bandage", catalogCode: "MED-1", catalogRefCode: "MED-1", quantityBorrowed: 5, quantityReturned: 0, returns: [] }],
     });
     const afterReturn = borrowRow({
       status: "PARTIALLY_RETURNED",
@@ -224,7 +224,7 @@ describe("borrow API routes", () => {
   });
 
   it("marks a borrow fully returned and rejects return requests for missing or exhausted items", async () => {
-    const current = borrowRow({ items: [{ id: "i1", itemName: "Bandage", catalogCode: "MED-1", catalogId: null, quantityBorrowed: 2, quantityReturned: 0, returns: [] }] });
+    const current = borrowRow({ items: [{ id: "i1", itemName: "Bandage", catalogCode: "MED-1", catalogRefCode: null, quantityBorrowed: 2, quantityReturned: 0, returns: [] }] });
     const after = borrowRow({ items: [{ ...current.items[0], quantityReturned: 2 }] });
     const findUnique = vi.fn().mockResolvedValueOnce(current).mockResolvedValueOnce(after);
     const update = vi.fn().mockResolvedValue(borrowRow({ status: "RETURNED", returnedAt: new Date(), items: after.items }));

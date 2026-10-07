@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  const apiBase = window.FMS_API_URL || `${location.protocol}//${location.hostname}:4000`;
+  const apiBase = window.FMS_API_URL || "";
   const endpoint = `${apiBase}/api/legacy-storage`;
   const normalizedPath = location.pathname.replace(/\/+$/, "").toLowerCase();
   const isLoginPage = normalizedPath === "" || normalizedPath === "/" || normalizedPath.endsWith("/index.html") || normalizedPath.endsWith("/front-end");

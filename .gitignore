@@ -9,4 +9,5 @@ dist/
 *.pyc
 __pycache__/
 postgres_data/
+.backups/
 /apps/web/public/legacy/

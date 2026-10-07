@@ -1,0 +1,208 @@
+FMS: อธิบายฟังก์ชันการเข้าสู่ระบบ
+====================================
+
+เอกสารนี้สรุปเส้นทางการเข้าสู่ระบบและบัญชีผู้ใช้จากโค้ดปัจจุบันของโปรเจกต์
+
+
+1. ไฟล์และส่วนประกอบหลัก
+--------------------------
+
+Front-end/index.html
+  หน้าเข้าสู่ระบบและฟอร์มต่าง ๆ ได้แก่ ล็อกอิน, สมัครบัญชี, ยืนยันอีเมลด้วย OTP,
+  ลืมรหัสผ่าน และตั้งรหัสผ่านใหม่
+
+Front-end/script.js
+  JavaScript ฝั่งหน้าเว็บ เชื่อมต่อ Firebase Authentication และเรียก API ของ FMS
+  จัดการล็อกอินด้วยอีเมล/รหัสผ่าน, Google, OTP, รีเซ็ตรหัสผ่าน และแสดงข้อความสถานะ
+
+Back-end/src/routes/auth.js
+  API สำหรับสร้าง session, ส่งและตรวจ OTP, รีเซ็ตรหัสผ่าน, อ่าน session และ logout
+
+Back-end/src/middleware/firebase-session.js
+  ตรวจ Firebase session cookie, ตรวจสถานะบัญชี, ใส่ข้อมูลผู้ใช้และ role ให้ request,
+  สร้าง/ล้าง cookie และตรวจ CSRF token
+
+Back-end/src/lib/firebase-admin.js
+  เชื่อมต่อ Firebase Admin SDK ที่เซิร์ฟเวอร์ใช้ตรวจ token และจัดการบัญชี Firebase
+
+Back-end/prisma/schema.prisma
+  โครงสร้างบัญชีผู้ใช้ใน PostgreSQL เช่น email, Firebase UID, role และ isActive
+
+
+2. ภาพรวมการล็อกอิน
+--------------------
+
+ผู้ใช้กรอกอีเมลและรหัสผ่าน หรือเลือก Google
+    -> Firebase Authentication ตรวจข้อมูลบัญชี
+    -> หน้าเว็บส่ง Firebase ID token ให้ API ของ FMS
+    -> API ตรวจ token กับ Firebase Admin และตรวจว่าอีเมลยืนยันแล้ว
+    -> API จับคู่/สร้างบัญชีในฐานข้อมูล FMS และอ่าน role
+    -> API สร้าง Firebase session cookie และ CSRF cookie
+    -> หน้าเว็บไปยัง menu.html
+    -> เมื่อเรียก API ข้อมูล จะตรวจ session cookie, สถานะบัญชี และสิทธิ์
+
+Firebase ยืนยันตัวตนว่าเป็นใคร ส่วน FMS เก็บข้อมูลบัญชีภายในและกำหนด role
+การล็อกอินสำเร็จไม่ได้หมายความว่าผู้ใช้มีสิทธิ์ทุกหน้า: API ตรวจ role แยกตามงาน
+
+
+3. ล็อกอินด้วยอีเมลและรหัสผ่าน
+-------------------------------
+
+1) ผู้ใช้ส่งฟอร์มหน้า index.html
+2) script.js เรียก Firebase signInWithEmailAndPassword()
+3) เมื่อ Firebase ตอบกลับ หน้าเว็บ reload ข้อมูลผู้ใช้เพื่อตรวจ emailVerified
+4) ถ้ายังไม่ยืนยันอีเมล ระบบส่ง OTP ทางอีเมลและแสดงฟอร์มยืนยัน
+   ยังไม่สร้าง FMS session และยังไม่นำผู้ใช้เข้าหน้าเมนู
+5) ถ้ายืนยันอีเมลแล้ว เรียก establishApiSession(user)
+6) establishApiSession() ขอ Firebase ID token แล้วส่งไปที่
+   POST /api/auth/session ใน Authorization: Bearer <ID token>
+7) เมื่อ API สร้าง session สำเร็จ หน้าเว็บแสดงข้อความและไป menu.html
+
+หากข้อมูลผิด, Firebase ติดต่อไม่ได้, โดเมนยังไม่อยู่ใน Authorized domains,
+หรือบัญชีมีปัญหา หน้าเว็บจะแสดงข้อความตาม error code ที่ script.js จัดการไว้
+
+
+4. ล็อกอินด้วย Google
+---------------------
+
+1) ผู้ใช้กดปุ่ม Google
+2) script.js เปิด Firebase signInWithPopup() และกำหนดให้ Google ถามเลือกบัญชี
+3) เมื่อ Firebase ยืนยันตัวตนแล้ว ใช้ขั้นตอน establishApiSession() แบบเดียวกับอีเมล
+4) เมื่อ API ออก session cookie แล้ว จึงนำไป menu.html
+
+
+5. การสมัครบัญชีและ OTP ยืนยันอีเมล
+-----------------------------------
+
+1) ผู้ใช้เลือก Create an account แล้วกรอกชื่อ, อีเมล และรหัสผ่าน
+2) Firebase createUserWithEmailAndPassword() สร้างบัญชี Firebase
+3) หน้าเว็บส่ง ID token ไป POST /api/auth/signup/otp/request
+4) API ตรวจบัญชี Firebase และสร้าง OTP 6 หลัก ส่งทาง SMTP ไปยังอีเมล
+5) OTP เก็บในฐานข้อมูลในรูป hash ไม่เก็บรหัส OTP เป็นข้อความปกติ
+6) OTP หมดอายุใน 10 นาที และมีจำนวนครั้งกรอกผิดได้สูงสุด 5 ครั้ง
+7) เมื่อผู้ใช้ส่งรหัส หน้าเว็บเรียก POST /api/auth/signup/otp/verify
+8) API ตรวจ OTP และ Firebase UID ที่ผูกกับรหัสนั้น จากนั้นตั้ง emailVerified ใน Firebase
+9) หน้าเว็บออกจาก Firebase แล้วให้ผู้ใช้กลับไปล็อกอิน
+10) หลังล็อกอินที่ยืนยันอีเมลแล้ว API จึงสร้าง/จับคู่บัญชี FMS และเปิด session
+
+การแยกยืนยันอีเมลออกจากการเปิด session ช่วยป้องกันบัญชีที่ยังไม่ยืนยัน
+ไม่ให้เข้าถึง API ที่ต้องล็อกอิน
+
+
+6. การสร้าง session ฝั่ง FMS
+----------------------------
+
+POST /api/auth/session ทำงานโดยสรุปดังนี้:
+
+- รับ Firebase ID token จาก Authorization header
+- Firebase Admin ตรวจ token รวมถึงตรวจสถานะการเพิกถอน token
+- อ่านบัญชี Firebase และกำหนดให้ต้องมีอีเมลที่ยืนยันแล้ว
+- ค้นหาบัญชี FMS ด้วย Firebase UID หรืออีเมล
+- ถ้ามีบัญชีเดิม จะผูก UID และคง role ที่บันทึกไว้ใน FMS
+- ถ้ายังไม่มีบัญชี จะสร้างบัญชีใหม่และกำหนด role เริ่มต้น
+- ออก Firebase session cookie อายุ 5 วัน
+- ตั้ง cookie fms_session เป็น HttpOnly เพื่อไม่ให้ JavaScript อ่านค่าได้
+- ตั้ง fms_csrf อีก cookie สำหรับป้องกันคำขอเขียนข้อมูลปลอม
+
+cookie ใช้ Path=/ และ SameSite=Strict; ใน production จะติด Secure
+หมายเหตุ: อายุ 5 วันเป็นอายุ cookie ที่เซิร์ฟเวอร์กำหนด ไม่ใช่การรับประกันว่า
+Firebase หรือผู้ให้บริการอีเมลจะใช้งานได้ตลอดช่วงนั้น
+
+
+7. การกำหนด role
+-----------------
+
+role ที่ระบบรู้จัก:
+- ADMIN: จัดการสิทธิ์และการตั้งค่าของระบบตาม endpoint ที่อนุญาต
+- NURSE: ใช้งานส่วนงานที่ต้องบันทึกข้อมูลตามสิทธิ์ของหน้า/API
+- VISITOR: role เริ่มต้นสำหรับบัญชีใหม่ทั่วไป และ API ปัจจุบันอนุญาตให้อ่าน
+  แต่ปฏิเสธคำขอเขียนข้อมูล
+
+สำหรับบัญชีใหม่:
+- ถ้าอีเมลอยู่ใน FMS_ADMIN_EMAILS ของ backend จะเริ่มเป็น ADMIN
+- ถ้าไม่อยู่ในรายการ จะเริ่มเป็น VISITOR
+
+บัญชีเดิมจะคง role จากฐานข้อมูลไว้ ไม่ถูกเปลี่ยนเป็น ADMIN หรือ VISITOR ใหม่
+เพียงเพราะมีการล็อกอินอีกครั้ง ผู้ดูแลระบบเปลี่ยน role ได้จากหน้า Admin Settings
+การปฏิเสธ role ที่ไม่มีสิทธิ์เกิดที่ API ด้วย ไม่ได้อาศัยแค่ซ่อนปุ่มในหน้าเว็บ
+
+
+8. การตรวจ session เมื่อเปิดหน้าเมนูและเรียก API
+-------------------------------------------------
+
+หน้า menu.html ใช้ Firebase onAuthStateChanged() ตรวจว่ามี Firebase user อยู่หรือไม่
+แล้วเรียก GET /api/auth/session โดยส่ง cookie ไปด้วย
+
+API อ่าน fms_session, ให้ Firebase Admin ตรวจ session cookie และอ่านผู้ใช้จากฐานข้อมูล
+จากนั้นตรวจว่า:
+- ผู้ใช้ยังมีบัญชีอยู่
+- isActive ยังเป็น true
+- role ปัจจุบันของบัญชีเป็นอะไร
+
+role ที่อ่านจากฐานข้อมูลจะใช้เป็นตัวตัดสินสิทธิ์ API ส่วน sessionStorage
+ชื่อ fms-admin-session มีไว้ช่วยหน้าเว็บแสดง/ซ่อน UI และไม่ใช่แหล่งยืนยันสิทธิ์
+ที่เชื่อถือได้สำหรับ backend
+
+ทุก API ใต้ /api โดยทั่วไปต้องมี session ยกเว้นเส้นทางล็อกอินบางส่วนและ health check
+คำขอที่เปลี่ยนข้อมูล (POST, PUT, PATCH, DELETE) ต้องส่ง CSRF token ที่ตรงกับ cookie
+ด้วย นอกจากนี้ backend ยังตรวจ role เฉพาะ endpoint อีกชั้นหนึ่ง
+
+
+9. ออกจากระบบ
+--------------
+
+ปุ่มออกจากระบบใน menu.js:
+1) อ่าน fms_csrf แล้วเรียก POST /api/auth/session/logout
+2) API ตรวจ CSRF และล้าง fms_session กับ fms_csrf โดยตั้งอายุเป็นศูนย์
+3) หน้าเว็บลบ fms-admin-session ออกจาก sessionStorage
+4) เรียก Firebase signOut() และกลับหน้า index.html
+
+
+10. ลืมรหัสผ่าน
+----------------
+
+1) ผู้ใช้กรอกอีเมล แล้วเรียก POST /api/auth/password-reset/otp/request
+2) ถ้าพบบัญชี Firebase จะส่ง OTP 6 หลักทาง SMTP
+   ถ้าไม่พบบัญชี API ตอบข้อความทั่วไป เพื่อไม่เปิดเผยว่ามีอีเมลนั้นในระบบหรือไม่
+3) ผู้ใช้กรอก OTP ที่ยังไม่หมดอายุ แล้วเรียก
+   POST /api/auth/password-reset/otp/verify
+4) API ตรวจ OTP แล้วสร้าง reset token แบบสุ่ม เก็บเฉพาะ hash ในฐานข้อมูล
+   token นี้หมดอายุใน 10 นาที
+5) ผู้ใช้กรอกรหัสผ่านใหม่และยืนยันอีกครั้ง
+6) หน้าเว็บเรียก POST /api/auth/password-reset/complete
+7) API ตรวจ reset token และตั้งรหัสผ่านใหม่ผ่าน Firebase Admin
+8) การรีเซ็ตรหัสผ่านไม่ได้สร้าง FMS session ใหม่โดยอัตโนมัติ ผู้ใช้กลับไปล็อกอิน
+
+รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัวอักษรตามการตรวจใน API/หน้าเว็บ
+
+
+11. ข้อสังเกตจากโค้ดหน้าเว็บ
+-----------------------------
+
+- มีช่อง Remember me ใน index.html แต่ใน Front-end/script.js ไม่พบการผูก event
+  เพื่อเปลี่ยนระยะเวลาหรือ persistence ของ session ดังนั้นช่องนี้ไม่ได้ควบคุม
+  อายุ fms_session; ฝั่ง backend กำหนดอายุ session cookie ไว้ 5 วัน
+- เมนู/การซ่อนหน้าตาม role เป็นเพียงประสบการณ์ผู้ใช้ ส่วนการป้องกันข้อมูลจริง
+  ต้องอยู่ที่ API ซึ่งระบบมีการตรวจ session, CSRF และ role
+- หากตั้งค่า SMTP ไม่ครบ การส่ง OTP จะล้มเหลว แม้ Firebase Authentication
+  จะสร้างบัญชีได้แล้ว
+
+
+12. ตำแหน่งโค้ดที่เกี่ยวข้อง
+----------------------------
+
+หน้าและ logic ฝั่ง browser:
+  Front-end/index.html
+  Front-end/script.js
+  Front-end/menu.js
+
+API authentication:
+  Back-end/src/routes/auth.js
+  Back-end/src/middleware/firebase-session.js
+  Back-end/src/lib/firebase-admin.js
+  Back-end/src/server.js
+
+ข้อมูล role:
+  Back-end/prisma/schema.prisma
+  Back-end/src/routes/index.js (API จัดการผู้ใช้/เปลี่ยน role)
+

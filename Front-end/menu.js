@@ -43,7 +43,7 @@ const yearCalendarTrigger = document.getElementById("yearCalendarTrigger");
 const yearCalendarValue = document.getElementById("yearCalendarValue");
 const yearCalendarOptions = document.getElementById("yearCalendarOptions");
 const ADMIN_SESSION_KEY = "fms-admin-session";
-const API_BASE = window.FMS_API_URL || `${location.protocol}//${location.hostname}:4000`;
+const API_BASE = window.FMS_API_URL || "";
 let currentRole = (() => {
   try {
     return JSON.parse(sessionStorage.getItem(ADMIN_SESSION_KEY) || "null")?.role?.toUpperCase() || null;
@@ -352,7 +352,10 @@ function renderLanguage() {
   document.querySelectorAll("[data-i18n-placeholder]").forEach((element) => { element.placeholder = t[element.dataset.i18nPlaceholder]; });
   document.querySelectorAll("[data-i18n-aria-label]").forEach((element) => { element.setAttribute("aria-label", t[element.dataset.i18nAriaLabel]); });
   signOutLabel.textContent = t.signOut;
-  const cards = isAdminSession() ? [...t.cards, [t.setting[0], t.setting[1], t.setting[2]]] : t.cards;
+  const adminBlockedImages = new Set(["6.png", "7.png", "9.png", "10.png"]);
+  const cards = isAdminSession()
+    ? [...t.cards.filter(([, , image]) => !adminBlockedImages.has(image)), [t.setting[0], t.setting[1], t.setting[2]]]
+    : t.cards;
   menuGrid.innerHTML = cards.map(([title, description, image]) => `<div class="col-12 col-sm-6 col-lg-4 col-xl-3"><a class="menu-card d-block text-decoration-none" href="${title === "Dashboard and Report" ? "./dashboard.html" : title === "Infirmary Visit" ? "./infirmary-visit.html" : title === "Borrow and Return" ? "./borrow-return.html" : title === "Duty Shift" ? "./duty-shift.html" : title === "System Activity Log" ? "./system-activity.html" : title === "Setting" || title === "Settings" || title === "ตั้งค่า" ? "./admin-settings.html" : "#"}"><img src="./assets/${image}" alt="${title}" /><div class="menu-card-body"><h3>${title}</h3><p>${description}</p></div></a></div>`).join("");
   renderCalendar();
   renderPalette();

@@ -43,7 +43,7 @@
     "ยา และเวชภัณฑ์": "Medicines & Medical Supplies",
     "ยาและเวชภัณฑ์ที่จะยืม": "Medicines & Supplies to Borrow",
     "รายละเอียดของยา": "Medicine Details",
-    "ชื่อสินค้า": "Product name",
+    "ชื่อยา": "Medicine name",
     "ชื่อสามัญ": "Generic name",
     "ประเภท": "Category",
     "รหัสยา": "Medicine code",
